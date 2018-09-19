@@ -73,6 +73,7 @@ install_requires = [
     'flower',
     'items',
     'scapy',
+    'scapy-http',
     'baidu-aip',
     'pytesseract',
     'scrapy-splash',
