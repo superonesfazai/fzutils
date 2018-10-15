@@ -83,6 +83,7 @@ install_requires = [
     'xmltodict',
     'python-dateutil',
     'newspaper3k',          # 文章提取
+    'ftfy',                 # 超级强大的unicode文本工具
     # 'sip',
     # 'pyqt5',
 ]
