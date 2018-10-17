@@ -84,6 +84,7 @@ install_requires = [
     'python-dateutil',
     'newspaper3k',          # 文章提取
     'ftfy',                 # 超级强大的unicode文本工具
+    'tenacity',             # 强大的python重试库
     # 'sip',
     # 'pyqt5',
 ]
