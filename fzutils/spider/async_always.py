@@ -17,7 +17,14 @@ from time import sleep
 from pprint import pprint
 from scrapy.selector import Selector
 
-from asyncio import get_event_loop, wait
+from asyncio import (
+    get_event_loop,
+    wait,
+    PriorityQueue,
+    ensure_future,
+    Semaphore,
+    Future,
+    CancelledError,)
 from asyncio import sleep as async_sleep
 from async_timeout import timeout as async_timeout
 from asyncio import TimeoutError as AsyncTimeoutError
