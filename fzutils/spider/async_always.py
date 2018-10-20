@@ -16,6 +16,7 @@ import re
 from time import sleep
 from pprint import pprint
 from scrapy.selector import Selector
+from json import dumps, loads
 
 from asyncio import (
     get_event_loop,
