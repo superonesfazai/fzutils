@@ -16,6 +16,10 @@ import gc
 from random import randint
 from pprint import pprint
 
+# 避免报安全异常!
+# from requests.packages.urllib3.exceptions import InsecureRequestWarning
+# requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 from ..ip_pools import (
     MyIpPools,
     ip_proxy_pool,
