@@ -12,8 +12,7 @@ from setuptools import (
     setup,
     find_packages,
 )
-import sys
-import os
+from os import path
 import codecs
 from requires import install_requires
 
@@ -43,7 +42,7 @@ def read(f_name):
     你也可以不用这个方法，自己手动写内容即可，
     PyPI上支持.rst格式的文件。暂不支持.md格式的文件，<BR>.rst文件PyPI会自动把它转为HTML形式显示在你包的信息页面上。
     """
-    return codecs.open(os.path.join(os.path.dirname(__file__), f_name)).read()
+    return codecs.open(path.join(path.dirname(__file__), f_name)).read()
 
 long_description = read('README.md')
 
@@ -54,14 +53,14 @@ classifiers = [
     'Operating System :: OS Independent',
 ]
 
-# 可被导入的包(写最外层的就可以)
+# 可被导入的包(写最外层的即可)
 py_modules = [
     'fzutils',
 ]
 
 setup(
     name="fzutils",
-    version="0.1.9.9",
+    version="0.2.0.1",
     author="super_fazai",
     author_email="superonesfazai@gmail.com",
     description="A Python utils for spider",

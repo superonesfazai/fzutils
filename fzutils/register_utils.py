@@ -136,7 +136,7 @@ class YiMaSmser(object):
         else:
             return ''
 
-    def _get_sms(self, phone_num, project_id, release='1', timeout=88) -> str:
+    def _get_sms(self, phone_num, project_id, release='1', timeout=66) -> str:
         '''
         获取手机号对应的短信
         :param phone_num: 手机号码
@@ -253,19 +253,23 @@ class YiMaSmser(object):
     def __del__(self):
         collect()
 
+# @外部调用
 # 测试批量注册微博账号: https://passport.sina.cn/signup/signup?entry=wapsso&r=https%3A%2F%2Fsina.cn%2Findex%2Fsettings%3Fvt%3D4%26pos%3D108
 # with open('/Users/afa/myFiles/pwd/yima_pwd.json', 'r') as f:
 #     yima_info = json_2_dict(f.read())
 # _ = YiMaSmser(username=yima_info['username'], pwd=yima_info['pwd'])
 #
+# # project_id = 35
+# project_id = 715
 # while True:
-#     phone_num = _._get_phone_num(project_id=35)
+#     phone_num = _._get_phone_num(project_id=project_id)
 #     print(phone_num)
-#     a = input('aaa: ')
+#     a = input('是否可用: ')
 #     if a == 'y':
 #         break
+#
 # print('\n未注册的: {}'.format(phone_num))
-# sms_res = _._get_sms(phone_num=phone_num, project_id=35)
+# sms_res = _._get_sms(phone_num=phone_num, project_id=project_id)
 # print(sms_res)
 # res = _._get_account_info()
 # from pprint import pprint

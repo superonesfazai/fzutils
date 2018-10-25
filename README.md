@@ -324,6 +324,30 @@ tracks = get_tracks_based_on_distance(distance=100)
 distance = dichotomy_match_gap_distance(bg_img_path='xxx', slide_img_path='xxx')
 ```
 
+## 批量注册账号
+```python
+from pprint import pprint
+from fzutils.register_utils import YiMaSmser
+
+_ = YiMaSmser(username='账号', pwd='密码')
+project_id = 715
+while True:
+    # 获取新手机号
+    phone_num = _._get_phone_num(project_id=project_id)
+    print(phone_num)
+    a = input('是否可用: ')
+    if a == 'y':
+        break
+
+print('\n未注册的: {}'.format(phone_num))
+# 获取该手机号的短信
+sms_res = _._get_sms(phone_num=phone_num, project_id=project_id)
+print(sms_res)
+# 查看自己的账户余额
+money_res = _._get_account_info()
+pprint(money_res)
+```
+
 ### 代码模板生成
 ```python
 from fzutils.spider.auto import auto_generate_crawler_code

@@ -4,6 +4,7 @@
 aio 异步utils
 """
 
+from time import time
 from asyncio import get_event_loop, wait
 
 from .spider.fz_aiohttp import AioHttp
@@ -46,10 +47,13 @@ async def async_wait_tasks_finished(tasks:list) -> list:
     :param tasks: 任务集
     :return:
     '''
+    s_time = time()
     try:
-        success_jobs, fail_jobs = await wait(tasks)
         print('请耐心等待所有任务完成...')
+        success_jobs, fail_jobs = await wait(tasks)
         print('执行完毕! success_task_num: {}, fail_task_num: {}'.format(len(success_jobs), len(fail_jobs)))
+        time_consume = time() - s_time
+        print('此次耗时 {} s!'.format(round(float(time_consume), 3)))
         all_res = [r.result() for r in success_jobs]
     except Exception as e:
         print(e)

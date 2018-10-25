@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: fzutils
-Version: 0.1.9.9
+Version: 0.2.0.1
 Summary: A Python utils for spider
 Home-page: https://www.github.com/superonesfazai
 Author: super_fazai
@@ -330,6 +330,30 @@ Description: ```bash
         
         # 二分法匹配滑块与缺口间的距离
         distance = dichotomy_match_gap_distance(bg_img_path='xxx', slide_img_path='xxx')
+        ```
+        
+        ## 批量注册账号
+        ```python
+        from pprint import pprint
+        from fzutils.register_utils import YiMaSmser
+        
+        _ = YiMaSmser(username='账号', pwd='密码')
+        project_id = 715
+        while True:
+            # 获取新手机号
+            phone_num = _._get_phone_num(project_id=project_id)
+            print(phone_num)
+            a = input('是否可用: ')
+            if a == 'y':
+                break
+        
+        print('\n未注册的: {}'.format(phone_num))
+        # 获取该手机号的短信
+        sms_res = _._get_sms(phone_num=phone_num, project_id=project_id)
+        print(sms_res)
+        # 查看自己的账户余额
+        money_res = _._get_account_info()
+        pprint(money_res)
         ```
         
         ### 代码模板生成
