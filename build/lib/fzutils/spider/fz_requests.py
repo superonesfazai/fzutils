@@ -34,9 +34,6 @@ __all__ = [
 
 class MyRequests(object):
     def __init__(self):
-        '''
-        :param high_conceal: 代理是否高匿
-        '''
         super(MyRequests, self).__init__()
 
     @classmethod
@@ -54,7 +51,9 @@ class MyRequests(object):
                      num_retries=1,
                      high_conceal=True,
                      ip_pool_type=ip_proxy_pool,
-                     verify=None):
+                     verify=None,
+                     _session=None,
+                     get_session=False):
         '''
         根据url得到body
         :param url:
@@ -70,6 +69,8 @@ class MyRequests(object):
         :param num_retries:
         :param high_conceal: 代理是否为高匿名
         :param verify:
+        :param _session: 旧的session
+        :param get_session: True 则返回值为此次请求的session
         :return: '' 表示error | str 表示success
         '''
         if use_proxy:
@@ -90,7 +91,7 @@ class MyRequests(object):
             else:
                 tmp_headers['Referer'] = 'http://' + tmp_headers['Host'] + '/'
 
-        with requests.session() as s:
+        with requests.session() if _session is None else _session as s:
             try:
                 response = s.request(method=method, url=url, headers=tmp_headers, params=params, data=data, cookies=cookies, proxies=tmp_proxies, timeout=timeout, verify=verify)  # 在requests里面传数据，在构造头时，注意在url外头的&xxx=也得先构造
                 # print(str(response.url))
@@ -109,6 +110,9 @@ class MyRequests(object):
                     print('requests.get()请求超时....')
                     print('data为空!')
                     body = ''
+
+        if get_session:
+            return s
 
         return body
 

@@ -10,16 +10,23 @@
 批量注册工具 utils
 """
 
+import re
 from gc import collect
-from time import sleep
-from ..fzutils.spider.fz_requests import Requests
-from ..fzutils.common_utils import json_2_dict
+from time import sleep, time
+from requests import session
+
+from .spider.fz_requests import Requests
+from .common_utils import json_2_dict
+from .internet_utils import get_random_phone_ua
 
 # from fzutils.spider.fz_requests import Requests
 # from fzutils.common_utils import json_2_dict
+# from fzutils.internet_utils import get_random_phone_ua
 
 __all__ = [
     'YiMaSmser',                # 易码平台的短信验证码服务
+    'TenMinuteEmail',           # 10分钟邮箱
+    'TwentyFourEmail',          # 24小时邮箱
 ]
 
 class YiMaSmser(object):
@@ -253,24 +260,238 @@ class YiMaSmser(object):
     def __del__(self):
         collect()
 
-# @外部调用
-# 测试批量注册微博账号: https://passport.sina.cn/signup/signup?entry=wapsso&r=https%3A%2F%2Fsina.cn%2Findex%2Fsettings%3Fvt%3D4%26pos%3D108
-# with open('/Users/afa/myFiles/pwd/yima_pwd.json', 'r') as f:
-#     yima_info = json_2_dict(f.read())
-# _ = YiMaSmser(username=yima_info['username'], pwd=yima_info['pwd'])
-#
-# # project_id = 35
-# project_id = 715
-# while True:
-#     phone_num = _._get_phone_num(project_id=project_id)
-#     print(phone_num)
-#     a = input('是否可用: ')
-#     if a == 'y':
-#         break
-#
-# print('\n未注册的: {}'.format(phone_num))
-# sms_res = _._get_sms(phone_num=phone_num, project_id=project_id)
-# print(sms_res)
-# res = _._get_account_info()
-# from pprint import pprint
-# pprint(res)
+class TenMinuteEmail(object):
+    """
+    10分钟邮箱(https://10minutemail.com/10MinuteMail/index.html)(缺点: 单机不能频繁获取email address, 会被封一个小时,  而且返回乱码)
+    TODO 收message 有问题
+        simple use:
+            _ = TenMinuteEmail()
+            email_address = _._get_email_address()
+            print('email_address: {}'.format(email_address))
+            print('time_left: {}s'.format(_._get_email_seconds_left()))
+            email_message_count = lambda : _._get_email_message_count()
+            index = 1
+            start_time = time()
+            while email_message_count() == 0 and time() - start_time < 60.:
+                sleep_time = 2
+                print('{}try...休眠{}s'.format(index, sleep_time))
+                index += 1
+
+            print('email_message_list: {}'.format(_._get_email_message_list()))
+    """
+    def __init__(self):
+        self._set_headers()
+        self.session = session()
+        self.email_address = ''
+
+    def _set_headers(self):
+        self.headers = {
+            'accept-encoding': 'gzip, deflate, br',
+            'accept-language': 'zh-CN,zh;q=0.9',
+            'user-agent': get_random_phone_ua(),
+            'accept': '*/*',
+            # 'referer': 'https://10minutemail.com/10MinuteMail/index.html?dswid=2885',
+            'authority': '10minutemail.com',
+            'x-requested-with': 'XMLHttpRequest',
+        }
+
+    def _get_url_body(self, url, params=None):
+        try:
+            with self.session.get(url=url, headers=self.headers, params=params) as response:
+                body = response.text
+        except Exception:
+            body = ''
+
+        return body
+
+    def _get_email_address(self) -> str:
+        '''
+        获取一个email address
+        :return: 一个email address
+        '''
+        url = 'https://10minutemail.com/10MinuteMail/resources/session/address'
+        self.email_address = self._get_url_body(url=url)
+
+        return self.email_address
+
+    def _get_email_seconds_left(self) -> int:
+        '''
+        获取email剩余秒数
+        :return:
+        '''
+        url = 'https://10minutemail.com/10MinuteMail/resources/session/secondsLeft'
+        body = self._get_url_body(url=url)
+
+        seconds_left = 0
+        try:
+            seconds_left = int(body)
+        except Exception as e:
+            print(e)
+
+        return seconds_left
+
+    def _get_email_message_count(self) -> int:
+        '''
+        得到当前email中的message数
+        :return:
+        '''
+        url = 'https://10minutemail.com/10MinuteMail/resources/messages/messageCount'
+        body = self._get_url_body(url=url)
+        try:
+            return int(body)
+        except:
+            return 0
+
+    def _get_email_message_list(self) -> list:
+        '''
+        获取该邮箱收到的所有邮件
+        :return:
+        '''
+        url = 'https://10minutemail.com/10MinuteMail/resources/messages/messagesAfter/0'
+        body = self._get_url_body(url=url)
+        # print(body)
+        data = json_2_dict(json_str=body, default_res=[])
+
+        return data
+
+    def __del__(self):
+        collect()
+
+class TwentyFourEmail(object):
+    """
+    24小时邮箱(http://24mail.chacuo.net/)(可用)
+    simple use:
+        _ = TwentyFourEmail()
+        email_address = _._get_email_address()
+        print('获取到的email_address: {}'.format(email_address))
+        # # 换个邮箱
+        # email_address = _._get_new_email_address()
+        # print(email_address)
+        message_count = lambda : _._get_email_message_count()
+        start_time = time()
+        index = 1
+        while message_count() in (0, None) and time() - start_time < 100.:
+            sleep_time = 2
+            print('{} try, 休眠{}s...'.format(index, sleep_time))
+            sleep(sleep_time)
+            index += 1
+
+        message_list = _._get_email_message_list()
+        print(message_list)
+    """
+    def __init__(self):
+        self.cookies = None
+        self.session = session()
+        self.email_address = ''
+        self._set_headers()
+        self.base_url = 'http://24mail.chacuo.net/'
+        self.MID = ''
+
+    def _set_headers(self) -> None:
+        self.headers = {
+            'Origin': 'http://24mail.chacuo.net',
+            'Accept-Encoding': 'gzip, deflate',
+            'Accept-Language': 'zh-CN,zh;q=0.9',
+            'User-Agent': get_random_phone_ua(),
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'Accept': '*/*',
+            'Referer': 'http://24mail.chacuo.net/',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Connection': 'keep-alive',
+        }
+
+    def _get_email_address(self) -> str:
+        '''
+        得到一个email address
+        :return:
+        '''
+        # 先请求主页获取cookies中的sid值, 必须
+        response = self.session.get(url=self.base_url, headers=self.headers)
+        self.cookies = response.cookies.get_dict()
+        # print('获取到的cookies: {}'.format(self.cookies))
+        if self.cookies.get('sid') is None:
+            raise ValueError('获取邮箱失败!')
+
+        body = response.text
+        try:
+            # 每次请求主页，都能获取到新的email地址
+            self.email_address = re.compile('value=\"(.*?)\" valid=').findall(body)[0] + '@chacuo.net'
+        except IndexError:
+            print('获取email_address时索引异常!')
+
+        return self.email_address
+
+    def _get_new_email_address(self):
+        '''
+        换个新email address
+        :return:
+        '''
+        data = {
+            'data': self.email_address.split('@')[0],
+            'type': 'renew',
+            'arg': 'd=chacuo.net_f=',
+        }
+        with self.session.post(url=self.base_url, headers=self.headers, cookies=self.cookies, data=data) as response:
+            self.cookies = response.cookies.get_dict()
+            print('获取到的新cookies: {}'.format(self.cookies))
+
+            try:
+                self.email_address = json_2_dict(response.text).get('data', [])[0] + '@chacuo.net'
+            except IndexError:
+                print('新获取邮箱时索引异常!')
+                self.email_address = ''
+
+        return self.email_address
+
+    def _get_email_message_count(self) -> int:
+        '''
+        获取email message数
+        :return:
+        '''
+        data = {
+            'data': self.email_address.split('@')[0],
+            'type': 'refresh',
+            'arg': '',
+        }
+        try:
+            response = self.session.post(url=self.base_url, headers=self.headers, cookies=self.cookies, data=data)
+            # print(response.text)
+        except Exception as e:
+            print(e)
+            return 0
+
+        res = []
+        try:
+            res = json_2_dict(response.text).get('data', {})[0].get('list', [])
+            if res != []:
+                # 获取第一封
+                try:
+                    self.MID = res[0].get('MID', '')
+                except IndexError:
+                    print('获取MID失败!')
+
+        except IndexError:
+            print('获取list时索引异常!')
+
+        return len(res)
+
+    def _get_email_message_list(self) -> list:
+        '''
+        获取邮件内容
+        :return:
+        '''
+        data = {
+            'data': self.email_address.split('@')[0],
+            'type': 'mailinfo',
+            # 'arg': 'f=192588114',
+            'arg': 'f={}'.format(self.MID),
+        }
+        message_list = []
+        with self.session.post(url=self.base_url, headers=self.headers, cookies=self.cookies, data=data) as response:
+            # print(response.text)
+            try:
+                message_list = json_2_dict(response.text).get('data', {})[0]
+            except IndexError:
+                print('获取message_list时索引异常!')
+
+            return message_list
