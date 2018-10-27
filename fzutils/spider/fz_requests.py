@@ -23,7 +23,8 @@ from pprint import pprint
 from ..ip_pools import (
     MyIpPools,
     ip_proxy_pool,
-    fz_ip_pool,)
+    fz_ip_pool,
+    sesame_ip_pool,)
 from ..internet_utils import get_base_headers
 from ..common_utils import _print
 
@@ -93,7 +94,16 @@ class MyRequests(object):
 
         with requests.session() if _session is None else _session as s:
             try:
-                response = s.request(method=method, url=url, headers=tmp_headers, params=params, data=data, cookies=cookies, proxies=tmp_proxies, timeout=timeout, verify=verify)  # 在requests里面传数据，在构造头时，注意在url外头的&xxx=也得先构造
+                response = s.request(
+                    method=method,
+                    url=url,
+                    headers=tmp_headers,
+                    params=params,
+                    data=data,
+                    cookies=cookies,
+                    proxies=tmp_proxies,
+                    timeout=timeout,
+                    verify=verify)  # 在requests里面传数据，在构造头时，注意在url外头的&xxx=也得先构造
                 # print(str(response.url))
                 try:
                     _ = response.content.decode(encoding)
@@ -105,7 +115,18 @@ class MyRequests(object):
             except Exception as e:
                 # print(e)
                 if num_retries > 1:
-                    return cls.get_url_body(method=method, url=url, headers=tmp_headers, params=params, data=data, cookies=cookies, had_referer=had_referer, encoding=encoding, timeout=timeout, verify=verify, num_retries=num_retries-1)
+                    return cls.get_url_body(
+                        method=method,
+                        url=url,
+                        headers=tmp_headers,
+                        params=params,
+                        data=data,
+                        cookies=cookies,
+                        had_referer=had_referer,
+                        encoding=encoding,
+                        timeout=timeout,
+                        verify=verify,
+                        num_retries=num_retries-1)
                 else:
                     print('requests.get()请求超时....')
                     print('data为空!')
@@ -136,6 +157,11 @@ class MyRequests(object):
             proxy = proxies.get('http', None)[randint(0, len(proxies) - 1)]
         except TypeError:
             return {}
+
+        if ip_pool_type == sesame_ip_pool:
+            return {
+                'https': proxy,
+            }
 
         tmp_proxies = {
             'http': proxy,

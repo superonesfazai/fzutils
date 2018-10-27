@@ -7,6 +7,8 @@ from random import randint
 from .sql_utils import BaseRedisCli
 from .safe_utils import get_uuid3
 from .data.pickle_utils import deserializate_pickle_object
+from .common_utils import json_2_dict
+from .time_utils import *
 
 __all__ = [
     'MyIpPools',
@@ -15,6 +17,7 @@ __all__ = [
 
 ip_proxy_pool = 'IPProxyPool'
 fz_ip_pool = 'fz_ip_pool'
+sesame_ip_pool = 'sesame_ip_pool'
 
 class MyIpPools(object):
     def __init__(self, type=ip_proxy_pool, high_conceal=False):
@@ -25,8 +28,13 @@ class MyIpPools(object):
         super(MyIpPools, self).__init__()
         self.high_conceal = high_conceal
         self.type = type
-        self.redis_cli = BaseRedisCli() if self.type == fz_ip_pool else None
-        self.h_key = get_uuid3('h_proxy_list') if self.redis_cli is not None else None
+        self.redis_cli = BaseRedisCli() if self.type == fz_ip_pool or self.type == sesame_ip_pool else None
+        if self.type == fz_ip_pool:
+            self.h_key = get_uuid3('h_proxy_list')
+        elif self.type == sesame_ip_pool:
+            self.h_key = get_uuid3('sesame_ip_pool')
+        else:
+            self.h_key = None
 
     def get_proxy_ip_from_ip_pool(self):
         '''
@@ -58,6 +66,14 @@ class MyIpPools(object):
                 pickle_object=self.redis_cli.get(name=self.h_key) or dumps([]),
                 default_res=[])
             proxy_list = ['http://{}:{}'.format(i.get('ip', ''), i.get('port', '')) for i in _]
+
+        elif self.type == sesame_ip_pool:
+            _ = json_2_dict(self.redis_cli.get(name=self.h_key) or dumps([]), default_res=[])
+            proxy_list = []
+            for i in _:
+                if datetime_to_timestamp(string_to_datetime(i.get('expire_time', ''))) \
+                        > datetime_to_timestamp(get_shanghai_time()) + 15:
+                    proxy_list.append('http://{}:{}'.format(i.get('ip', ''), i.get('port', '')))
 
         else:
             raise ValueError('type值异常, 请检查!')
@@ -91,14 +107,13 @@ class MyIpPools(object):
         if self.type == ip_proxy_pool:
             base_url = 'http://127.0.0.1:8000'
             result = get(base_url).json()
-
             delete_url = 'http://127.0.0.1:8000/delete?ip='
 
             for item in result:
                 if item[2] < 11:
                     delete_info = get(delete_url + item[0])
                     print(delete_info.text)
-        elif self.type == fz_ip_pool:
+        elif self.type == fz_ip_pool or self.type == sesame_ip_pool:
             self.redis_cli.set(self.h_key, '')
 
         return None
