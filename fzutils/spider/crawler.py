@@ -12,6 +12,9 @@
 
 from logging import INFO, ERROR
 from gc import collect
+from asyncio import (
+    get_event_loop,
+)
 
 from ..ip_pools import (
     fz_ip_pool,
@@ -28,6 +31,7 @@ from .fz_phantomjs import (
 
 __all__ = [
     'Crawler',          # 爬虫基类
+    'AsyncCrawler',     # 异步爬虫
 ]
 
 # user_agent_type
@@ -130,4 +134,33 @@ class Crawler(object):
         del_headers()
         del_logger()
         del_driver()
+        collect()
+
+class AsyncCrawler(Crawler):
+    """异步crawler"""
+    def __init__(self, *params, **kwargs):
+        '''
+        :param ip_pool_type: ip池类型
+        :param log_print: bool 打印类型是否为log/sys.stdout.write
+        :param logger:
+        :param log_save_path: 日志存储路径
+        '''
+        Crawler.__init__(self, *params, **kwargs)
+        self.loop = get_event_loop()
+        self.concurrency = 9            # 控制并发量
+
+    async def _get_phone_headers(self):
+        pass
+
+    async def _get_pc_headers(self):
+        pass
+
+    async def _fck_run(self):
+        pass
+
+    def __del__(self):
+        try:
+            del self.loop
+        except:
+            pass
         collect()
