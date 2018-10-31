@@ -16,6 +16,7 @@ install_requires = [
     'web.py==0.40.dev1',
     'pytz',
     'requests',
+    'requests_oauthlib',
     'selenium==3.8.0',     # 3.8.1及其以上版本不支持phantomjs了
     'asyncio',
     'psutil',
