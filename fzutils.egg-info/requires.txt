@@ -6,6 +6,7 @@ greenlet==0.4.13
 web.py==0.40.dev1
 pytz
 requests
+requests_oauthlib
 selenium==3.8.0
 asyncio
 psutil

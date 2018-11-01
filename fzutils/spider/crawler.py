@@ -28,6 +28,7 @@ from .fz_phantomjs import (
     BaseDriver,
     CHROME,
     PHANTOMJS,)
+from ..safe_utils import get_uuid1
 
 __all__ = [
     'Crawler',          # 爬虫基类
@@ -154,6 +155,20 @@ class AsyncCrawler(Crawler):
 
     async def _get_pc_headers(self):
         pass
+
+    async def _get_new_logger(self, logger_name=get_uuid1()):
+        '''
+        获取一个新的日志对象
+        :param logger_name:
+        :return:
+        '''
+        assert self.log_save_path != '', 'log_save_path为空值!'
+
+        return set_logger(
+            log_file_name=self.log_save_path + str(get_shanghai_time())[0:10] + '.txt',
+            logger_name=logger_name,
+            console_log_level=INFO,
+            file_log_level=ERROR)
 
     async def _fck_run(self):
         pass

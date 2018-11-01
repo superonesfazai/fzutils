@@ -5,6 +5,7 @@ aio 异步utils
 """
 
 from time import time
+from gc import collect
 from asyncio import get_event_loop, wait
 
 from .spider.fz_aiohttp import AioHttp
@@ -13,6 +14,7 @@ __all__ = [
     'Asyncer',
     'get_async_execute_result',     # 获取异步执行结果
     'async_wait_tasks_finished',    # 异步等待目标tasks完成
+    'TasksParamsListObj',           # 任务参数List
 ]
 
 class Asyncer(object):
@@ -60,3 +62,42 @@ async def async_wait_tasks_finished(tasks:list) -> list:
         return []
 
     return all_res
+
+class TasksParamsListObj(object):
+    """
+    任务参数List
+        simple use:
+            a = [1,2,3,4,5]
+            _ = TasksParamsListObj(tasks_params_list=a, step=2)
+            while True:
+                try:
+                    print(_.__next__())
+                except AssertionError as e:
+                    break
+    """
+    def __init__(self, tasks_params_list, step, slice_start_index=0):
+        '''
+        :param tasks_params_list: tasks 的参数list
+        :param step: 步长，即并发量
+        :param slice_start_index: 切片起始位置
+        '''
+        self.tasks_params_list = tasks_params_list
+        self.tasks_params_list_len = len(tasks_params_list)
+        self.step = step
+        self.slice_start_index = slice_start_index
+
+    def __next__(self):
+        assert self.slice_start_index < self.tasks_params_list_len, '超出长度!'
+
+        res = self.tasks_params_list[self.slice_start_index:self.step+self.slice_start_index]
+        self.slice_start_index += self.step
+        # print(self.slice_start_index)
+
+        return res
+
+    def __del__(self):
+        try:
+            del self.tasks_params_list
+        except:
+            pass
+        collect()
