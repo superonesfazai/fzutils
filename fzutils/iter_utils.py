@@ -8,6 +8,7 @@ from toolz.itertoolz import groupby
 
 __all__ = [
     'group_by',                     # 通过key function 给list分组
+    'filter_iterable_obj',          # 过滤可迭代对象
 ]
 
 def group_by(key, seq):
@@ -28,4 +29,23 @@ def group_by(key, seq):
     See Also:
         countby
     """
-    groupby(key, seq)
+    return groupby(key, seq)
+
+def filter_iterable_obj(func, iterable_obj):
+    '''
+    过滤可迭代对象
+        simple use:
+        a = [
+            {
+                'id': 1,
+            },{
+                'id': 2,
+            }
+        ]
+        b = list(filter_iterable_obj(lambda x: x.get('id') > 1, a))
+        print(b)
+    :param func: 筛选函数
+    :param iterable_obj: 可迭代对象
+    :return:
+    '''
+    return filter(func, iterable_obj)
