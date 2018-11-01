@@ -111,7 +111,7 @@ def _print(**kwargs):
     '''
     msg = kwargs.get('msg', None)
     logger = kwargs.get('logger', None)
-    log_level = kwargs.get('log_level', 1)     # 日志等级(默认'info')
+    log_level = kwargs.get('log_level', 1)      # 日志等级(默认'info'=1)
     exception = kwargs.get('exception', None)
 
     if logger is None:
