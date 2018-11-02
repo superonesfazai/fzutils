@@ -21,13 +21,24 @@ from json import dumps, loads
 from asyncio import (
     get_event_loop,
     wait,
-    PriorityQueue,
+    Queue,                      # 一个队列，用于协调生产者和消费者协同程序。
+    PriorityQueue,              # 子类Queue; 按优先级顺序检索条目(最低的第一个)
+    LifoQueue,
     ensure_future,
-    Semaphore,
+    Semaphore,                  # 信号量实现
     Future,
     CancelledError,
-    gather,)
+    gather,                     # 返回给定协程对象或期货的未来聚合结果, 所有期货必须共享相同的事件循环
+    iscoroutine,                # True如果obj是协程对象
+    iscoroutinefunction,        # True如果确定func是协程函数
+    run_coroutine_threadsafe,   # 将coroutine对象提交给给定的事件循环, 此函数旨在从与运行事件循环的线程不同的线程调用
+    subprocess,
+    shield,
+    set_event_loop,
+    Condition,                  # 该类实现条件变量对象。条件变量允许一个或多个协同程序等待，直到它们被另一个协程通知。
+)
 from asyncio import sleep as async_sleep
+from asyncio import Lock as AsyncLock
 from async_timeout import timeout as async_timeout
 from asyncio import TimeoutError as AsyncTimeoutError
 

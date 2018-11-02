@@ -26,7 +26,6 @@ install_requires = [
     'twine',
     'numpy',
     'pprint',
-    'selenium',
     'chardet',
     'bs4',
     'scrapy',
@@ -63,17 +62,17 @@ install_requires = [
     'Jinja2',
     'elasticsearch',
     'elasticsearch_dsl',
-    'salt',
-    'ray',
+    'salt',                 # 为大规模复杂系统管理提供软件, 同步控制百万台服务器
+    'ray',                  # 一个灵活的高性能分布式执行框架
     'jupyter',
     'ipywidgets',
-    'bokeh',
+    'bokeh',                # 一个用于Python的交互式可视化库，可在现代Web浏览器中实现美观且有意义的数据可视化呈现
     'stem',
-    'pika',
+    'pika',                 # RabbitMQ客户端库
     'redis',
-    'flower',
+    'flower',               # 一个基于Web的工具，用于监视和管理Celery集群。
     'items',
-    'scapy',
+    'scapy',                # 功能强大的基于Python的交互式数据包操作程序和库
     'scapy-http',
     'baidu-aip',
     'pytesseract',
