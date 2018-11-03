@@ -100,31 +100,33 @@ def get_shelf_time_and_delete_time(tmp_data, is_delete, shelf_time, delete_time)
 
     return (shelf_time, delete_time)
 
-def _get_price_change_info(old_price, old_taobao_price, new_price, new_taobao_price):
+def _get_price_change_info(old_price, old_taobao_price, new_price, new_taobao_price, is_price_change):
     '''
     公司用来记录价格改变信息
     :param old_price: 原始最高价 type Decimal
     :param old_taobao_price: 原始最低价 type Decimal
     :param new_price: 新的最高价
     :param new_taobao_price: 新的最低价
-    :return: _is_price_change 0 or 1 | _
+    :return: is_price_change 0 or 1 | _
     '''
     # print(old_price)
     # print(type(old_price))
     # print(new_price)
     # print(type(new_price))
-    _is_price_change = 0
-    if float(old_price) != float(new_price) or float(old_taobao_price) != float(new_taobao_price):
-        _is_price_change = 1
+    if is_price_change == 0:
+        # 处理单规格的情况, 价格变动置1, price, taobao_price每次更新都是更新的
+        if float(old_price) != float(new_price) or float(old_taobao_price) != float(new_taobao_price):
+            is_price_change = 1
 
+    # 默认留空不记录东西了
     _ = {
-        'old_price': str(old_price),
-        'old_taobao_price': str(old_taobao_price),
-        'new_price': str(new_price),
-        'new_taobao_price': str(new_taobao_price),
+        # 'old_price': str(old_price),
+        # 'old_taobao_price': str(old_taobao_price),
+        # 'new_price': str(new_price),
+        # 'new_taobao_price': str(new_taobao_price),
     }
 
-    return _is_price_change, _
+    return is_price_change, _
 
 async def calculate_right_sign(_m_h5_tk: str, data: json):
     '''

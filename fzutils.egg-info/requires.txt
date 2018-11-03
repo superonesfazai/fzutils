@@ -16,7 +16,6 @@ colorama
 twine
 numpy
 pprint
-selenium
 chardet
 bs4
 scrapy

@@ -101,17 +101,17 @@ def deal_with_JSONDecodeError_about_value_invalid_escape(json_str):
     '''
     return re.compile(r'\\(?![/u"])').sub(r"\\\\", json_str)
 
-def _print(log_level=1, **kwargs):
+def _print(**kwargs):
     '''
     fz的输出方式(常规print or logger打印)
         可传特殊形式:
             eg: _print(exception=e, logger=logger)  # logger可以为None
-    :param log_level: 日志等级(默认'info'=1)
     :param kwargs:
     :return: None
     '''
     msg = kwargs.get('msg', None)
     logger = kwargs.get('logger', None)
+    log_level = kwargs.get('log_level', 1)      # 日志等级(默认'info'=1)
     exception = kwargs.get('exception', None)
 
     if logger is None:
