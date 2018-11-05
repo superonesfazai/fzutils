@@ -67,6 +67,8 @@ class GoodsItem(Item):              # Item属性固定，无法外在添加属�
     block_id = Field()              # 未知
     father_sort = Field()           # 未知
     child_sort = Field()            # 未知
+    is_spec_change = Field()        # 纯规格变动标记
+    spec_trans_time = Field()       # 纯规格变动时间点
 
 class BaseItem(object_ref):
     """Base class for all scraped items."""

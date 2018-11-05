@@ -370,6 +370,8 @@ def _get_right_model_data(data, site_id=None, logger=None):
     tmp['block_id'] = data_list.get('block_id', '')
     tmp['father_sort'] = data_list.get('father_sort', '')
     tmp['child_sort'] = data_list.get('child_sort', '')
+    tmp['is_spec_change'] = data_list.get('is_spec_change', 0)
+    tmp['spec_trans_time'] = data_list.get('spec_trans_time', '')
 
     return tmp
 
