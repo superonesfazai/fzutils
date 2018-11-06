@@ -51,6 +51,9 @@ def json_2_dict(json_str, logger=None, encoding=None, default_res=None):
     :return:
     '''
     _ = default_res if default_res is not None else {}
+    if json_str is None:    # 单独处理json_str为空值
+        return _
+
     try:
         _ = loads(json_str)
     except JSONDecodeError:

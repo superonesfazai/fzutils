@@ -372,6 +372,9 @@ def _get_right_model_data(data, site_id=None, logger=None):
     tmp['child_sort'] = data_list.get('child_sort', '')
     tmp['is_spec_change'] = data_list.get('is_spec_change', 0)
     tmp['spec_trans_time'] = data_list.get('spec_trans_time', '')
+    tmp['is_stock_change'] = data_list.get('is_stock_change', 0)
+    tmp['stock_trans_time'] = data_list.get('stock_trans_time', '')
+    tmp['stock_change_info'] = data_list.get('stock_change_info', '')
 
     return tmp
 
@@ -402,6 +405,8 @@ def format_price_info_list(price_info_list, site_id):
             else:
                 img_url = item.get('img_url', '')
             is_on_sale = item.get('is_on_sale', 1)  # 1:特价 0:原价(normal_price)   就拼多多有, 对公司后台无用
+            if rest_number <= 0:
+                continue
 
             _.append({
                 'unique_id': get_uuid3(spec_value),                 # 该规格唯一id
