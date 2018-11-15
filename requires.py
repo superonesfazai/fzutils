@@ -85,6 +85,7 @@ install_requires = [
     'newspaper3k',          # 文章提取
     'ftfy',                 # 超级强大的unicode文本工具
     'tenacity',             # 强大的python重试库
+    'pyzbar',               # 二维码识别库, 安装前提:(ubuntu: sudo apt-get install libzbar-dev | mac: brew install zbar)
     # 'sip',
     # 'pyqt5',
 ]

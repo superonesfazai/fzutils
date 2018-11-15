@@ -100,7 +100,7 @@ def get_shelf_time_and_delete_time(tmp_data, is_delete, shelf_time, delete_time)
 
     return (shelf_time, delete_time)
 
-def _get_price_change_info(old_price, old_taobao_price, new_price, new_taobao_price, is_price_change):
+def _get_price_change_info(old_price, old_taobao_price, new_price, new_taobao_price, is_price_change, price_change_info):
     '''
     公司用来记录价格改变信息
     :param old_price: 原始最高价 type Decimal
@@ -126,7 +126,7 @@ def _get_price_change_info(old_price, old_taobao_price, new_price, new_taobao_pr
         # 'new_taobao_price': str(new_taobao_price),
     }
 
-    return is_price_change, _
+    return is_price_change, price_change_info
 
 async def calculate_right_sign(_m_h5_tk: str, data: json):
     '''

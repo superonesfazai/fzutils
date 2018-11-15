@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: fzutils
-Version: 0.2.1.9
+Version: 0.2.2.2
 Summary: A Python utils for spider
 Home-page: https://www.github.com/superonesfazai
 Author: super_fazai
@@ -330,6 +330,15 @@ Description: ```bash
         
         # 二分法匹配滑块与缺口间的距离
         distance = dichotomy_match_gap_distance(bg_img_path='xxx', slide_img_path='xxx')
+        ```
+        
+        ## qrcode
+        二维码解码
+        ```python
+        from fzutils.qrcode_utils import decode_qrcode
+        
+        img_url = 'https://i.loli.net/2018/11/15/5bed1adce184e.jpg'
+        print(decode_qrcode(img_url=img_url))
         ```
         
         ## 批量注册账号

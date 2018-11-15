@@ -8,6 +8,7 @@ from pprint import pprint
 from uuid import uuid1, uuid3
 from uuid import NAMESPACE_DNS
 from hashlib import md5
+from base64 import b64decode
 
 __all__ = [
     'encrypt',                                                      # 加密算法
@@ -16,6 +17,7 @@ __all__ = [
     'get_uuid1',                                                    # 根据时间戳等, 随机生成一个唯一的uuid
     'get_uuid3',                                                    # 得到一个uuid3加密的唯一标识符
     'get_all_func_class_name_where_no_import_packages_called',      # 得到所有不导入皆可被调用的class name (使用mro不导入任何包，调用原生类)
+    'b64decode_plus',                                               # base64解码plus, 自动填充缺损字符
 ]
 
 def encrypt(key, tmp_str):
@@ -110,3 +112,16 @@ def get_all_func_class_name_where_no_import_packages_called() -> list:
     # pprint(_)
 
     return _
+
+def b64decode_plus(data: bytes, *params) -> bytes:
+    """
+    base64解码plus, 自动填充缺损字符
+    出现错误: Error: Incorrect padding, 进行填充
+    :param data: Base64 data as an ASCII byte string
+    :returns: The decoded byte string.
+    """
+    missing_padding = len(data) % 4
+    if missing_padding != 0:
+        data += b'=' * (4 - missing_padding)
+
+    return b64decode(s=data, *params)

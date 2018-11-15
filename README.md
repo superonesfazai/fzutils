@@ -324,6 +324,15 @@ tracks = get_tracks_based_on_distance(distance=100)
 distance = dichotomy_match_gap_distance(bg_img_path='xxx', slide_img_path='xxx')
 ```
 
+## qrcode
+二维码解码
+```python
+from fzutils.qrcode_utils import decode_qrcode
+
+img_url = 'https://i.loli.net/2018/11/15/5bed1adce184e.jpg'
+print(decode_qrcode(img_url=img_url))
+```
+
 ## 批量注册账号
 ```python
 from pprint import pprint

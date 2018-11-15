@@ -74,3 +74,4 @@ python-dateutil
 newspaper3k
 ftfy
 tenacity
+pyzbar

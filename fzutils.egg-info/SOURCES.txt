@@ -23,6 +23,7 @@ fzutils/log_utils.py
 fzutils/markdown_utils.py
 fzutils/ocr_utils.py
 fzutils/path_utils.py
+fzutils/qrcode_utils.py
 fzutils/register_utils.py
 fzutils/safe_utils.py
 fzutils/sms_utils.py
