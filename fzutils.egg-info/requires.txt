@@ -75,3 +75,4 @@ newspaper3k
 ftfy
 tenacity
 pyzbar
+eventlet

@@ -10,10 +10,13 @@
 celery常用函数
 """
 
+from time import time
 from celery import Celery
+from celery.utils.log import get_task_logger
 
 __all__ = [
-    'init_celery_app',          # 初始化一个celery对象
+    'init_celery_app',              # 初始化一个celery对象
+    '_get_celery_async_results',    # 得到celery worker的处理结果集合
 ]
 
 def init_celery_app(name='proxy_tasks',
@@ -37,9 +40,40 @@ def init_celery_app(name='proxy_tasks',
         CELERY_RESULT_SERIALIZER='pickle',
         CELERYD_FORCE_EXECV=True,
         # CELERYD_HIJACK_ROOT_LOGGER=False,                         # 想要用自己的logger, 则设置为False
-        CELERYD_MAX_TASKS_PER_CHILD=celeryd_max_tasks_per_child,    # 长时间运行Celery有可能发生内存泄露，可以像下面这样设置
+        CELERYD_MAX_TASKS_PER_CHILD=celeryd_max_tasks_per_child,    # 长时间运行Celery有可能发生内存泄露，可以像下面这样设置, 这个表示每个工作的进程／线程／绿程 在执行 n 次任务后，主动销毁，之后会起一个新的。主要解决一些资源释放的问题。
         CELERY_TASK_RESULT_EXPIRES=60*60,                           # task result过期时间 单位秒
         BROKER_HEARTBEAT=0,)
 
     return app
+
+async def _get_celery_async_results(tasks:list) -> list:
+    '''
+    得到celery worker的处理结果集合
+    :param tasks: celery的tasks任务对象集
+    :return:
+    '''
+    all = []
+    success_num = 1
+    s_time = time()
+    while len(tasks) > 0:
+        for r_index, r in enumerate(tasks):
+            if r.ready():
+                try:
+                    all.append(r.get(timeout=2, propagate=False))
+                    print('\rsuccess_num: {}'.format(success_num), end='', flush=True)
+                except TimeoutError:
+                    pass
+                success_num += 1
+                try:
+                    tasks.pop(r_index)
+                except:
+                    pass
+            else:
+                pass
+    else:
+        pass
+    time_consume = time() - s_time
+    print('\n执行完毕! 此次耗时 {} s!'.format(round(float(time_consume), 3)))
+
+    return all
 
