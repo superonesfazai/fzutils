@@ -13,6 +13,7 @@ sql utils
 
 from pymssql import *
 import asyncio
+from time import sleep
 from redis import (
     ConnectionPool,
     StrictRedis,)
@@ -32,6 +33,8 @@ class BaseSqlServer(object):
     def __init__(self, host, user, passwd, db, port):
         super(BaseSqlServer, self).__init__()
         self.is_connect_success = True
+        # 死锁重试次数
+        self.dead_lock_retry_num = 3
         try:
             self.conn = connect(
                 host=host,
@@ -69,7 +72,6 @@ class BaseSqlServer(object):
             else:
                 cs.execute(sql_str)
             # self.conn.commit()
-
             result = cs.fetchall()
         except Exception as e:
             _print(msg='--------------------| 筛选level时报错: ', logger=logger, log_level=2, exception=e)
@@ -97,7 +99,6 @@ class BaseSqlServer(object):
         except IntegrityError:
             print('重复插入...')
             _ = True
-
         except Exception as e:
             print('-' * 9 + '| 修改信息失败, 未能将该页面信息存入到sqlserver中 |')
             print('-' * 9 + '| 错误如下: ', e)
@@ -121,7 +122,6 @@ class BaseSqlServer(object):
         except IntegrityError:
             logger.info('重复插入goods_id[%s], 此处跳过!' % params[0])
             _ = True
-
         except Exception:
             logger.error('| 修改信息失败, 未能将该页面信息存入到sqlserver中 | 出错goods_id: %s' % params[0], exc_info=True)
         finally:
@@ -165,7 +165,6 @@ class BaseSqlServer(object):
             if not error_msg_dict:
                 logger.info('重复插入goods_id[%s], 此处跳过!' % params[0])
                 _ = True
-
             else:
                 if isinstance(error_msg_dict, dict):
                     msg = '重复插入{0}[{1}], 此处跳过!'.format(
@@ -174,7 +173,6 @@ class BaseSqlServer(object):
                     )
                     logger.info(msg)
                     _ = True
-
                 else:
                     raise TypeError('传入的error_msg_dict类型错误, 请核对需求参数!')
 
@@ -207,45 +205,71 @@ class BaseSqlServer(object):
         :param params:
         :return: bool
         '''
+        ERROR_NUMBER = 0
+        RETRY_NUM = self.dead_lock_retry_num    # 死锁重试次数
         cs = self.conn.cursor()
         _ = False
-        try:
-            cs.execute(sql_str, params)
-
-            self.conn.commit()
-            print('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
-            _ = True
-        except Exception as e:
-            print('-' * 9 + '| 修改信息失败, 未能将该页面信息存入到sqlserver中 |')
-            print('--------------------| 错误如下: ', e)
-        finally:
+        while RETRY_NUM > 0:
             try:
-                cs.close()
-            except Exception:
-                pass
+                cs.execute(sql_str, params)
+                self.conn.commit()        # 不进行事务提交, 不提交无法更改
+                print('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
+                _ = True
+                RETRY_NUM = 0
+            except Exception as e:
+                try:
+                    ERROR_NUMBER = e.number
+                except:
+                    pass
+                if ERROR_NUMBER == 1025:  # 死锁状态码
+                    print('遇到死锁!!进入等待...')
+                    sleep(1)
+                    RETRY_NUM -= 1
+                else:
+                    print('-' * 9 + '| 修改信息失败, 未能将该页面信息存入到sqlserver中 |')
+                    print('--------------------| 错误如下: ', e)
+                    RETRY_NUM = 0
 
-            return _
+            finally:
+                try:
+                    cs.close()
+                except Exception:
+                    pass
+
+        return _
 
     def _update_table_2(self, sql_str, params: tuple, logger):
+        ERROR_NUMBER = 0
+        RETRY_NUM = self.dead_lock_retry_num    # 死锁重试次数
         cs = self.conn.cursor()
         _ = False
-        try:
-            cs.execute(sql_str, params)
-
-            self.conn.commit()
-            cs.close()
-            logger.info('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
-            _ = True
-        except Exception as e:
-            logger.error('| 修改信息失败, 未能将该页面信息存入到sqlserver中 出错goods_id: %s|' % params[-1])
-            logger.exception(e)
-
-        finally:
+        while RETRY_NUM > 0:
             try:
-                cs.close()
-            except Exception:
-                pass
-            return _
+                cs.execute(sql_str, params)
+                self.conn.commit()        # 不进行事务提交
+                logger.info('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
+                _ = True
+                RETRY_NUM = 0
+            except Exception as e:
+                try:
+                    ERROR_NUMBER = e.number
+                except:
+                    pass
+                if ERROR_NUMBER == 1025:  # 死锁状态码
+                    logger.error('遇到死锁!!进入等待...')
+                    sleep(1)
+                    RETRY_NUM -= 1
+                else:
+                    logger.error('| 修改信息失败, 未能将该页面信息存入到sqlserver中 出错goods_id: %s|' % params[-1])
+                    logger.exception(e)
+                    RETRY_NUM = 0
+
+            finally:
+                try:
+                    cs.close()
+                except Exception:
+                    pass
+        return _
 
     async def _update_table_3(self, sql_str, params: tuple, logger, error_msg_dict=None):
         '''
@@ -264,37 +288,49 @@ class BaseSqlServer(object):
         :param error_msg_dict: logger记录的额外信息
         :return:
         '''
+        ERROR_NUMBER = 0
+        RETRY_NUM = self.dead_lock_retry_num    # 死锁重试次数
         cs = self.conn.cursor()
         _ = False
-        try:
-            cs.execute(sql_str, params)
-
-            self.conn.commit()
-            logger.info('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
-            _ = True
-        except Exception:
-            if not error_msg_dict:
-                logger.error('-' * 9 + '| 修改信息失败, 未能将该页面信息存入到sqlserver中 | 出错goods_id: {0}'.format(params[-1]),
-                     exc_info=True)
-            else:
-                if isinstance(error_msg_dict, dict):
-                    msg = '-' * 9 + '| 修改信息失败, 未能将该页面信息存入到sqlserver中 | '
-                    for item in error_msg_dict.get('other_error', []):
-                        msg += '出错{0}: {1} '.format(
-                            item.get('field_name', ''),
-                            item.get('field_value', '')
-                        )
-                    logger.error(msg, exc_info=True)
-
-                else:
-                    raise TypeError('传入的error_msg_dict类型错误, 请核对需求参数!')
-        finally:
+        while RETRY_NUM > 0:
             try:
-                cs.close()
-            except Exception:
-                pass
+                cs.execute(sql_str, params)
+                self.conn.commit()
+                logger.info('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
+                _ = True
+                RETRY_NUM = 0
+            except Exception as e:
+                try:
+                    ERROR_NUMBER = e.number
+                except:
+                    pass
+                if ERROR_NUMBER == 1025:    # 死锁状态码
+                    sleep(1)
+                    RETRY_NUM -= 1
+                    logger.error('遇到死锁!!进入等待...')
+                else:
+                    RETRY_NUM = 0
+                    if not error_msg_dict:
+                        logger.error('-' * 9 + '| 修改信息失败, 未能将该页面信息存入到sqlserver中 | 出错goods_id: {0}'.format(params[-1]), exc_info=True)
+                    else:
+                        if isinstance(error_msg_dict, dict):
+                            msg = '-' * 9 + '| 修改信息失败, 未能将该页面信息存入到sqlserver中 | '
+                            for item in error_msg_dict.get('other_error', []):
+                                msg += '出错{0}: {1} '.format(
+                                    item.get('field_name', ''),
+                                    item.get('field_value', '')
+                                )
+                            logger.error(msg, exc_info=True)
 
-            return _
+                        else:
+                            raise TypeError('传入的error_msg_dict类型错误, 请核对需求参数!')
+            finally:
+                try:
+                    cs.close()
+                except Exception:
+                    pass
+
+        return _
 
     def _delete_table(self, sql_str, params=None, lock_timeout=20000):
         cs = self.conn.cursor()
@@ -307,9 +343,7 @@ class BaseSqlServer(object):
                 cs.execute(sql_str, params)
             else:
                 cs.execute(sql_str)
-            self.conn.commit()
-            # print('success')
-
+            self.conn.commit()        # 不进行事务提交
             _ = True
         except Exception as e:
             print('删除时报错: ', e)
