@@ -76,3 +76,5 @@ ftfy
 tenacity
 pyzbar
 eventlet
+termcolor
+Flask-APScheduler

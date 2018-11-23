@@ -12,7 +12,8 @@ sys.path.append('..')
 from ..ip_pools import (
     MyIpPools,
     ip_proxy_pool,
-    fz_ip_pool,)
+    fz_ip_pool,
+    tri_ip_pool,)
 from ..internet_utils import (
     get_random_pc_ua,
     get_random_phone_ua,)
@@ -250,8 +251,6 @@ class MyPhantomjs(object):
         proxy_ip = self._get_random_proxy_ip()
         if proxy_ip == '':
             return False
-
-        # _print(msg='------>>>| 正在使用的代理ip: {} 进行爬取... |<<<------'.format(proxy_ip), logger=self.lg)
 
         try:
             tmp_js = {

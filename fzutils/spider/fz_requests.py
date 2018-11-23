@@ -24,7 +24,8 @@ from ..ip_pools import (
     MyIpPools,
     ip_proxy_pool,
     fz_ip_pool,
-    sesame_ip_pool,)
+    sesame_ip_pool,
+    tri_ip_pool,)
 from ..internet_utils import get_base_headers
 from ..common_utils import _print
 
@@ -153,12 +154,14 @@ class MyRequests(object):
         '''
         ip_obj = MyIpPools(type=ip_pool_type, high_conceal=high_conceal)
         proxies = ip_obj.get_proxy_ip_from_ip_pool()  # {'http': ['xx', 'yy', ...]}
+        _ = proxies.get('http') if proxies.get('http') is not None else proxies.get('https')
         try:
-            proxy = proxies.get('http', None)[randint(0, len(proxies) - 1)]
+            proxy = _[randint(0, len(proxies) - 1)]
         except TypeError:
             return {}
 
-        if ip_pool_type == sesame_ip_pool:
+        if ip_pool_type == sesame_ip_pool\
+                or ip_pool_type == tri_ip_pool:
             return {
                 'https': proxy,
             }

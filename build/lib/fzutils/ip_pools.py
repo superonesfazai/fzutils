@@ -18,6 +18,7 @@ __all__ = [
 ip_proxy_pool = 'IPProxyPool'
 fz_ip_pool = 'fz_ip_pool'
 sesame_ip_pool = 'sesame_ip_pool'
+tri_ip_pool = 'tri_ip_pool'
 
 class MyIpPools(object):
     def __init__(self, type=ip_proxy_pool, high_conceal=False):
@@ -41,6 +42,7 @@ class MyIpPools(object):
         从代理ip池中获取到对应ip
         :return: dict类型 {'http': ['http://183.136.218.253:80', ...]}
         '''
+        proxy_list = []
         if self.type == ip_proxy_pool:
             if self.high_conceal:
                 base_url = 'http://127.0.0.1:8000/?types=0' # types: 0高匿|1匿名|2透明
@@ -52,7 +54,6 @@ class MyIpPools(object):
                 print(e)
                 return {'http': None}
 
-            proxy_list = []
             for item in result:
                 if item[2] > 7:
                     tmp_url = 'http://{}:{}'.format(item[0], item[1])
@@ -75,6 +76,21 @@ class MyIpPools(object):
                         > datetime_to_timestamp(get_shanghai_time()) + 15:
                     proxy_list.append('http://{}:{}'.format(i.get('ip', ''), i.get('port', '')))
 
+        elif self.type == tri_ip_pool:
+            base_url = 'http://127.0.0.1:8001/get_all'
+            try:
+                res = get(base_url).json()
+                assert res != [], 'res为空list!'
+            except Exception as e:
+                print(e)
+                return {'https': None}
+
+            proxy_list = ['https://{}:{}'.format(item['ip'], item['port']) for item in res]
+
+            return {
+                'https': proxy_list,
+            }
+
         else:
             raise ValueError('type值异常, 请检查!')
 
@@ -87,7 +103,8 @@ class MyIpPools(object):
         随机获取一个代理ip: 格式 'http://175.6.2.174:8088'
         :return:
         '''
-        ip_list = self.get_proxy_ip_from_ip_pool().get('http')
+        _ = self.get_proxy_ip_from_ip_pool()
+        ip_list = _.get('http') if _.get('http') is not None else _.get('https')
         try:
             if isinstance(ip_list, list):
                 proxy_ip = ip_list[randint(0, len(ip_list) - 1)]  # 随机一个代理ip

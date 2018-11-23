@@ -87,6 +87,8 @@ install_requires = [
     'tenacity',             # 强大的python重试库
     'pyzbar',               # 二维码识别库, 安装前提:(ubuntu: sudo apt-get install libzbar-dev | mac: brew install zbar)
     'eventlet',             # celery改变单个worker并发量必备库
+    'termcolor',            # shell颜色化输出
+    'Flask-APScheduler',    # flask的定时任务库
     # 'sip',
     # 'pyqt5',
 ]

@@ -11,6 +11,7 @@
 sql utils
 """
 
+import sqlite3
 from pymssql import *
 import asyncio
 from time import sleep
@@ -23,6 +24,7 @@ from .common_utils import _print
 __all__ = [
     'BaseSqlServer',        # cli for sql_server
     'BaseRedisCli',         # cli for redis
+    'BaseSqlite3Cli',       # cli for sqlite3
     'pretty_table',         # 美化打印table
 ]
 
@@ -428,6 +430,41 @@ class BaseRedisCli():
         try:
             del self.pool
             del self.redis_cli
+        except:
+            pass
+        collect()
+
+class BaseSqlite3Cli(object):
+    """
+    sqlite3 obj
+        always use:
+            1. 查看db中所有表: select name from sqlite_master where type='table' order by name;
+    """
+    def __init__(self, db_path):
+        self.conn = sqlite3.connect(database=db_path)
+
+    def _execute(self, sql_str, params:(dict, tuple)=None) -> sqlite3.Cursor:
+        '''
+        执行(结果可根据相应db操作查看结果)(切记游标每次用完close())
+        :param sql_str:
+        :param params:
+        :return:
+        '''
+        cursor = self.conn.cursor()
+        try:
+            if params is None:
+                cursor.execute(sql_str)
+            else:
+                cursor.execute(sql_str, params)
+            self.conn.commit()
+        except Exception as e:
+            print(e)
+
+        return cursor
+
+    def __del__(self):
+        try:
+            del self.conn
         except:
             pass
         collect()
