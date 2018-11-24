@@ -156,15 +156,20 @@ class MyRequests(object):
         proxies = ip_obj.get_proxy_ip_from_ip_pool()  # {'http': ['xx', 'yy', ...]}
         _ = proxies.get('http') if proxies.get('http') is not None else proxies.get('https')
         try:
-            proxy = _[randint(0, len(proxies) - 1)]
+            proxy = _[randint(0, len(_) - 1)]
         except TypeError:
             return {}
 
-        if ip_pool_type == sesame_ip_pool\
-                or ip_pool_type == tri_ip_pool:
+        if ip_pool_type == sesame_ip_pool:
             return {
                 'https': proxy,
             }
+
+        if ip_pool_type == tri_ip_pool:
+            # return {
+            #     'http': proxy,
+            # }
+            pass
 
         tmp_proxies = {
             'http': proxy,

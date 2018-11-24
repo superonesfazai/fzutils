@@ -10,12 +10,16 @@
 ip utils
 """
 
+import re
 from .common_utils import json_2_dict
+from .internet_utils import *
+from .ip_pools import tri_ip_pool
 from .spider.fz_requests import Requests
 
 __all__ = [
     'get_ip_address_info',              # 获取ip的address信息
     'get_local_external_network_ip',    # 获取本机外网ip地址
+    'proxy_type_detect',                # 代理种类发现
 ]
 
 def get_ip_address_info(ip) -> dict:
@@ -53,3 +57,30 @@ def get_local_external_network_ip() -> str:
 
     return local_ip
 
+def proxy_type_detect():
+    '''
+    代理种类发现
+    :return:
+    '''
+    headers = {
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': get_random_phone_ua(),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+    }
+    url = 'http://proxies.site-digger.com/proxy-detect/'
+    body = Requests.get_url_body(url=url, headers=headers, ip_pool_type=tri_ip_pool)
+    # print(body)
+    try:
+        REMOTE_ADDR = re.compile('REMOTE_ADDR = (.*?)</p>').findall(body)[0]
+        HTTP_VIA = re.compile('HTTP_VIA = (.*?)</p>').findall(body)[0]
+        HTTP_X_FORWARDED_FOR = re.compile('HTTP_X_FORWARDED_FOR = (.*?)</p>').findall(body)[0]
+        HTTP_PROXY_CONNECTION = re.compile('HTTP_PROXY_CONNECTION = (.*?)</p>').findall(body)[0]
+        print('REMOTE_ADDR:{}\nHTTP_VIA:{}\nHTTP_X_FORWARDED_FOR:{}\nHTTP_PROXY_CONNECTION:{}\n'.format(REMOTE_ADDR, HTTP_VIA, HTTP_X_FORWARDED_FOR, HTTP_PROXY_CONNECTION))
+    except IndexError as e:
+        print(e)
+
+    return None

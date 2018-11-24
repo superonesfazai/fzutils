@@ -63,10 +63,15 @@ class MyIpPools(object):
                     delete_info = get(delete_url + item[0])
 
         elif self.type == fz_ip_pool:
-            _ = deserializate_pickle_object(
-                pickle_object=self.redis_cli.get(name=self.h_key) or dumps([]),
-                default_res=[])
-            proxy_list = ['http://{}:{}'.format(i.get('ip', ''), i.get('port', '')) for i in _]
+            base_url = 'http://127.0.0.1:8002/get_all'
+            try:
+                res = get(base_url).json()
+                assert res != [], 'res为空list!'
+            except Exception as e:
+                print(e)
+                return {'https': None}
+
+            proxy_list = ['http://{}:{}'.format(item['ip'], item['port']) for item in res]
 
         elif self.type == sesame_ip_pool:
             _ = json_2_dict(self.redis_cli.get(name=self.h_key) or dumps([]), default_res=[])
@@ -85,7 +90,7 @@ class MyIpPools(object):
                 print(e)
                 return {'https': None}
 
-            proxy_list = ['https://{}:{}'.format(item['ip'], item['port']) for item in res]
+            proxy_list = ['http://{}:{}'.format(item['ip'], item['port']) for item in res]
 
             return {
                 'https': proxy_list,
@@ -143,3 +148,4 @@ class MyIpPools(object):
 
 class IpPools(MyIpPools):
     pass
+

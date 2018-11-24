@@ -15,9 +15,10 @@ install_requires = [
     'greenlet==0.4.13',
     'web.py==0.40.dev1',
     'pytz',
+    'pysocks',              # requests 进行socks代理必备!
     'requests',
     'requests_oauthlib',
-    'selenium==3.8.0',     # 3.8.1及其以上版本不支持phantomjs了
+    'selenium==3.8.0',      # 3.8.1及其以上版本不支持phantomjs了
     'asyncio',
     'psutil',
     'pyexecjs',

@@ -243,14 +243,13 @@ class MyPhantomjs(object):
 
         return True
 
-    def from_ip_pool_set_proxy_ip_to_phantomjs(self):
+    def from_ip_pool_set_proxy_ip_to_phantomjs(self) -> bool:
         '''
         给phantomjs切换代理
         :return:
         '''
         proxy_ip = self._get_random_proxy_ip()
-        if proxy_ip == '':
-            return False
+        assert proxy_ip != '', '动态切换ip失败!'
 
         try:
             tmp_js = {
@@ -259,10 +258,8 @@ class MyPhantomjs(object):
             }
             self.driver.command_executor._commands['executePhantomScript'] = ('POST', '/session/$sessionId/phantom/execute')
             self.driver.execute('executePhantomScript', tmp_js)
-
         except Exception:
-            _print(msg='动态切换ip失败', logger=self.lg, log_level=2)
-            return False
+            raise AssertionError('动态切换ip失败!')
 
         return True
 
@@ -273,12 +270,14 @@ class MyPhantomjs(object):
         :return: 字符串类型
         '''
         if self.type == PHANTOMJS:
-            change_ip_result = self.from_ip_pool_set_proxy_ip_to_phantomjs()
-            if change_ip_result is False:
-                if self.from_ip_pool_set_proxy_ip_to_phantomjs() is False:  # 一次切换失败，就尝试第二次
+            try:
+                self.from_ip_pool_set_proxy_ip_to_phantomjs()
+            except Exception:
+                try:    # 第二次尝试
+                    self.from_ip_pool_set_proxy_ip_to_phantomjs()
+                except Exception:
+                    _print(msg='动态切换ip失败!', logger=self.lg, log_level=2)
                     return ''
-                else:
-                    pass
         else:                                                               # 其他类型不动态改变代理
             pass
 
@@ -379,7 +378,7 @@ class MyPhantomjs(object):
     def _get_random_proxy_ip(self) -> str:
         '''
         得到一个随机代理
-        :return: 格式: ip:port
+        :return: 格式: ip:port or ''
         '''
         ip_object = MyIpPools(type=self.ip_pool_type, high_conceal=self.high_conceal)
         _ = ip_object._get_random_proxy_ip()

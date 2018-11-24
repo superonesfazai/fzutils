@@ -5,6 +5,7 @@ db
 greenlet==0.4.13
 web.py==0.40.dev1
 pytz
+pysocks
 requests
 requests_oauthlib
 selenium==3.8.0
