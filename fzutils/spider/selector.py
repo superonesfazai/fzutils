@@ -32,6 +32,11 @@ def parse_field(parser: dict,
     '''
     res = ''
     if parser is not None:
+        if parser == {}:
+            # 处理传入的对象是{}
+            _print(msg='遇到错误:', logger=logger, log_level=2, exception=AssertionError('传入的parser为空dict!'))
+            return res
+
         parser_method = parser.get('method', '')
         parser_selector = parser.get('selector')
         if parser_method == 're':
