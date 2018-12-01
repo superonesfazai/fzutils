@@ -16,7 +16,7 @@ __all__ = [
     'get_js_parser_res',        # python调用js, 并返回结果
 ]
 
-def get_js_parser_res(js_path, func_name, **args):
+def get_js_parser_res(js_path, func_name, *args):
     '''
     python调用js, 并返回结果
     :param js_path: js文件路径

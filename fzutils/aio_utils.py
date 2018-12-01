@@ -10,14 +10,18 @@ from gc import collect
 from asyncio import get_event_loop, wait
 from scrapy.selector import Selector
 
+from .ip_pools import ip_proxy_pool, fz_ip_pool
 from .spider.fz_aiohttp import AioHttp
 from .common_utils import _print
+from .spider.fz_requests import Requests
+from .internet_utils import get_base_headers
 
 __all__ = [
     'Asyncer',
     'get_async_execute_result',     # 获取异步执行结果
     'async_wait_tasks_finished',    # 异步等待目标tasks完成
     'TasksParamsListObj',           # 任务参数List
+    'unblock_request',              # 非阻塞的request请求
 ]
 
 class Asyncer(object):
@@ -104,3 +108,77 @@ class TasksParamsListObj(object):
         except:
             pass
         collect()
+
+async def unblock_request(url,
+                          use_proxy=True,
+                          headers:dict=get_base_headers(),
+                          params=None,
+                          data=None,
+                          cookies=None,
+                          had_referer=False,
+                          encoding='utf-8',
+                          method='get',
+                          timeout=12,
+                          num_retries=1,
+                          high_conceal=True,
+                          ip_pool_type=ip_proxy_pool,
+                          verify=None,
+                          _session=None,
+                          get_session=False,
+                          logger=None) -> str:
+    '''
+    非阻塞的request请求
+    :param url:
+    :param use_proxy:
+    :param headers:
+    :param params:
+    :param data:
+    :param cookies:
+    :param had_referer:
+    :param encoding:
+    :param method:
+    :param timeout:
+    :param num_retries:
+    :param high_conceal:
+    :param ip_pool_type:
+    :param verify:
+    :param _session:
+    :param get_session:
+    :return:
+    '''
+    async def _get_args() -> list:
+        '''获取args'''
+        return [
+            url,
+            use_proxy,
+            headers,
+            params,
+            data,
+            cookies,
+            had_referer,
+            encoding,
+            method,
+            timeout,
+            num_retries,
+            high_conceal,
+            ip_pool_type,
+            verify,
+            _session,
+            get_session,
+        ]
+
+    loop = get_event_loop()
+    args = await _get_args()
+    body = ''
+    try:
+        body = await loop.run_in_executor(None, Requests.get_url_body, *args)
+    except Exception as e:
+        _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
+    finally:
+        try:
+            del loop
+        except:
+            pass
+        collect()
+
+        return body

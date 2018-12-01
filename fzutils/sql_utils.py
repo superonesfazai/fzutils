@@ -66,6 +66,8 @@ class BaseSqlServer(object):
             return result
 
         try:
+            # 设置隔离级别为脏读
+            cs.execute('set tran isolation level read uncommitted;')
             cs.execute('set lock_timeout {0};'.format(lock_timeout))  # 设置客户端执行超时等待为20秒
             if params is not None:
                 if not isinstance(params, tuple):
@@ -94,6 +96,7 @@ class BaseSqlServer(object):
         cs = self.conn.cursor()
         _ = False
         try:
+            cs.execute('set deadlock_priority low;')        # 设置死锁释放级别
             cs.execute(sql_str.encode('utf-8'), params)  # 注意必须是tuple类型
             self.conn.commit()
             print('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
@@ -116,6 +119,7 @@ class BaseSqlServer(object):
         cs = self.conn.cursor()
         _ = False
         try:
+            cs.execute('set deadlock_priority low;')  # 设置死锁释放级别
             # logger.info(str(params))
             cs.execute(sql_str.encode('utf-8'), params)  # 注意必须是tuple类型
             self.conn.commit()
@@ -158,6 +162,7 @@ class BaseSqlServer(object):
         cs = self.conn.cursor()
         _ = False
         try:
+            cs.execute('set deadlock_priority low;')  # 设置死锁释放级别
             # logger.info(str(params))
             cs.execute(sql_str.encode('utf-8'), params)  # 注意必须是tuple类型
             self.conn.commit()
@@ -213,6 +218,7 @@ class BaseSqlServer(object):
         _ = False
         while RETRY_NUM > 0:
             try:
+                cs.execute('set deadlock_priority low;')    # 设置死锁释放级别
                 cs.execute(sql_str, params)
                 self.conn.commit()        # 不进行事务提交, 不提交无法更改
                 print('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
@@ -247,6 +253,7 @@ class BaseSqlServer(object):
         _ = False
         while RETRY_NUM > 0:
             try:
+                cs.execute('set deadlock_priority low;')    # 设置死锁释放级别
                 cs.execute(sql_str, params)
                 self.conn.commit()        # 不进行事务提交
                 logger.info('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
@@ -296,6 +303,7 @@ class BaseSqlServer(object):
         _ = False
         while RETRY_NUM > 0:
             try:
+                cs.execute('set deadlock_priority low;')    # 设置死锁释放级别
                 cs.execute(sql_str, params)
                 self.conn.commit()
                 logger.info('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')

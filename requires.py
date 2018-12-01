@@ -18,6 +18,7 @@ install_requires = [
     'pysocks',              # requests 进行socks代理必备!
     'requests',
     'requests_oauthlib',
+    # 'requests-html',        # requests的html解析器 for human, 但是必须python >= 3.6
     'selenium==3.8.0',      # 3.8.1及其以上版本不支持phantomjs了
     'asyncio',
     'psutil',
@@ -90,6 +91,7 @@ install_requires = [
     'eventlet',             # celery改变单个worker并发量必备库
     'termcolor',            # shell颜色化输出
     'Flask-APScheduler',    # flask的定时任务库
+    'mongoengine',          # mongo engine
     # 'sip',
     # 'pyqt5',
 ]
