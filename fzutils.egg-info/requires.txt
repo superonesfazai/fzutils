@@ -79,3 +79,4 @@ pyzbar
 eventlet
 termcolor
 Flask-APScheduler
+mongoengine

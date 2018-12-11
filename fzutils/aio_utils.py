@@ -15,6 +15,11 @@ from .spider.fz_aiohttp import AioHttp
 from .common_utils import _print
 from .spider.fz_requests import Requests
 from .internet_utils import get_base_headers
+from .spider.fz_driver import (
+    BaseDriver,
+    PC,
+    PHANTOMJS,)
+from .spider.fz_phantomjs import PHANTOMJS_DRIVER_PATH
 
 __all__ = [
     'Asyncer',
@@ -22,6 +27,7 @@ __all__ = [
     'async_wait_tasks_finished',    # 异步等待目标tasks完成
     'TasksParamsListObj',           # 任务参数List
     'unblock_request',              # 非阻塞的request请求
+    'unblock_request_by_driver',    # 非阻塞的request by driver
 ]
 
 class Asyncer(object):
@@ -177,6 +183,73 @@ async def unblock_request(url,
     finally:
         try:
             del loop
+        except:
+            pass
+        collect()
+
+        return body
+
+async def unblock_request_by_driver(url,
+                                    type=PHANTOMJS,
+                                    load_images=False,
+                                    executable_path=PHANTOMJS_DRIVER_PATH,
+                                    logger=None,
+                                    high_conceal=True,
+                                    headless=False,
+                                    driver_use_proxy=True,
+                                    user_agent_type=PC,
+                                    driver_obj=None,
+                                    ip_pool_type=ip_proxy_pool,
+                                    extension_path=None,
+
+                                    css_selector='',
+                                    exec_code='',
+                                    timeout=20, ) -> str:
+    '''
+    非阻塞的driver 的请求
+    :return:
+    '''
+
+    async def _get_init_args() -> list:
+        '''获取args'''
+        return [
+            type,
+            load_images,
+            executable_path,
+            logger,
+            high_conceal,
+            headless,
+            driver_use_proxy,
+            user_agent_type,
+            driver_obj,
+            ip_pool_type,
+            extension_path
+        ]
+
+    async def _get_request_args() -> list:
+        return [
+            url,
+            css_selector,
+            exec_code,
+            timeout,
+        ]
+
+    loop = get_event_loop()
+    body = ''
+    driver_args = await _get_init_args()
+    request_args = await _get_request_args()
+    try:
+        driver = await loop.run_in_executor(None, BaseDriver, *driver_args)
+        body = await loop.run_in_executor(None, driver.get_url_body, *request_args)
+    except Exception as e:
+        _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
+    finally:
+        try:
+            del loop
+        except:
+            pass
+        try:
+            del driver
         except:
             pass
         collect()

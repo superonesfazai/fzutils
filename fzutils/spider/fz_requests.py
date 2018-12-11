@@ -144,6 +144,8 @@ class MyRequests(object):
         body = re.compile('\r\n').sub('', body)
         body = re.compile('\n').sub('', body)
 
+        body = re.compile('<ahref').sub('<a href', body)
+
         return body
 
     @classmethod
