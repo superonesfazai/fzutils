@@ -37,15 +37,22 @@ class BaseSqlServer(object):
         self.is_connect_success = True
         # 死锁重试次数
         self.dead_lock_retry_num = 3
+        self.host = host
+        self.user = user
+        self.passwd = passwd
+        self.db = db
+        self.port = port
+        self._init_conn()
+
+    def _init_conn(self):
         try:
             self.conn = connect(
-                host=host,
-                user=user,
-                password=passwd,
-                database=db,
-                port=port,
-                charset='utf8'
-            )
+                host=self.host,
+                user=self.user,
+                password=self.passwd,
+                database=self.db,
+                port=self.port,
+                charset='utf8')
         except Exception:
             print('数据库连接失败!!')
             self.is_connect_success = False
@@ -93,8 +100,13 @@ class BaseSqlServer(object):
         :param params:
         :return:
         '''
-        cs = self.conn.cursor()
         _ = False
+        try:
+            cs = self.conn.cursor()
+        except AttributeError as e:
+            _print(msg=str(e.args[0]))
+            return _
+
         try:
             cs.execute('set deadlock_priority low;')        # 设置死锁释放级别
             cs.execute(sql_str.encode('utf-8'), params)  # 注意必须是tuple类型
@@ -116,8 +128,13 @@ class BaseSqlServer(object):
             return _
 
     def _insert_into_table_2(self, sql_str, params: tuple, logger):
-        cs = self.conn.cursor()
         _ = False
+        try:
+            cs = self.conn.cursor()
+        except AttributeError as e:
+            _print(msg=str(e.args[0]), logger=logger, log_level=2)
+            return _
+
         try:
             cs.execute('set deadlock_priority low;')  # 设置死锁释放级别
             # logger.info(str(params))
@@ -159,8 +176,13 @@ class BaseSqlServer(object):
         :param error_msg_dict: logger记录的额外信息
         :return:
         '''
-        cs = self.conn.cursor()
         _ = False
+        try:
+            cs = self.conn.cursor()
+        except AttributeError as e:
+            _print(msg=str(e.args[0]), logger=logger, log_level=2)
+            return _
+
         try:
             cs.execute('set deadlock_priority low;')  # 设置死锁释放级别
             # logger.info(str(params))
@@ -249,8 +271,13 @@ class BaseSqlServer(object):
     def _update_table_2(self, sql_str, params: tuple, logger):
         ERROR_NUMBER = 0
         RETRY_NUM = self.dead_lock_retry_num    # 死锁重试次数
-        cs = self.conn.cursor()
         _ = False
+        try:
+            cs = self.conn.cursor()
+        except AttributeError as e:
+            _print(msg=str(e.args[0]), logger=logger, log_level=2)
+            return _
+
         while RETRY_NUM > 0:
             try:
                 cs.execute('set deadlock_priority low;')    # 设置死锁释放级别
@@ -299,8 +326,13 @@ class BaseSqlServer(object):
         '''
         ERROR_NUMBER = 0
         RETRY_NUM = self.dead_lock_retry_num    # 死锁重试次数
-        cs = self.conn.cursor()
         _ = False
+        try:
+            cs = self.conn.cursor()
+        except AttributeError as e:
+            _print(msg=str(e.args[0]), logger=logger, log_level=2)
+            return _
+
         while RETRY_NUM > 0:
             try:
                 cs.execute('set deadlock_priority low;')    # 设置死锁释放级别

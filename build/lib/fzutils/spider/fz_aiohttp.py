@@ -12,6 +12,9 @@ import aiohttp
 import re
 import gc
 
+from asyncio import get_event_loop
+from gc import collect
+
 from ..ip_pools import (
     MyIpPools,
     ip_proxy_pool,
@@ -66,6 +69,9 @@ class MyAiohttp(object):
         :return:
         '''
         proxy = await self.get_proxy(high_conceal, ip_pool_type=ip_pool_type)
+        if isinstance(proxy, bool):
+            if proxy is False:
+                return ''
 
         # 连接池不能太大, < 500
         conn = aiohttp.TCPConnector(verify_ssl=True, limit=150, use_dns_cache=True)
@@ -103,11 +109,25 @@ class MyAiohttp(object):
         异步获取proxy
         :return: 格式: 'http://ip:port'
         '''
+        # proxy = ip_object._get_random_proxy_ip()    # 失败返回False
+
+        loop = get_event_loop()
         # 设置代理ip
         ip_object = MyIpPools(type=ip_pool_type, high_conceal=high_conceal)
-        proxy = ip_object._get_random_proxy_ip()    # 失败返回False
+        args = []
+        proxy = False
+        try:
+            proxy = await loop.run_in_executor(None, ip_object._get_random_proxy_ip, *args)
+        except Exception:
+            pass
+        finally:
+            try:
+                del loop
+            except:
+                pass
+            collect()
 
-        return proxy
+            return proxy
 
     async def run(self):
         url = 'https://superonesfazai.github.io/'

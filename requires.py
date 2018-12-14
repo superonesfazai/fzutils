@@ -92,6 +92,7 @@ install_requires = [
     'termcolor',            # shell颜色化输出
     'Flask-APScheduler',    # flask的定时任务库
     'mongoengine',          # mongo engine
+    'pypinyin',             # 汉字转拼音包
     # 'sip',
     # 'pyqt5',
 ]

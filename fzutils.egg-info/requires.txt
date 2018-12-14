@@ -80,3 +80,4 @@ eventlet
 termcolor
 Flask-APScheduler
 mongoengine
+pypinyin

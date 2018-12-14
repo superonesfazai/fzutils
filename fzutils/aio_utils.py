@@ -27,6 +27,7 @@ __all__ = [
     'async_wait_tasks_finished',    # 异步等待目标tasks完成
     'TasksParamsListObj',           # 任务参数List
     'unblock_request',              # 非阻塞的request请求
+    'unblock_get_driver_obj',       # 异步获取driver obj
     'unblock_request_by_driver',    # 非阻塞的request by driver
 ]
 
@@ -189,6 +190,52 @@ async def unblock_request(url,
 
         return body
 
+async def unblock_get_driver_obj(type=PHANTOMJS,
+                                 load_images=False,
+                                 executable_path=PHANTOMJS_DRIVER_PATH,
+                                 logger=None,
+                                 high_conceal=True,
+                                 headless=False,
+                                 driver_use_proxy=True,
+                                 user_agent_type=PC,
+                                 driver_obj=None,
+                                 ip_pool_type=ip_proxy_pool,
+                                 extension_path=None,):
+    '''
+    异步获取一个driver obj
+    :return:
+    '''
+    async def _get_init_args() -> list:
+        '''获取args'''
+        return [
+            type,
+            load_images,
+            executable_path,
+            logger,
+            high_conceal,
+            headless,
+            driver_use_proxy,
+            user_agent_type,
+            driver_obj,
+            ip_pool_type,
+            extension_path
+        ]
+
+    loop = get_event_loop()
+    driver_args = await _get_init_args()
+    try:
+        driver_obj = await loop.run_in_executor(None, BaseDriver, *driver_args)
+    except Exception as e:
+        _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
+    finally:
+        try:
+            del loop
+        except:
+            pass
+        collect()
+
+        return driver_obj
+
 async def unblock_request_by_driver(url,
                                     type=PHANTOMJS,
                                     load_images=False,
@@ -209,23 +256,6 @@ async def unblock_request_by_driver(url,
     非阻塞的driver 的请求
     :return:
     '''
-
-    async def _get_init_args() -> list:
-        '''获取args'''
-        return [
-            type,
-            load_images,
-            executable_path,
-            logger,
-            high_conceal,
-            headless,
-            driver_use_proxy,
-            user_agent_type,
-            driver_obj,
-            ip_pool_type,
-            extension_path
-        ]
-
     async def _get_request_args() -> list:
         return [
             url,
@@ -236,10 +266,20 @@ async def unblock_request_by_driver(url,
 
     loop = get_event_loop()
     body = ''
-    driver_args = await _get_init_args()
     request_args = await _get_request_args()
     try:
-        driver = await loop.run_in_executor(None, BaseDriver, *driver_args)
+        driver = await unblock_get_driver_obj(
+            type=type,
+            load_images=load_images,
+            executable_path=executable_path,
+            logger=logger,
+            high_conceal=high_conceal,
+            headless=headless,
+            driver_use_proxy=driver_use_proxy,
+            user_agent_type=user_agent_type,
+            driver_obj=driver_obj,
+            ip_pool_type=ip_pool_type,
+            extension_path=extension_path,)
         body = await loop.run_in_executor(None, driver.get_url_body, *request_args)
     except Exception as e:
         _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
@@ -255,3 +295,4 @@ async def unblock_request_by_driver(url,
         collect()
 
         return body
+
