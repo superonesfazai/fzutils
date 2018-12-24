@@ -51,7 +51,10 @@ def str_cookies_2_dict(str_cookies):
     :param str_cookies:
     :return:
     '''
-    _ = [(i.split('=')[0], i.split('=')[1]) for i in str_cookies.replace(' ', '').split(';')]
+    _ = []
+    for i in str_cookies.replace(' ', '').split(';'):
+        if i != '':
+            _.append((i.split('=')[0], i.split('=')[1]))
 
     cookies_dict = {}
     for item in _:

@@ -53,7 +53,8 @@ class Crawler(object):
                  driver_type=PHANTOMJS,
                  driver_load_images=False,
                  headless=False,
-                 driver_obj=None):
+                 driver_obj=None,
+                 driver_cookies=None,):
         '''
         :param ip_pool_type: 使用ip池的类型
         :param user_agent_type:
@@ -82,7 +83,8 @@ class Crawler(object):
                 headless=headless,
                 user_agent_type=user_agent_type,
                 driver_obj=driver_obj,
-                ip_pool_type=ip_pool_type)
+                ip_pool_type=ip_pool_type,
+                driver_cookies=driver_cookies,)
 
     def _set_headers(self) -> None:
         '''

@@ -56,3 +56,4 @@ from ..linux_utils import *
 from ..cp_utils import *
 from ..url_utils import *
 from ..img_utils import *
+from ..map_utils import *

@@ -20,6 +20,7 @@ fzutils/iter_utils.py
 fzutils/js_utils.py
 fzutils/linux_utils.py
 fzutils/log_utils.py
+fzutils/map_utils.py
 fzutils/markdown_utils.py
 fzutils/memory_utils.py
 fzutils/ocr_utils.py

@@ -70,7 +70,8 @@ class MyPhantomjs(object):
                  user_agent_type=PC,
                  driver_obj=None,
                  ip_pool_type=ip_proxy_pool,
-                 extension_path=None):
+                 extension_path=None,
+                 driver_cookies=None,):
         '''
         初始化
         :param load_images: 是否加载图片
@@ -93,6 +94,7 @@ class MyPhantomjs(object):
         self.user_agent_type = user_agent_type
         self.ip_pool_type = ip_pool_type
         self.extension_path = extension_path
+        self._cookies = driver_cookies
         if driver_obj is None:
             self._set_driver()
         else:
@@ -131,7 +133,9 @@ class MyPhantomjs(object):
         cap['phantomjs.page.settings.loadImages'] = self.load_images
         cap['phantomjs.page.settings.disk-cache'] = True
         cap['phantomjs.page.settings.userAgent'] = get_random_pc_ua() if self.user_agent_type == PC else get_random_phone_ua()
-        # cap['phantomjs.page.customHeaders.Cookie'] = cookies
+        if self._cookies is not None:
+            if self._cookies != '':
+                cap['phantomjs.page.customHeaders.Cookie'] = self._cookies
 
         self.driver = webdriver.PhantomJS(executable_path=self.executable_path, desired_capabilities=cap)
 

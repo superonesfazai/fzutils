@@ -200,7 +200,8 @@ async def unblock_get_driver_obj(type=PHANTOMJS,
                                  user_agent_type=PC,
                                  driver_obj=None,
                                  ip_pool_type=ip_proxy_pool,
-                                 extension_path=None,):
+                                 extension_path=None,
+                                 driver_cookies=None,):
     '''
     异步获取一个driver obj
     :return:
@@ -218,7 +219,8 @@ async def unblock_get_driver_obj(type=PHANTOMJS,
             user_agent_type,
             driver_obj,
             ip_pool_type,
-            extension_path
+            extension_path,
+            driver_cookies,
         ]
 
     loop = get_event_loop()
@@ -248,6 +250,7 @@ async def unblock_request_by_driver(url,
                                     driver_obj=None,
                                     ip_pool_type=ip_proxy_pool,
                                     extension_path=None,
+                                    driver_cookies=None,
 
                                     css_selector='',
                                     exec_code='',
@@ -279,7 +282,8 @@ async def unblock_request_by_driver(url,
             user_agent_type=user_agent_type,
             driver_obj=driver_obj,
             ip_pool_type=ip_pool_type,
-            extension_path=extension_path,)
+            extension_path=extension_path,
+            driver_cookies=driver_cookies,)
         body = await loop.run_in_executor(None, driver.get_url_body, *request_args)
     except Exception as e:
         _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
