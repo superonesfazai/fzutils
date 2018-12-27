@@ -8,8 +8,12 @@ import re
 import execjs
 import time
 import requests
+from gc import collect
 from random import randint
 from decimal import Decimal
+from asyncio import (
+    get_event_loop,
+    new_event_loop,)
 
 from .common_utils import _print
 from .time_utils import (
@@ -29,9 +33,10 @@ __all__ = [
     'get_miaosha_begin_time_and_miaosha_end_time',          # cp返回秒杀开始和结束时间
     'filter_invalid_comment_content',                       # cp过滤无效comment
 
-    # 淘宝签名相关
+    # tb签名相关
     'calculate_right_sign',                                 # 获取淘宝sign
     'get_taobao_sign_and_body',                             # 得到淘宝带签名sign的接口数据
+    'unblock_get_taobao_sign_and_body',                     # 非阻塞获取tb sign body
 
     # get model data
     '_get_right_model_data',                                # 得到规范化GoodsItem model的数据
@@ -173,6 +178,7 @@ async def get_taobao_sign_and_body(base_url,
     :return: (_m_h5_tk, session, body)
     '''
     sign, t = await calculate_right_sign(data=data, _m_h5_tk=_m_h5_tk)
+    # print(sign, t)
     headers['Host'] = re.compile(r'://(.*?)/').findall(base_url)[0]
     params.update({  # 添加下面几个query string
         't': t,
@@ -191,6 +197,8 @@ async def get_taobao_sign_and_body(base_url,
         _m_h5_tk = response.cookies.get('_m_h5_tk', '').split('_')[0]
         # logger.info(str(s.cookies.items()))
         # logger.info(str(_m_h5_tk))
+        # print(str(response.cookies.items()))
+        # print(_m_h5_tk)
 
         body = response.content.decode(encoding)
         # logger.info(str(body))
@@ -454,3 +462,68 @@ def format_p_info(p_info):
         raise TypeError('获取到p_info类型异常!请检查!')
 
     return _
+
+async def unblock_get_taobao_sign_and_body(base_url,
+                                           headers: dict,
+                                           params: dict,
+                                           data: json,
+                                           timeout=13,
+                                           _m_h5_tk='undefine',
+                                           session=None,
+                                           logger=None,
+                                           encoding='utf-8',
+                                           ip_pool_type=ip_proxy_pool) -> tuple:
+    '''
+    非阻塞获取tb sign body
+    :param base_url:
+    :param headers:
+    :param params:
+    :param data:
+    :param timeout:
+    :param _m_h5_tk:
+    :param session:
+    :param logger:
+    :param encoding:
+    :param ip_pool_type:
+    :return:
+    '''
+    def _get_taobao_sign_and_body(*args, **kwargs):
+        new_loop = new_event_loop()
+        res = new_loop.run_until_complete(get_taobao_sign_and_body(*args, **kwargs))
+        try:
+            del new_loop
+        except:
+            pass
+        # print(res)
+
+        return res
+
+    async def _get_args() -> list:
+        return [
+            base_url,
+            headers,
+            params,
+            data,
+            timeout,
+            _m_h5_tk,
+            session,
+            logger,
+            encoding,
+            ip_pool_type,
+        ]
+
+    loop = get_event_loop()
+    args = await _get_args()
+    try:
+        res = await loop.run_in_executor(None, _get_taobao_sign_and_body, *args)
+        # print(res)
+    except Exception as e:
+        _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
+    finally:
+        try:
+            del loop
+        except:
+            pass
+        collect()
+
+        return res

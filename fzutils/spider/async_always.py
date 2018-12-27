@@ -19,6 +19,7 @@ from scrapy.selector import Selector
 from json import dumps, loads
 
 from asyncio import (
+    new_event_loop,
     get_event_loop,
     wait,
     Queue,                      # 一个队列，用于协调生产者和消费者协同程序。
@@ -36,6 +37,7 @@ from asyncio import (
     shield,
     set_event_loop,
     Condition,                  # 该类实现条件变量对象。条件变量允许一个或多个协同程序等待，直到它们被另一个协程通知。
+    as_completed,
 )
 from asyncio import sleep as async_sleep
 from asyncio import Lock as AsyncLock
