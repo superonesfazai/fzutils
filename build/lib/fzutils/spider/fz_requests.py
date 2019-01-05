@@ -55,7 +55,8 @@ class MyRequests(object):
                      ip_pool_type=ip_proxy_pool,
                      verify=None,
                      _session=None,
-                     get_session=False):
+                     get_session=False,
+                     proxies=None):
         '''
         根据url得到body
         :param url:
@@ -73,17 +74,33 @@ class MyRequests(object):
         :param verify:
         :param _session: 旧的session
         :param get_session: True 则返回值为此次请求的session
+        :param proxies: 代理 None or {xxx} 同requests的proxies
         :return: '' 表示error | str 表示success
         '''
-        if use_proxy:
-            # 设置代理ip
-            tmp_proxies = cls._get_proxies(ip_pool_type=ip_pool_type, high_conceal=high_conceal)
-            if tmp_proxies == {}:
-                print('获取代理失败, 此处跳过!')
-                return ''
-            # print('------>>>| 正在使用代理ip: {} 进行爬取... |<<<------'.format(tmp_proxies.get('http')))
-        else:
+        def _get_one_proxies_obj():
+            '''获取一个代理'''
             tmp_proxies = {}
+            if proxies is None:
+                if use_proxy:
+                    # 设置代理ip
+                    tmp_proxies = cls._get_proxies(ip_pool_type=ip_pool_type, high_conceal=high_conceal)
+                    assert tmp_proxies != {}, '获取代理失败, 此处跳过!'
+                    # print('------>>>| 正在使用代理ip: {} 进行爬取... |<<<------'.format(tmp_proxies.get('http')))
+                else:
+                    pass
+            else:
+                if isinstance(proxies, dict):
+                    tmp_proxies = proxies
+                else:
+                    raise ValueError('proxies类型异常!')
+
+            return tmp_proxies
+
+        try:
+            tmp_proxies = _get_one_proxies_obj()
+        except Exception as e:
+            print(e)
+            return ''
 
         tmp_headers = headers
         tmp_headers['Host'] = re.compile(r'://(.*?)/').findall(url)[0]
@@ -108,7 +125,7 @@ class MyRequests(object):
                 # print(str(response.url))
                 try:
                     _ = response.content.decode(encoding)
-                except Exception:   # 报编码错误
+                except Exception:  # 报编码错误
                     _ = response.text
                 body = cls._wash_html(_)
                 # print(str(body))
@@ -127,7 +144,7 @@ class MyRequests(object):
                         encoding=encoding,
                         timeout=timeout,
                         verify=verify,
-                        num_retries=num_retries-1)
+                        num_retries=num_retries - 1)
                 else:
                     print('requests.get()请求超时....')
                     print('data为空!')

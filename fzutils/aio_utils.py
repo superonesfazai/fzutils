@@ -132,6 +132,7 @@ async def unblock_request(url,
                           verify=None,
                           _session=None,
                           get_session=False,
+                          proxies=None,
                           logger=None) -> str:
     '''
     非阻塞的request请求
@@ -151,6 +152,7 @@ async def unblock_request(url,
     :param verify:
     :param _session:
     :param get_session:
+    :param proxies:
     :return:
     '''
     async def _get_args() -> list:
@@ -172,6 +174,7 @@ async def unblock_request(url,
             verify,
             _session,
             get_session,
+            proxies,
         ]
 
     loop = get_event_loop()

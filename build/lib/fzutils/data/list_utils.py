@@ -10,6 +10,7 @@
 __all__ = [
     'unique_list_and_keep_original_order',              # 从列表中删除重复的元素, 同时保留其原始顺序
     'list_remove_repeat_dict',                          # list 子元素为dict的去重
+    'list_remove_repeat_dict_plus',                     # list 子元素为dict的去重plus
 ]
 
 def unique_list_and_keep_original_order(target_list, key=None):
@@ -51,3 +52,21 @@ def list_remove_repeat_dict(target:list, repeat_key:str) -> list:
             pass
 
     return res
+
+def list_remove_repeat_dict_plus(target: list, repeat_key: str) -> list:
+    '''
+    list 子元素为dict的去重plus
+    :param target: 目标list
+    :param repeat_key: dict指定唯一去重检测key
+    :return:
+    '''
+    tmp_list = []
+    res_list = []
+    for item in target:
+        repeat_key_value = item.get(repeat_key)
+        if repeat_key_value is not None:
+            if repeat_key_value not in tmp_list:
+                res_list.append(item)
+                tmp_list.append(repeat_key_value)
+
+    return res_list
