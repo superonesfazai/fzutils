@@ -57,19 +57,25 @@ async def _get_celery_async_results(tasks:list) -> list:
     s_time = time()
     while len(tasks) > 0:
         for r_index, r in enumerate(tasks):
-            if r.ready():
-                try:
-                    all.append(r.get(timeout=2, propagate=False))
-                    print('\rsuccess_num: {}'.format(success_num), end='', flush=True)
-                except TimeoutError:
+            try:
+                if r.ready():
+                    try:
+                        all.append(r.get(timeout=2, propagate=False))
+                        print('\r--->>> success_num: {}'.format(success_num), end='', flush=True)
+                    except TimeoutError:
+                        pass
+                    success_num += 1
+                    try:
+                        tasks.pop(r_index)
+                    except:
+                        pass
+                else:
                     pass
-                success_num += 1
-                try:
-                    tasks.pop(r_index)
-                except:
-                    pass
-            else:
-                pass
+            except Exception as e:
+                # redis.exceptions.TimeoutError: Timeout reading from socket
+                print(e)
+                return []
+
     else:
         pass
     time_consume = time() - s_time
