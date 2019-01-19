@@ -96,6 +96,8 @@ class MyRequests(object):
 
             return tmp_proxies
 
+        # print('num_retries = {}'.format(num_retries))
+
         try:
             tmp_proxies = _get_one_proxies_obj()
         except Exception as e:
@@ -144,6 +146,7 @@ class MyRequests(object):
                         encoding=encoding,
                         timeout=timeout,
                         verify=verify,
+                        ip_pool_type=ip_pool_type,
                         num_retries=num_retries - 1)
                 else:
                     print('requests.get()请求超时....')

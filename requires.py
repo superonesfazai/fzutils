@@ -12,7 +12,7 @@ install_requires = [
     'wheel',
     'utils',
     'db',
-    'greenlet==0.4.13',
+    'greenlet==0.4.14',     # 之前0.4.13, 改成0.4.14(gevent依靠)
     'web.py==0.40.dev1',
     'pytz',
     'pysocks',              # requests 进行socks代理必备!

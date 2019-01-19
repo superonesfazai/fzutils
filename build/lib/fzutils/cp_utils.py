@@ -204,7 +204,7 @@ async def get_taobao_sign_and_body(base_url,
         # logger.info(str(body))
 
     except Exception:
-        logger.error(exc_info=True)
+        logger.error('遇到错误:', exc_info=True)
         _m_h5_tk = ''
         body = ''
 

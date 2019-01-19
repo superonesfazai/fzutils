@@ -1,4 +1,3 @@
-README.md
 setup.py
 fzutils/__init__.py
 fzutils/aio_utils.py

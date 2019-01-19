@@ -20,7 +20,11 @@ def curl_cmd_2_py_code(curl_cmd:str) -> str:
     '''
     curl cmd to py code
         使用前提:
-            已安装: npm install --save curlconverter
+            $ cd ~ && brew install node && npm install npm@latest -g
+            # 下面这个旨在创造package.json(一路回车)
+            $ npm init
+            # 再装包
+            $ npm install --save curlconverter
         github: https://github.com/NickCarneiro/curlconverter
         demo url: https://curl.trillworks.com
     :param curl_cmd:
