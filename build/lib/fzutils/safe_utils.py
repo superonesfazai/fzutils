@@ -18,6 +18,8 @@ __all__ = [
     'get_uuid3',                                                    # 得到一个uuid3加密的唯一标识符
     'get_all_func_class_name_where_no_import_packages_called',      # 得到所有不导入皆可被调用的class name (使用mro不导入任何包，调用原生类)
     'b64decode_plus',                                               # base64解码plus, 自动填充缺损字符
+    'get_hex_id_from_obj',                                          # 进行obj的hex id寻址
+    'get_id_from_obj',                                              # 获取obj的int id地址
 ]
 
 def encrypt(key, tmp_str):
@@ -125,3 +127,19 @@ def b64decode_plus(data: bytes, *params) -> bytes:
         data += b'=' * (4 - missing_padding)
 
     return b64decode(s=data, *params)
+
+def get_hex_id_from_obj(obj) -> str:
+    '''
+    进行obj的hex id寻址
+    :param obj:
+    :return:
+    '''
+    return hex(id(obj))
+
+def get_id_from_obj(obj):
+    '''
+    获取obj的int id地址
+    :param obj:
+    :return:
+    '''
+    return id(obj)

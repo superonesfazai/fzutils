@@ -46,7 +46,7 @@ class MyAiohttp(object):
             'User-Agent': get_random_pc_ua(),
         }
 
-    @classmethod    # 注意timeout不是越长越好，测试发现10左右成功率较高
+    @classmethod
     async def aio_get_url_body(self,
                                url,
                                headers,
@@ -56,9 +56,15 @@ class MyAiohttp(object):
                                num_retries=10,
                                high_conceal=True,
                                data=None,
-                               ip_pool_type=ip_proxy_pool):
+                               ip_pool_type=ip_proxy_pool,
+                               verify_ssl=True,
+                               use_dns_cache=True,
+                               proxy_auth=None,
+                               allow_redirects=True,
+                               proxy_headers=None,):
         '''
         异步获取url的body(简略版)
+        # 注意timeout不是越长越好，测试发现10左右成功率较高
         :param url:
         :param headers:
         :param params:
@@ -69,15 +75,31 @@ class MyAiohttp(object):
         :return:
         '''
         proxy = await self.get_proxy(high_conceal, ip_pool_type=ip_pool_type)
+        # print(proxy)
         if isinstance(proxy, bool):
             if proxy is False:
+                print('异步获取代理失败! return ""!')
                 return ''
 
         # 连接池不能太大, < 500
-        conn = aiohttp.TCPConnector(verify_ssl=True, limit=150, use_dns_cache=True)
+        conn = aiohttp.TCPConnector(
+            verify_ssl=verify_ssl,
+            limit=150,
+            use_dns_cache=use_dns_cache,)
         async with aiohttp.ClientSession(connector=conn) as session:
             try:
-                async with session.request(method=method, url=url, headers=headers, params=params, data=data, proxy=proxy, timeout=timeout) as r:
+                async with session.request(
+                        method=method,
+                        url=url,
+                        headers=headers,
+                        params=params,
+                        data=data,
+                        proxy=proxy,
+                        timeout=timeout,
+                        proxy_auth=proxy_auth,
+                        allow_redirects=allow_redirects,
+                        proxy_headers=proxy_headers, ) as r:
+                    # print(r)
                     result = await r.text(encoding=None)
                     result = await self.wash_html(result)
                     # print('success')
@@ -86,7 +108,19 @@ class MyAiohttp(object):
                 # print('出错:', e)
                 if num_retries > 0:
                     # 如果不是200就重试，每次递减重试次数
-                    return await self.aio_get_url_body(method=method, url=url, headers=headers, params=params, data=data, num_retries=num_retries-1)
+                    return await self.aio_get_url_body(
+                        method=method,
+                        url=url,
+                        headers=headers,
+                        params=params,
+                        data=data,
+                        timeout=timeout,
+                        proxy_auth=proxy_auth,
+                        verify_ssl=verify_ssl,
+                        use_dns_cache=use_dns_cache,
+                        allow_redirects=allow_redirects,
+                        proxy_headers=proxy_headers,
+                        num_retries=num_retries - 1)
                 else:
                     print('异步获取body失败!')
                     return ''
