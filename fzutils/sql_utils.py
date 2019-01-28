@@ -236,8 +236,13 @@ class BaseSqlServer(object):
         '''
         ERROR_NUMBER = 0
         RETRY_NUM = self.dead_lock_retry_num    # 死锁重试次数
-        cs = self.conn.cursor()
         _ = False
+        try:
+            cs = self.conn.cursor()
+        except AttributeError as e:
+            _print(msg='遇到错误:', exception=e)
+            return _
+
         while RETRY_NUM > 0:
             try:
                 cs.execute('set deadlock_priority low;')    # 设置死锁释放级别
@@ -375,8 +380,13 @@ class BaseSqlServer(object):
         return _
 
     def _delete_table(self, sql_str, params=None, lock_timeout=20000):
-        cs = self.conn.cursor()
         _ = False
+        try:
+            cs = self.conn.cursor()
+        except AttributeError as e:
+            _print(msg='遇到错误:', exception=e)
+            return _
+
         try:
             cs.execute('set lock_timeout {0};'.format(lock_timeout))  # 设置客户端执行超时等待为20秒
             if params is not None:
