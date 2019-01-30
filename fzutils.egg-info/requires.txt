@@ -4,6 +4,7 @@ utils
 db
 greenlet==0.4.14
 web.py==0.40.dev1
+fake-useragent
 pytz
 pysocks
 requests

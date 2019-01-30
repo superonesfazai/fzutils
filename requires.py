@@ -14,6 +14,7 @@ install_requires = [
     'db',
     'greenlet==0.4.14',     # 之前0.4.13, 改成0.4.14(gevent依靠)
     'web.py==0.40.dev1',
+    'fake-useragent',       # 随机user-agent
     'pytz',
     'pysocks',              # requests 进行socks代理必备!
     'requests',
