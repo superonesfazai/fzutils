@@ -38,11 +38,13 @@ from asyncio import (
     set_event_loop,
     Condition,                  # 该类实现条件变量对象。条件变量允许一个或多个协同程序等待，直到它们被另一个协程通知。
     as_completed,
+    set_event_loop_policy,      # 修改事件循环规则
 )
 from asyncio import sleep as async_sleep
 from asyncio import Lock as AsyncLock
 from async_timeout import timeout as async_timeout
 from asyncio import TimeoutError as AsyncTimeoutError
+from uvloop import EventLoopPolicy
 
 from ..ip_pools import *
 from ..internet_utils import *

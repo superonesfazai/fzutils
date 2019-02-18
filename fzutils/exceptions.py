@@ -2,6 +2,6 @@
 
 '''
 @author = super_fazai
-@File    : exceptions.py
+@File    : my_exceptions.py
 @connect : superonesfazai@gmail.com
 '''
