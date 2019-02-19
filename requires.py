@@ -21,6 +21,7 @@ install_requires = [
     'requests_oauthlib',
     # 'requests-html',        # requests的html解析器 for human, 但是必须python >= 3.6
     'selenium==3.8.0',      # 3.8.1及其以上版本不支持phantomjs了
+    'uvloop',               # asyncio默认事件循环替代品
     'asyncio',
     'psutil',
     'pyexecjs',

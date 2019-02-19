@@ -10,6 +10,7 @@ pysocks
 requests
 requests_oauthlib
 selenium==3.8.0
+uvloop
 asyncio
 psutil
 pyexecjs
