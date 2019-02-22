@@ -45,7 +45,7 @@ ip_obj = IpPools(type=ip_proxy_pool, high_conceal=True)
 proxy = ip_obj._get_random_proxy_ip()
 ```
 ```python
-from fzutils.spider.crawler import Crawler
+from fzutils.spider.crawler import Crawler, AsyncCrawler
 from fzutils.ip_pools import fz_ip_pool
 
 class ASpider(Crawler):     # Crawler为爬虫基类
@@ -59,6 +59,10 @@ class ASpider(Crawler):     # Crawler为爬虫基类
             is_use_driver=True,
             driver_executable_path='驱动path',
         )
+
+class BSpider(AsyncCrawler):
+    """异步爬虫"""
+    pass
 
 _ = ASpider()
 ```
