@@ -34,6 +34,10 @@ __all__ = [
     'Requests',
 ]
 
+# 代理类型
+PROXY_TYPE_HTTP = 'http'
+PROXY_TYPE_HTTPS = 'https'
+
 class MyRequests(object):
     def __init__(self):
         super(MyRequests, self).__init__()
@@ -56,7 +60,8 @@ class MyRequests(object):
                      verify=None,
                      _session=None,
                      get_session=False,
-                     proxies=None):
+                     proxies=None,
+                     proxy_type=PROXY_TYPE_HTTP,):
         '''
         根据url得到body
         :param url:
@@ -75,6 +80,7 @@ class MyRequests(object):
         :param _session: 旧的session
         :param get_session: True 则返回值为此次请求的session
         :param proxies: 代理 None or {xxx} 同requests的proxies
+        :param proxy_type: PROXY_TYPE_HTTP 即'http' or PROXY_TYPE_HTTPS 即'https'
         :return: '' 表示error | str 表示success
         '''
         def _get_one_proxies_obj():
@@ -83,7 +89,10 @@ class MyRequests(object):
             if proxies is None:
                 if use_proxy:
                     # 设置代理ip
-                    tmp_proxies = cls._get_proxies(ip_pool_type=ip_pool_type, high_conceal=high_conceal)
+                    tmp_proxies = cls._get_proxies(
+                        ip_pool_type=ip_pool_type,
+                        high_conceal=high_conceal,
+                        proxy_type=proxy_type)
                     assert tmp_proxies != {}, '获取代理失败, 此处跳过!'
                     # print('------>>>| 正在使用代理ip: {} 进行爬取... |<<<------'.format(tmp_proxies.get('http')))
                 else:
@@ -136,18 +145,24 @@ class MyRequests(object):
                 # print(e)
                 if num_retries > 1:
                     return cls.get_url_body(
-                        method=method,
                         url=url,
+                        use_proxy=use_proxy,
                         headers=tmp_headers,
                         params=params,
                         data=data,
                         cookies=cookies,
                         had_referer=had_referer,
                         encoding=encoding,
+                        method=method,
                         timeout=timeout,
-                        verify=verify,
+                        num_retries=num_retries-1,
+                        high_conceal=high_conceal,
                         ip_pool_type=ip_pool_type,
-                        num_retries=num_retries - 1)
+                        verify=verify,
+                        _session=_session,
+                        get_session=get_session,
+                        proxies=proxies,
+                        proxy_type=proxy_type,)
                 else:
                     print('requests.get()请求超时....')
                     print('data为空!')
@@ -169,7 +184,7 @@ class MyRequests(object):
         return body
 
     @classmethod
-    def _get_proxies(cls, ip_pool_type=ip_proxy_pool, high_conceal=True):
+    def _get_proxies(cls, ip_pool_type=ip_proxy_pool, high_conceal=True, proxy_type=PROXY_TYPE_HTTP):
         '''
         得到单个代理ip
         :return: 格式: {'http': ip+port}
@@ -193,11 +208,18 @@ class MyRequests(object):
             # }
             pass
 
-        tmp_proxies = {
-            'http': proxy,
-        }
+        if proxy_type == PROXY_TYPE_HTTP:
+            return {
+                'http': proxy
+            }
 
-        return tmp_proxies
+        elif proxy_type == PROXY_TYPE_HTTPS:
+            return {
+                'https': proxy,
+            }
+
+        else:
+            raise ValueError('未知的proxy_type值!请检查!')
 
     @classmethod
     def _download_file(cls,

@@ -13,7 +13,10 @@ from scrapy.selector import Selector
 from .ip_pools import ip_proxy_pool, fz_ip_pool
 from .spider.fz_aiohttp import AioHttp
 from .common_utils import _print
-from .spider.fz_requests import Requests
+from .spider.fz_requests import (
+    Requests,
+    PROXY_TYPE_HTTP,
+    PROXY_TYPE_HTTPS,)
 from .internet_utils import get_base_headers
 from .spider.fz_driver import (
     BaseDriver,
@@ -133,6 +136,7 @@ async def unblock_request(url,
                           _session=None,
                           get_session=False,
                           proxies=None,
+                          proxy_type=PROXY_TYPE_HTTP,
                           logger=None) -> str:
     '''
     非阻塞的request请求
@@ -153,6 +157,7 @@ async def unblock_request(url,
     :param _session:
     :param get_session:
     :param proxies:
+    :param proxy_type:
     :return:
     '''
     async def _get_args() -> list:
@@ -175,6 +180,7 @@ async def unblock_request(url,
             _session,
             get_session,
             proxies,
+            proxy_type,
         ]
 
     loop = get_event_loop()
@@ -185,7 +191,7 @@ async def unblock_request(url,
     except Exception as e:
         _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
     finally:
-        loop.close()
+        # loop.close()
         try:
             del loop
         except:

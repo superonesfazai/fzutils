@@ -520,6 +520,7 @@ async def unblock_get_taobao_sign_and_body(base_url,
     except Exception as e:
         _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
     finally:
+        loop.close()
         try:
             del loop
         except:

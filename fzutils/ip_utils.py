@@ -57,7 +57,7 @@ def get_local_external_network_ip() -> str:
 
     return local_ip
 
-def proxy_type_detect():
+def proxy_type_detect(ip_pool_type=tri_ip_pool):
     '''
     代理种类发现
     :return:
@@ -72,7 +72,7 @@ def proxy_type_detect():
         'Accept-Language': 'zh-CN,zh;q=0.9',
     }
     url = 'http://proxies.site-digger.com/proxy-detect/'
-    body = Requests.get_url_body(url=url, headers=headers, ip_pool_type=tri_ip_pool)
+    body = Requests.get_url_body(url=url, headers=headers, ip_pool_type=ip_pool_type)
     # print(body)
     try:
         REMOTE_ADDR = re.compile('REMOTE_ADDR = (.*?)</p>').findall(body)[0]
