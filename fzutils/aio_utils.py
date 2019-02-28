@@ -240,7 +240,7 @@ async def unblock_get_driver_obj(type=PHANTOMJS,
     except Exception as e:
         _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
     finally:
-        loop.close()
+        # loop.close()
         try:
             del loop
         except:
@@ -299,7 +299,7 @@ async def unblock_request_by_driver(url,
     except Exception as e:
         _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
     finally:
-        loop.close()
+        # loop.close()
         try:
             del loop
         except:
