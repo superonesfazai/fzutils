@@ -127,7 +127,7 @@ class MyPhantomjs(object):
         """
         初始化带cookie的驱动，之所以用phantomjs是因为其加载速度很快(快过chrome驱动太多)
         """
-        _print(msg='--->>>初始化phantomjs驱动中<<<---', logger=self.lg)
+        _print(msg='init phantomjs ...', logger=self.lg)
         cap = webdriver.DesiredCapabilities.PHANTOMJS
         cap['phantomjs.page.settings.resourceTimeout'] = 1000  # 1秒
         cap['phantomjs.page.settings.loadImages'] = self.load_images
@@ -140,7 +140,7 @@ class MyPhantomjs(object):
         self.driver = webdriver.PhantomJS(executable_path=self.executable_path, desired_capabilities=cap)
 
         wait = ui.WebDriverWait(self.driver, 20)  # 显示等待n秒, 每过0.5检查一次页面是否加载完毕
-        _print(msg='------->>>初始化完毕<<<-------', logger=self.lg)
+        _print(msg='init over!', logger=self.lg)
 
         return True
 
@@ -149,7 +149,7 @@ class MyPhantomjs(object):
         如果使用chrome请设置page_timeout=30(可用)
         :return:
         '''
-        _print(msg='--->>>初始化chrome驱动中<<<---', logger=self.lg)
+        _print(msg='init chrome...', logger=self.lg)
         chrome_options = webdriver.ChromeOptions()
         # 设置headless
         if self.headless:
@@ -190,7 +190,7 @@ class MyPhantomjs(object):
             desired_capabilities=capabilities
         )
         wait = ui.WebDriverWait(self.driver, 30)  # 显示等待n秒, 每过0.5检查一次页面是否加载完毕
-        _print(msg='------->>>初始化完毕<<<-------', logger=self.lg)
+        _print(msg='init over!', logger=self.lg)
 
         return True
 
@@ -199,7 +199,7 @@ class MyPhantomjs(object):
         firefox初始化
         :return:
         '''
-        _print(msg='--->>>初始化firefox驱动中<<<---', logger=self.lg)
+        _print(msg='init firefox...', logger=self.lg)
         options = webdriver.FirefoxOptions()
         profile = webdriver.FirefoxProfile()
 
@@ -243,7 +243,7 @@ class MyPhantomjs(object):
             firefox_profile=profile
         )
         ui.WebDriverWait(self.driver, 30)  # 显示等待n秒, 每过0.5检查一次页面是否加载完毕
-        _print(msg='------->>>初始化完毕<<<-------', logger=self.lg)
+        _print(msg='init over!', logger=self.lg)
 
         return True
 
