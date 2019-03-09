@@ -104,7 +104,7 @@ def upload_or_download_files(method, connect_object:Connection, local_file_path,
 
     return _
 
-def local_compress_folders(father_folders_path, folders_name, default_save_path='/Users/afa/myFiles/tmp'):
+def local_compress_folders(father_folders_path, folders_name, default_save_path='/Users/afa/myFiles/tmp', exclude_folders=None):
     '''
     本地压缩文件夹
         use: eg:
@@ -116,6 +116,7 @@ def local_compress_folders(father_folders_path, folders_name, default_save_path=
     :param father_folders_path: 文件夹所在父目录地址
     :param folders_name: 要压缩的文件夹名
     :param default_save_path: 默认存储路径
+    :param exclude_folders: 不打包的文件, 必须以list传入 eg: ['*.svn*', ]
     :return:
     '''
     if not exists(father_folders_path):
@@ -128,13 +129,20 @@ def local_compress_folders(father_folders_path, folders_name, default_save_path=
     _ = False
     '''用zip, unzip的原因是: mac与linux用tar存在解码冲突'''
     # 先cd 到父目录, 再压缩对应文件夹, 最后移动到默认保存目录
-    cmd = 'cd {0} && zip -r {1}.zip {2} && mv {3}.zip {4}'.format(
+    exclude_str = ''
+    if isinstance(exclude_folders, list):
+        for i in exclude_folders:
+            exclude_str += '--exclude {} '.format(i)
+
+    cmd = 'cd {0} && zip -r {1}.zip {2} {3} && mv {4}.zip {5}'.format(
         father_folders_path,
         folders_name,
         './'+folders_name+'/*',
+        exclude_str,
         folders_name,
         default_save_path           # 默认存储路径
     )
+    # print(cmd)
     try:
         system(cmd)
         print('\n[+] 本地压缩 {0}.zip 成功!'.format(folders_name))
