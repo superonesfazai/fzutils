@@ -47,7 +47,7 @@ class MyAiohttp(object):
         }
 
     @classmethod
-    async def aio_get_url_body(self,
+    async def aio_get_url_body(cls,
                                url,
                                headers,
                                method='get',
@@ -74,7 +74,7 @@ class MyAiohttp(object):
         :param data: post的data
         :return:
         '''
-        proxy = await self.get_proxy(high_conceal, ip_pool_type=ip_pool_type)
+        proxy = await cls.get_proxy(ip_pool_type=ip_pool_type, high_conceal=high_conceal,)
         # print(proxy)
         if isinstance(proxy, bool):
             if proxy is False:
@@ -101,32 +101,34 @@ class MyAiohttp(object):
                         proxy_headers=proxy_headers, ) as r:
                     # print(r)
                     result = await r.text(encoding=None)
-                    result = await self.wash_html(result)
+                    result = await cls.wash_html(result)
                     # print('success')
                     return result
             except Exception as e:
                 # print('出错:', e)
                 if num_retries > 0:
                     # 如果不是200就重试，每次递减重试次数
-                    return await self.aio_get_url_body(
-                        method=method,
+                    return await cls.aio_get_url_body(
                         url=url,
                         headers=headers,
+                        method=method,
                         params=params,
-                        data=data,
                         timeout=timeout,
-                        proxy_auth=proxy_auth,
+                        num_retries=num_retries-1,
+                        high_conceal=high_conceal,
+                        data=data,
+                        ip_pool_type=ip_pool_type,
                         verify_ssl=verify_ssl,
                         use_dns_cache=use_dns_cache,
+                        proxy_auth=proxy_auth,
                         allow_redirects=allow_redirects,
-                        proxy_headers=proxy_headers,
-                        num_retries=num_retries - 1)
+                        proxy_headers=proxy_headers,)
                 else:
                     print('异步获取body失败!')
                     return ''
 
     @classmethod
-    async def wash_html(self, body):
+    async def wash_html(cls, body):
         '''
         异步清洗html
         :param body:
@@ -138,7 +140,7 @@ class MyAiohttp(object):
         return body
 
     @classmethod
-    async def get_proxy(self, high_conceal=True, ip_pool_type=ip_proxy_pool):
+    async def get_proxy(cls, ip_pool_type=ip_proxy_pool, high_conceal=True,):
         '''
         异步获取proxy
         :return: 格式: 'http://ip:port'
@@ -152,6 +154,7 @@ class MyAiohttp(object):
         proxy = False
         try:
             proxy = await loop.run_in_executor(None, ip_object._get_random_proxy_ip, *args)
+            # print(proxy)
         except Exception:
             pass
         finally:
