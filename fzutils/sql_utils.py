@@ -127,7 +127,14 @@ class BaseSqlServer(object):
                 pass
             return _
 
-    def _insert_into_table_2(self, sql_str, params: tuple, logger):
+    def _insert_into_table_2(self, sql_str, params: tuple, logger, set_deadlock_priority_low=True):
+        """
+        :param sql_str:
+        :param params:
+        :param logger:
+        :param set_deadlock_priority_low: 是否设置死锁等级低
+        :return:
+        """
         _ = False
         try:
             cs = self.conn.cursor()
@@ -136,7 +143,9 @@ class BaseSqlServer(object):
             return _
 
         try:
-            cs.execute('set deadlock_priority low;')  # 设置死锁释放级别
+            if set_deadlock_priority_low:
+                cs.execute('set deadlock_priority low;')  # 设置死锁释放级别
+
             # logger.info(str(params))
             cs.execute(sql_str.encode('utf-8'), params)  # 注意必须是tuple类型
             self.conn.commit()
