@@ -18,6 +18,7 @@ __all__ = [
     'tuple_or_list_params_2_dict_params',                   # tuple和list类型的params转dict类型的params
     'str_cookies_2_dict',                                   # cookies字符串转dict
     'dict_cookies_2_str',                                   # dict类型cookies转str
+    'driver_cookies_list_2_str',                            # driver_cookies_list_2_str
 
     # chrome下抓包后, requests处理相关
     'chrome_copy_requests_header_2_dict_headers',           # 将直接从chrome复制的Request Headers转换为dict的headers
@@ -643,3 +644,18 @@ def html_entities_2_standard_html(html_body):
         html_body = html_body.replace(item[0], item[1])
 
     return html_body
+
+def driver_cookies_list_2_str(cookies_list:list) -> str:
+    """
+    driver的cookies list 转 str
+    :param cookies_list: eg: [{"domain":".jianshu.com", "expirationDate":1552467568.95627, ..., "name":"_m7e_session_core", ..., "value":"cc5871cc6fd05e742b83fbf476676450",}, ...]
+    :return:
+    """
+    res = ''
+    for item in cookies_list:
+        name = item.get('name', '')
+        value = item.get('value', '')
+        if name != '':
+            res += '{}={};'.format(name, value)
+
+    return res

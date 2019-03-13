@@ -15,8 +15,9 @@ from celery import Celery
 from celery.utils.log import get_task_logger
 
 __all__ = [
-    'init_celery_app',              # 初始化一个celery对象
-    '_get_celery_async_results',    # 得到celery worker的处理结果集合
+    'init_celery_app',                  # 初始化一个celery对象
+    'block_get_celery_async_results',   # 同步得到celery worker的处理结果集合
+    '_get_celery_async_results',        # 得到celery worker的处理结果集合
 ]
 
 def init_celery_app(name='proxy_tasks',
@@ -46,12 +47,12 @@ def init_celery_app(name='proxy_tasks',
 
     return app
 
-async def _get_celery_async_results(tasks:list) -> list:
-    '''
+def block_get_celery_async_results(tasks:list) -> list:
+    """
     得到celery worker的处理结果集合
     :param tasks: celery的tasks任务对象集
     :return:
-    '''
+    """
     all = []
     success_num = 1
     s_time = time()
@@ -82,4 +83,12 @@ async def _get_celery_async_results(tasks:list) -> list:
     print('\n执行完毕! 此次耗时 {} s!'.format(round(float(time_consume), 3)))
 
     return all
+
+async def _get_celery_async_results(tasks:list) -> list:
+    '''
+    得到celery worker的处理结果集合
+    :param tasks: celery的tasks任务对象集
+    :return:
+    '''
+    return block_get_celery_async_results(tasks=tasks)
 

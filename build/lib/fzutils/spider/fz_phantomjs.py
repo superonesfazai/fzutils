@@ -16,7 +16,8 @@ from ..ip_pools import (
     tri_ip_pool,)
 from ..internet_utils import (
     get_random_pc_ua,
-    get_random_phone_ua,)
+    get_random_phone_ua,
+    driver_cookies_list_2_str,)
 from ..common_utils import _print
 
 from selenium import webdriver
@@ -353,29 +354,18 @@ class MyPhantomjs(object):
         :return: cookies 类型 str
         '''
         _print(msg='正在获取cookies...请耐心等待...', logger=self.lg)
-        self.use_phantomjs_to_get_url_body(url=url, css_selector=css_selector, exec_code=exec_code, timeout=timeout)
-        cookies = self.phantomjs_cookies_2_str(self.driver.get_cookies())
-        # _print(msg=str(cookies), logger=self.lg)
-
-        return cookies
-
-    def phantomjs_cookies_2_str(self, cookies)  -> str:
-        '''
-        从phantomjs的cookies中获取到规范格式的cookies字符串
-        :param cookies:
-        :return: '' 表示获取失败 | str
-        '''
-        if cookies == []:
-            return ''
-
-        tmp_cookies = {}
+        self.use_phantomjs_to_get_url_body(
+            url=url,
+            css_selector=css_selector,
+            exec_code=exec_code,
+            timeout=timeout)
         cookies_str = ''
-        for item in cookies:
-            tmp_cookies[item.get('name', '')] = item.get('value', '')
-
-        # pprint(tmp_cookies)
-        for key, value in tmp_cookies.items():
-            cookies_str += key + '=' + value + ';'
+        try:
+            cookies_list = self.driver.get_cookies()
+            cookies_str = driver_cookies_list_2_str(cookies_list=cookies_list)
+            # _print(msg=str(cookies), logger=self.lg)
+        except Exception as e:
+            _print(msg='遇到错误:', logger=self.lg, exception=e, log_level=2)
 
         return cookies_str
 
