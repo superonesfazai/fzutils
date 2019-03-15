@@ -165,12 +165,13 @@ def wash_sensitive_info(data, replace_str_list=None, add_sensitive_str_list=None
     :param add_sensitive_str_list: 增加的过滤敏感词汇(会被替换为'') eg: ['123', '456', ...]
     :return: a str
     '''
+    data = data.lower()
     if replace_str_list is not None:            # replace
         if isinstance(replace_str_list, list):
             for item in replace_str_list:
                 try:
-                    before_str = r'{0}'.format(item[0])
-                    end_str = r'{0}'.format(item[1])
+                    before_str = r'{0}'.format(item[0]).lower()
+                    end_str = r'{0}'.format(item[1]).lower()
                 except IndexError:
                     raise IndexError('获取replace_str_list的子元素时索引异常, 请检查!')
                 data = re.compile(before_str).sub(end_str, data)
@@ -180,7 +181,10 @@ def wash_sensitive_info(data, replace_str_list=None, add_sensitive_str_list=None
     if add_sensitive_str_list is not None:      # add sensitive_str to ''
         if isinstance(add_sensitive_str_list, list):
             for item in add_sensitive_str_list:
-                data = re.compile(r'{0}'.format(item)).sub('', data)
+                try:
+                    data = re.compile(r'{0}'.format(item).lower()).sub('', data)
+                except:
+                    continue
         else:
             raise TypeError('add_sensitive_str_list只支持list类型! eg: ["123", "456", ...]')
 
@@ -192,8 +196,8 @@ def wash_sensitive_info(data, replace_str_list=None, add_sensitive_str_list=None
     拉粑粑
     '''.replace(' ', '').replace('\n', '')
     data = re.compile(tmp_str).sub('', data)
-
-    data = re.compile(r'\xa0').sub(' ', data)  # '\xa0' 是不间断空白符 &nbsp;
+    # '\xa0' 是不间断空白符 &nbsp;
+    data = re.compile(r'\xa0').sub(' ', data)
 
     return data
 

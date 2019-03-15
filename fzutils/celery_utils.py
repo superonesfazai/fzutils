@@ -14,10 +14,13 @@ from time import time
 from celery import Celery
 from celery.utils.log import get_task_logger
 
+from .common_utils import _print
+
 __all__ = [
-    'init_celery_app',                  # 初始化一个celery对象
-    'block_get_celery_async_results',   # 同步得到celery worker的处理结果集合
-    '_get_celery_async_results',        # 得到celery worker的处理结果集合
+    'init_celery_app',                              # 初始化一个celery对象
+    'block_get_celery_async_results',               # 同步得到celery worker的处理结果集合
+    '_get_celery_async_results',                    # 得到celery worker的处理结果集合
+    'get_current_all_celery_handled_results_list',  # 得到当前所有celery处理后子元素的子元素, 并以新集合形式返回!
 ]
 
 def init_celery_app(name='proxy_tasks',
@@ -92,3 +95,19 @@ async def _get_celery_async_results(tasks:list) -> list:
     '''
     return block_get_celery_async_results(tasks=tasks)
 
+def get_current_all_celery_handled_results_list(one_res, logger=None) -> list:
+    """
+    得到当前所有celery处理后子元素的子元素, 并以新集合形式返回!
+    :param one_res:
+    :return:
+    """
+    res = []
+    for i in one_res:
+        try:
+            for j in i:
+                res.append(j)
+        except TypeError as e:
+            _print(msg='遇到错误:', logger=logger, exception=e, log_level=2)
+            continue
+
+    return res
