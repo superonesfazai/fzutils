@@ -85,7 +85,7 @@ class BaseSqlServer(object):
             # self.conn.commit()
             result = cs.fetchall()
         except Exception as e:
-            _print(msg='--------------------| 筛选level时报错: ', logger=logger, log_level=2, exception=e)
+            _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
         finally:
             try:
                 cs.close()
