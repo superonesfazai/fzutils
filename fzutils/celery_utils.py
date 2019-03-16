@@ -107,7 +107,7 @@ def get_current_all_celery_handled_results_list(one_res, logger=None) -> list:
             for j in i:
                 res.append(j)
         except TypeError as e:
-            _print(msg='遇到错误:', logger=logger, exception=e, log_level=2)
+            # _print(msg='遇到错误:', logger=logger, exception=e, log_level=2)
             continue
 
     return res
