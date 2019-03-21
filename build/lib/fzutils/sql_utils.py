@@ -111,7 +111,7 @@ class BaseSqlServer(object):
             cs.execute('set deadlock_priority low;')        # 设置死锁释放级别
             cs.execute(sql_str.encode('utf-8'), params)  # 注意必须是tuple类型
             self.conn.commit()
-            print('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
+            print('[+] add to db!')
             _ = True
         except IntegrityError:
             print('重复插入...')
@@ -149,7 +149,7 @@ class BaseSqlServer(object):
             # logger.info(str(params))
             cs.execute(sql_str.encode('utf-8'), params)  # 注意必须是tuple类型
             self.conn.commit()
-            logger.info('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
+            logger.info('[+] add to db!')
             _ = True
         except IntegrityError:
             logger.info('重复插入goods_id[%s], 此处跳过!' % params[0])
@@ -197,7 +197,7 @@ class BaseSqlServer(object):
             # logger.info(str(params))
             cs.execute(sql_str.encode('utf-8'), params)  # 注意必须是tuple类型
             self.conn.commit()
-            logger.info('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
+            logger.info('[+] add to db!')
             _ = True
         except IntegrityError:
             if not error_msg_dict:
@@ -257,7 +257,7 @@ class BaseSqlServer(object):
                 cs.execute('set deadlock_priority low;')    # 设置死锁释放级别
                 cs.execute(sql_str, params)
                 self.conn.commit()        # 不进行事务提交, 不提交无法更改
-                print('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
+                print('[+] add to db!')
                 _ = True
                 RETRY_NUM = 0
             except Exception as e:
@@ -297,7 +297,7 @@ class BaseSqlServer(object):
                 cs.execute('set deadlock_priority low;')    # 设置死锁释放级别
                 cs.execute(sql_str, params)
                 self.conn.commit()        # 不进行事务提交
-                logger.info('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
+                logger.info('[+] add to db!')
                 _ = True
                 RETRY_NUM = 0
             except Exception as e:
@@ -352,7 +352,7 @@ class BaseSqlServer(object):
                 cs.execute('set deadlock_priority low;')    # 设置死锁释放级别
                 cs.execute(sql_str, params)
                 self.conn.commit()
-                logger.info('-' * 9 + '| ***该页面信息成功存入sqlserver中*** ')
+                logger.info('[+] add to db!')
                 _ = True
                 RETRY_NUM = 0
             except Exception as e:
