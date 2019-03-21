@@ -13,13 +13,10 @@ install_requires = [
     'utils',
     'db',
     'greenlet==0.4.14',     # 之前0.4.13, 改成0.4.14(gevent依靠)
-    'web.py==0.40.dev1',
-    'fake-useragent',       # 随机user-agent
     'pytz',
     'pysocks',              # requests 进行socks代理必备!
     'requests',
     'requests_oauthlib',
-    # 'requests-html',        # requests的html解析器 for human, 但是必须python >= 3.6
     'selenium==3.8.0',      # 3.8.1及其以上版本不支持phantomjs了
     'uvloop',               # asyncio默认事件循环替代品
     'asyncio',
@@ -38,10 +35,9 @@ install_requires = [
     'sqlalchemy',
     'gevent',
     'aiohttp',
+    'eventlet',             # celery改变单个worker并发量必备库
     'celery',
     'jsonpath',
-    'matplotlib',
-    'wget',
     'flask',
     'flask_login',
     'mitmproxy',            # shell 抓包代理
@@ -49,28 +45,18 @@ install_requires = [
     'pyexcel',
     'pyexcel-xlsx',
     'fabric',
-    'shadowsocks',
-    # 'pycurl==7.43.0.1',
     'furl',
     'yarl',
     'prettytable',
     'xlrd',
-    'pandas',
     'jieba',
-    'geopandas',
-    'scikit-image',
-    'wordcloud',            # 词云
-    'pygame',
+    'scikit-image',         # 图像处理
     'appium-python-client',
     'python-docx',
     'Jinja2',
     'elasticsearch',
     'elasticsearch_dsl',
     'salt',                 # 为大规模复杂系统管理提供软件, 同步控制百万台服务器
-    'ray',                  # 一个灵活的高性能分布式执行框架
-    'jupyter',
-    'ipywidgets',
-    'bokeh',                # 一个用于Python的交互式可视化库，可在现代Web浏览器中实现美观且有意义的数据可视化呈现
     'stem',
     'pika',                 # RabbitMQ客户端库
     'redis',
@@ -86,15 +72,31 @@ install_requires = [
     'fonttools',
     'xmltodict',
     'python-dateutil',
-    'newspaper3k',          # 文章提取
     'ftfy',                 # 超级强大的unicode文本工具
     'tenacity',             # 强大的python重试库
     'pyzbar',               # 二维码识别库, 安装前提:(ubuntu: sudo apt-get install libzbar-dev | mac: brew install zbar)
-    'eventlet',             # celery改变单个worker并发量必备库
     'termcolor',            # shell颜色化输出
-    'Flask-APScheduler',    # flask的定时任务库
     'mongoengine',          # mongo engine
     'pypinyin',             # 汉字转拼音包
+
+    # TODO 减少依赖
+    # 'jupyter',
+    # 'ipywidgets',           # jupyter笔记本和ipython内核的交互式HTML小部件
+    # 'matplotlib',
+    # 'shadowsocks',
+    # 'wget',
+    # 'fake-useragent',       # 随机user-agent
+    # 'web.py==0.40.dev1',    # IPProxyPool的依赖, 现弃用
+    # 'pygame',
+    # 'pandas',
+    # 'geopandas',            # 向pandas对象添加地理数据支持
+    # 'ray',                  # 一个灵活的高性能分布式执行框架
+    # 'Flask-APScheduler',    # flask的定时任务库
+    # 'newspaper3k',          # 文章提取
+    # 'wordcloud',            # 词云
     # 'sip',
     # 'pyqt5',
+    # 'bokeh',                # 一个用于Python的交互式可视化库，可在现代Web浏览器中实现美观且有意义的数据可视化呈现
+    # 'requests-html',        # requests的html解析器 for human, 但是必须python >= 3.6
+    # 'pycurl==7.43.0.1',
 ]
