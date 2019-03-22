@@ -31,25 +31,23 @@ install_requires = [
     'bs4',
     'scrapy',
     'demjson',
-    'pymssql',
-    'sqlalchemy',
     'gevent',
     'aiohttp',
     'eventlet',             # celery改变单个worker并发量必备库
     'celery',
+    'flower',               # web工具，用于监视和管理celery集群。
     'jsonpath',
     'flask',
     'flask_login',
     'mitmproxy',            # shell 抓包代理
-    'pymongo',
     'pyexcel',
     'pyexcel-xlsx',
-    'fabric',
-    'furl',
+    'fabric',               # 旨在通过SSH远程执行shell命令
+    'furl',                 # 可轻松解析和操作URL
     'yarl',
     'prettytable',
     'xlrd',
-    'jieba',
+    'jieba',                # 旨在做最好用的中文分词
     'scikit-image',         # 图像处理
     'appium-python-client',
     'python-docx',
@@ -57,10 +55,7 @@ install_requires = [
     'elasticsearch',
     'elasticsearch_dsl',
     'salt',                 # 为大规模复杂系统管理提供软件, 同步控制百万台服务器
-    'stem',
-    'pika',                 # RabbitMQ客户端库
-    'redis',
-    'flower',               # 一个基于Web的工具，用于监视和管理Celery集群。
+    'pika',                 # rabbitmq客户端库
     'items',
     'scapy',                # 功能强大的基于Python的交互式数据包操作程序和库
     'scapy-http',
@@ -69,17 +64,24 @@ install_requires = [
     'scrapy-splash',
     'opencv-python',
     'twilio',               # 免费发短信
-    'fonttools',
+    'fonttools',            # 用于操作字体的库, eg:爬虫中字形识别
     'xmltodict',
     'python-dateutil',
     'ftfy',                 # 超级强大的unicode文本工具
     'tenacity',             # 强大的python重试库
     'pyzbar',               # 二维码识别库, 安装前提:(ubuntu: sudo apt-get install libzbar-dev | mac: brew install zbar)
     'termcolor',            # shell颜色化输出
-    'mongoengine',          # mongo engine
     'pypinyin',             # 汉字转拼音包
 
+    # db
+    'pymssql',
+    'sqlalchemy',
+    'pymongo',
+    'redis',
+    'mongoengine',          # mongo engine
+
     # TODO 减少依赖
+    # 'stem',                 # 操作tor
     # 'jupyter',
     # 'ipywidgets',           # jupyter笔记本和ipython内核的交互式HTML小部件
     # 'matplotlib',

@@ -11,14 +11,13 @@
 自动化运维相关包
 """
 
-import os
 import time
 import re
-from os import system
+from os import (
+    system,
+    popen,)
 from os.path import (
     exists,
-    basename,)
-from os.path import (
     basename,
     dirname,)
 from fabric.connection import Connection
@@ -200,16 +199,16 @@ def auto_git(path):
     :param path: 绝对路径
     :return:
     '''
-    os.system('cd {0} && git pull'.format(path))
+    system('cd {0} && git pull'.format(path))
     print('------>>>| 远程合并分支完毕!!!')
     print((path + ' 正在提交').center(100, '*'))
-    os.popen('cd {0} && git add --all'.format(path))
+    popen('cd {0} && git add --all'.format(path))
     time.sleep(2)
     now_time = str(get_shanghai_time())
     now_time = str(re.compile(r'\..*').sub('', now_time))
-    os.system('cd {0} && git commit -m "{1}"'.format(path, now_time))
+    system('cd {0} && git commit -m "{1}"'.format(path, now_time))
     time.sleep(2)
-    os.system('cd {0} && git push -u origin master'.format(path))
+    system('cd {0} && git push -u origin master'.format(path))
     print((path + ' 提交成功!!').center(100, '*') + '\n')
 
     return True

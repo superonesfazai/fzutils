@@ -305,10 +305,7 @@ class StopRetry(Exception):
     def __repr__(self):
         return 'retry stop!'
 
-def retry(max_retries,
-          delay:(int, float)=0,
-          callback=None,
-          validate_func=None):
+def retry(max_retries, delay:(int, float)=0, callback=None, validate_func=None):
     '''
     函数执行出现异常时自动重试的装饰器
     :param max_retries: 最多重试次数
@@ -353,6 +350,3 @@ def retry(max_retries,
         return wrapper
 
     return decorated
-
-
-
