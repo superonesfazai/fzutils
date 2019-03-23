@@ -62,6 +62,7 @@ tenacity
 pyzbar
 termcolor
 pypinyin
+bitarray
 pymssql
 sqlalchemy
 pymongo

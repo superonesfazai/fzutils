@@ -72,6 +72,7 @@ install_requires = [
     'pyzbar',               # 二维码识别库, 安装前提:(ubuntu: sudo apt-get install libzbar-dev | mac: brew install zbar)
     'termcolor',            # shell颜色化输出
     'pypinyin',             # 汉字转拼音包
+    'bitarray',             # bloom 需要
 
     # db
     'pymssql',

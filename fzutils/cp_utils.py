@@ -23,7 +23,7 @@ from .items import GoodsItem
 from .safe_utils import get_uuid3
 from .safe_utils import md5_encrypt
 from .ip_pools import (
-    MyIpPools,
+    IpPools,
     fz_ip_pool,
     ip_proxy_pool,)
 
@@ -34,6 +34,8 @@ __all__ = [
     'filter_invalid_comment_content',                       # cp过滤无效comment
 
     # tb签名相关
+    'block_calculate_tb_right_sign',                        # 阻塞方式计算tb sign
+    'block_get_tb_sign_and_body',                           # 阻塞方式获取淘宝加密sign接口数据
     'calculate_right_sign',                                 # 获取淘宝sign
     'get_taobao_sign_and_body',                             # 得到淘宝带签名sign的接口数据
     'unblock_get_taobao_sign_and_body',                     # 非阻塞获取tb sign body
@@ -133,13 +135,13 @@ def _get_price_change_info(old_price, old_taobao_price, new_price, new_taobao_pr
 
     return is_price_change, price_change_info
 
-async def calculate_right_sign(_m_h5_tk: str, data: json):
-    '''
-    根据给的json对象 data 和 _m_h5_tk计算出正确的sign
+def block_calculate_tb_right_sign(_m_h5_tk: str, data: json) -> tuple:
+    """
+    阻塞方式计算tb sign
     :param _m_h5_tk:
     :param data:
     :return: sign 类型str, t 类型str
-    '''
+    """
     # with open('../static/js/get_h_func.js', 'r') as f:  # 打开js源文件
     #     js = f.read()
     #
@@ -156,28 +158,21 @@ async def calculate_right_sign(_m_h5_tk: str, data: json):
 
     return sign, t
 
-async def get_taobao_sign_and_body(base_url,
-                                   headers:dict,
-                                   params:dict,
-                                   data:json,
-                                   timeout=13,
-                                   _m_h5_tk='undefine',
-                                   session=None,
-                                   logger=None,
-                                   encoding='utf-8',
-                                   ip_pool_type=ip_proxy_pool) -> tuple:
-    '''
-    得到淘宝加密签名sign接口数据
-    :param base_url:
-    :param headers:
-    :param params:
-    :param data:
-    :param timeout:
-    :param _m_h5_tk:
-    :param session:
-    :return: (_m_h5_tk, session, body)
-    '''
-    sign, t = await calculate_right_sign(data=data, _m_h5_tk=_m_h5_tk)
+def block_get_tb_sign_and_body(base_url,
+                               headers:dict,
+                               params:dict,
+                               data:json,
+                               timeout=13,
+                               _m_h5_tk='undefine',
+                               session=None,
+                               logger=None,
+                               encoding='utf-8',
+                               ip_pool_type=ip_proxy_pool) -> tuple:
+    """
+    阻塞方式获取淘宝加密sign接口数据
+    :return:
+    """
+    sign, t = block_calculate_tb_right_sign(data=data, _m_h5_tk=_m_h5_tk)
     # print(sign, t)
     headers['Host'] = re.compile(r'://(.*?)/').findall(base_url)[0]
     params.update({  # 添加下面几个query string
@@ -186,14 +181,18 @@ async def get_taobao_sign_and_body(base_url,
         'data': data,
     })
 
-    ip_object = MyIpPools(type=ip_pool_type, high_conceal=True)
+    ip_object = IpPools(type=ip_pool_type)
     tmp_proxies = {
-        'http': ip_object._get_random_proxy_ip(),   # 失败返回False
+        'http': ip_object._get_random_proxy_ip(),  # 失败返回False
     }
-
     session = requests.session() if session is None else session
     try:
-        response = session.get(url=base_url, headers=headers, params=params, proxies=tmp_proxies, timeout=timeout)
+        response = session.get(
+            url=base_url,
+            headers=headers,
+            params=params,
+            proxies=tmp_proxies,
+            timeout=timeout,)
         _m_h5_tk = response.cookies.get('_m_h5_tk', '').split('_')[0]
         # logger.info(str(s.cookies.items()))
         # logger.info(str(_m_h5_tk))
@@ -209,6 +208,31 @@ async def get_taobao_sign_and_body(base_url,
         body = ''
 
     return (_m_h5_tk, session, body)
+
+async def calculate_right_sign(_m_h5_tk: str, data: json) -> tuple:
+    '''
+    根据给的json对象 data 和 _m_h5_tk计算出正确的sign
+    :param _m_h5_tk:
+    :param data:
+    :return: sign 类型str, t 类型str
+    '''
+    return block_calculate_tb_right_sign(
+        _m_h5_tk=_m_h5_tk,
+        data=data)
+
+async def get_taobao_sign_and_body(*params, **kwargs) -> tuple:
+    '''
+    得到淘宝加密签名sign接口数据
+    :param base_url:
+    :param headers:
+    :param params:
+    :param data:
+    :param timeout:
+    :param _m_h5_tk:
+    :param session:
+    :return: (_m_h5_tk, session, body)
+    '''
+    return block_get_tb_sign_and_body(*params, **kwargs)
 
 def get_miaosha_begin_time_and_miaosha_end_time(miaosha_time):
     '''
