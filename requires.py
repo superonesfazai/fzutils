@@ -73,6 +73,7 @@ install_requires = [
     'termcolor',            # shell颜色化输出
     'pypinyin',             # 汉字转拼音包
     'bitarray',             # bloom 需要
+    'click',                # shell交互
 
     # db
     'pymssql',

@@ -28,6 +28,7 @@ fzutils/path_utils.py
 fzutils/qrcode_utils.py
 fzutils/register_utils.py
 fzutils/safe_utils.py
+fzutils/shell_utils.py
 fzutils/sms_utils.py
 fzutils/sniff_utils.py
 fzutils/sql_utils.py

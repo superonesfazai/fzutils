@@ -63,6 +63,7 @@ pyzbar
 termcolor
 pypinyin
 bitarray
+click
 pymssql
 sqlalchemy
 pymongo
