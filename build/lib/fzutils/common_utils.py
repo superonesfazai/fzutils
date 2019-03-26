@@ -12,6 +12,10 @@ from json import (
     loads,
     JSONDecodeError,)
 from demjson import decode
+from gc import collect
+
+from .spider.bloom_utils import BloomFilter
+# from fzutils.spider.bloom_utils import BloomFilter
 
 __all__ = [
     'json_2_dict',                                              # json转dict
@@ -39,6 +43,9 @@ __all__ = [
 
     # 装饰器
     'retry',                                                    # 函数执行出现异常时自动重试的装饰器
+
+    # list
+    'list_remove_repeat_dict_plus_by_bloom_filter',             # 通过bloom list 子元素为dict的去重plus
 ]
 
 def json_2_dict(json_str, logger=None, encoding=None, default_res=None):
@@ -350,3 +357,29 @@ def retry(max_retries, delay:(int, float)=0, callback=None, validate_func=None):
         return wrapper
 
     return decorated
+
+def list_remove_repeat_dict_plus_by_bloom_filter(target: list, repeat_key: str, capacity=100000, error_rate=0.0001) -> list:
+    """
+    通过bloom list 子元素为dict的去重plus
+    :param target:
+    :param repeat_key:
+    :param capacity: 容器大小
+    :param error_rate: 错误率
+    :return:
+    """
+    bloom_filter = BloomFilter(capacity=capacity, error_rate=error_rate)
+    res_list = []
+    for item in target:
+        repeat_key_value = item.get(repeat_key)
+        if repeat_key_value is not None:
+            if repeat_key_value not in bloom_filter:
+                res_list.append(item)
+                bloom_filter.add(repeat_key_value)
+
+    try:
+        del bloom_filter
+    except:
+        pass
+    collect()
+
+    return res_list
