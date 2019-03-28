@@ -20,7 +20,20 @@ from ..internet_utils import (
     driver_cookies_list_2_str,)
 from ..common_utils import _print
 
+# from fzutils.ip_pools import (
+#     MyIpPools,
+#     ip_proxy_pool,
+#     fz_ip_pool,
+#     tri_ip_pool,)
+# from fzutils.internet_utils import (
+#     get_random_pc_ua,
+#     get_random_phone_ua,
+#     driver_cookies_list_2_str,)
+# from fzutils.common_utils import _print
+
 from selenium import webdriver
+# WebDriver
+from selenium.webdriver.remote.webdriver import WebDriver
 import selenium.webdriver.support.ui as ui
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -47,6 +60,8 @@ __all__ = [
 
 PHANTOMJS_DRIVER_PATH = '/Users/afa/myFiles/tools/phantomjs-2.1.1-macosx/bin/phantomjs'
 CHROME_DRIVER_PATH = '/Users/afa/myFiles/tools/chromedriver'
+FIREFOX_DRIVER_PATH = '/Users/afa/myFiles/tools/geckodriver'
+
 # phantomjs驱动地址
 EXECUTABLE_PATH = PHANTOMJS_DRIVER_PATH
 
@@ -408,6 +423,145 @@ class MyPhantomjs(object):
         '''
         return self.driver
 
+    def find_element(self, by=By.CSS_SELECTOR, value=None):
+        """
+        查找单个element
+        :param by:
+        :param value:
+        :return:
+        """
+        return self.driver.find_element(by=by, value=value)
+
+    def find_elements(self, by=By.CSS_SELECTOR, value=None):
+        """
+        查找elements
+        :param by:
+        :param value:
+        :return:
+        """
+        return self.driver.find_elements(by=by, value=value)
+
+    def save_screenshot(self, file_name):
+        """
+        屏幕截图
+        :param file_name: 保存的路径 eg: '/Screenshots/foo.png'
+        :return:
+        """
+        return self.driver.save_screenshot(filename=file_name)
+
+    def add_cookie(self, cookies_dict):
+        """
+        添加某个cookie 2 driver
+        :param cookies_dict: eg: {'name' : 'foo', 'value' : 'bar'}
+        :return:
+        """
+        self.driver.add_cookie(cookies_dict=cookies_dict)
+
+    def delete_cookie(self, name):
+        """
+        删除某个cookie
+        :param name:
+        :return:
+        """
+        self.driver.delete_cookie(name=name)
+
+    def delete_all_cookies(self):
+        """
+        删除driver所有cookies
+        :return:
+        """
+        self.driver.delete_all_cookies()
+
+    def execute_script(self, script, *args):
+        """
+        执行js
+        :param script:
+        :param args:
+        :return:
+        """
+        return self.driver.execute_script(script=script, *args)
+
+    def execute_async_script(self, script, *args):
+        """
+        执行异步js
+        :param script:
+        :param args:
+        :return:
+        """
+        return self.driver.execute_async_script(script=script, *args)
+
+    def close_current_window(self):
+        """
+        关闭当前窗口
+        :return:
+        """
+        self.driver.close()
+
+    def back(self):
+        """
+        当前页面回退
+        :return:
+        """
+        self.driver.back()
+
+    def refresh(self):
+        """
+        当前页面刷新
+        :return:
+        """
+        self.driver.refresh()
+
+    def forward(self):
+        """
+        返回前一页
+        :return:
+        """
+        self.driver.forward()
+
+    @property
+    def switch_to(self):
+        return self.driver.switch_to
+
+    def switch_to_window(self, window_name):
+        """
+        切换到某个tab window(切换到某个窗口句柄)
+        :param window_name:
+        :return:
+        """
+        self.driver.switch_to_window(window_name=window_name)
+
+    @property
+    def current_url(self):
+        """
+        获取当前的url
+        :return:
+        """
+        return self.driver.current_url
+
+    @property
+    def page_source(self):
+        """
+        当前页面的html
+        :return:
+        """
+        return self.driver.page_source
+
+    @property
+    def current_window_handle(self) -> str:
+        """
+        获取当前窗口句柄name
+        :return:
+        """
+        return self.driver.current_window_handle
+
+    @property
+    def window_handles(self) -> list:
+        """
+        获取所有窗口句柄name list
+        :return:
+        """
+        return self.driver.window_handles
+
     def __del__(self):
         try:
             self.driver.quit()
@@ -532,3 +686,57 @@ class ChromeExtensioner(object):
             [ 'blocking' ]
         );
         '''.format(self.ip_pools_info['schema'], self.ip_pools_info['host'], self.ip_pools_info['port'], self.ip_pools_info['username'], self.ip_pools_info['password'])
+
+def test_fz_driver_obj():
+    """
+    TEST 测试driver对象
+    :return:
+    """
+    driver = None
+    try:
+        driver = BaseDriver(
+            type=FIREFOX,
+            executable_path=FIREFOX_DRIVER_PATH,
+            ip_pool_type=tri_ip_pool,
+            headless=False,
+            load_images=True,)
+        url = 'https://www.baidu.com'
+        driver.get_url_body(url=url)
+        search_input = driver.find_element(
+            by=By.CSS_SELECTOR,
+            value='input#kw')
+        print('search_input:{}'.format(search_input))
+
+        search_input.send_keys('阿发')
+        driver.find_element(
+            by=By.CSS_SELECTOR,
+            value='input#su').click()
+        driver.back()
+
+        old_window_handle = driver.current_window_handle
+        print('current_window_handle:{}'.format(old_window_handle))
+        print('window_handles:{}'.format(driver.window_handles))
+
+        # TODO driver新开窗口的方法, 通过执行js来新开一个窗口
+        new_tab_window_js = 'window.open("https://www.sogou.com")'
+        driver.execute_async_script(script=new_tab_window_js)
+        print('window_handles:{}'.format(driver.window_handles))
+
+        for window_handle in driver.window_handles:
+            # 轮询handle
+            print('switch to: {}'.format(window_handle))
+            driver.switch_to_window(window_name=window_handle)
+            print('current_window_handle: {}'.format(driver.current_window_handle))
+
+        sleep(10)
+
+    except Exception as e:
+        print(e)
+
+    finally:
+        try:
+            del driver
+        except:
+            pass
+
+# test_fz_driver_obj()
