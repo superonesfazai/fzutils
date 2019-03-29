@@ -78,7 +78,7 @@ class MyAiohttp(object):
         :param method:
         :param params:
         :param timeout:
-        :param num_retries:
+        :param num_retries: 常规使用都设置为1次
         :param high_conceal:
         :param data: post的data
         :param ip_pool_type:
@@ -149,8 +149,12 @@ class MyAiohttp(object):
         :param body:
         :return:
         '''
-        body = re.compile('\t|  |\r\n').sub('', body)
+        body = re.compile('\t|  ').sub('', body)
+        body = re.compile('\r\n').sub('', body)
         body = re.compile('\n').sub('', body)
+
+        body = re.compile('<ahref').sub('<a href', body)
+        body = re.compile('<strongtitle').sub('<strong title', body)
 
         return body
 

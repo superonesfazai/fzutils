@@ -4,6 +4,8 @@
 可迭代对象utils
 """
 
+# itemgetter 常用用法eg: sorted([{'index': 2}, {'index': 1}], key=itemgetter('index'))
+from operator import itemgetter
 from toolz.itertoolz import groupby
 
 __all__ = [

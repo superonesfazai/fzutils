@@ -180,6 +180,7 @@ class MyRequests(object):
         body = re.compile('\n').sub('', body)
 
         body = re.compile('<ahref').sub('<a href', body)
+        body = re.compile('<strongtitle').sub('<strong title', body)
 
         return body
 
