@@ -7,19 +7,28 @@
 @connect : superonesfazai@gmail.com
 '''
 
-import asyncio
-import aiohttp
 import re
-import gc
-
-from asyncio import get_event_loop
 from gc import collect
 
+from asyncio import (
+    get_event_loop,)
+from asyncio import wait as async_wait
+from asyncio import Queue as AsyncioQueue
+from aiohttp import (
+    TCPConnector,
+    ClientSession,)
+
 from ..ip_pools import (
-    MyIpPools,
+    IpPools,
     ip_proxy_pool,
     fz_ip_pool,)
 from ..internet_utils import get_random_pc_ua
+
+# from fzutils.ip_pools import (
+#     IpPools,
+#     ip_proxy_pool,
+#     fz_ip_pool,)
+# from fzutils.internet_utils import get_random_pc_ua
 
 __all__ = [
     'MyAiohttp',
@@ -29,20 +38,20 @@ __all__ = [
 class MyAiohttp(object):
     def __init__(self, ip_pool_type=ip_proxy_pool, max_tasks=10):
         super(MyAiohttp, self).__init__()
-        self.loop = asyncio.get_event_loop()
+        self.loop = get_event_loop()
         self.max_tasks = max_tasks                  # 接口请求进程数
-        self.queue = asyncio.Queue(loop=self.loop)  # 接口队列
+        self.queue = AsyncioQueue(loop=self.loop)   # 接口队列
         self.ip_pool_type = ip_pool_type
 
     @property
     def headers(self):
         return {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-            # 'Accept-Encoding:': 'gzip, deflate, br',
+            'Accept-Encoding:': 'gzip, deflate, br',
             'Accept-Language': 'zh-CN,zh;q=0.9',
             'Cache-Control': 'max-age=0',
             'Connection': 'keep-alive',
-            'Host': 'superonesfazai.github.io',
+            # 'Host': 'superonesfazai.github.io',
             'User-Agent': get_random_pc_ua(),
         }
 
@@ -62,18 +71,24 @@ class MyAiohttp(object):
                                proxy_auth=None,
                                allow_redirects=True,
                                proxy_headers=None,):
-        '''
+        """
         异步获取url的body(简略版)
-        # 注意timeout不是越长越好，测试发现10左右成功率较高
         :param url:
         :param headers:
+        :param method:
         :param params:
-        :param had_proxy:
-        :param num_retries: 出错重试次数
-        :param hign_conceal: ip是否高匿
+        :param timeout:
+        :param num_retries:
+        :param high_conceal:
         :param data: post的data
+        :param ip_pool_type:
+        :param verify_ssl:
+        :param use_dns_cache:
+        :param proxy_auth:
+        :param allow_redirects:
+        :param proxy_headers:
         :return:
-        '''
+        """
         proxy = await cls.get_proxy(ip_pool_type=ip_pool_type, high_conceal=high_conceal,)
         # print(proxy)
         if isinstance(proxy, bool):
@@ -82,11 +97,11 @@ class MyAiohttp(object):
                 return ''
 
         # 连接池不能太大, < 500
-        conn = aiohttp.TCPConnector(
+        conn = TCPConnector(
             verify_ssl=verify_ssl,
             limit=150,
             use_dns_cache=use_dns_cache,)
-        async with aiohttp.ClientSession(connector=conn) as session:
+        async with ClientSession(connector=conn) as session:
             try:
                 async with session.request(
                         method=method,
@@ -145,14 +160,13 @@ class MyAiohttp(object):
         异步获取proxy
         :return: 格式: 'http://ip:port'
         '''
-        # proxy = ip_object._get_random_proxy_ip()    # 失败返回False
-
         loop = get_event_loop()
         # 设置代理ip
-        ip_object = MyIpPools(type=ip_pool_type, high_conceal=high_conceal)
+        ip_object = IpPools(type=ip_pool_type, high_conceal=high_conceal)
         args = []
         proxy = False
         try:
+            # 失败返回False
             proxy = await loop.run_in_executor(None, ip_object._get_random_proxy_ip, *args)
             # print(proxy)
         except Exception:
@@ -171,7 +185,7 @@ class MyAiohttp(object):
 
         # 对比发现 总数 越大，aiohttp的效率就比requests更高(100个 aiohttp:35s, requests:43s)
         tasks = [self.loop.create_task(self.aio_get_url_body(url=url, headers=self.headers)) for _ in range(self.max_tasks)]
-        finished_job, unfinished_job = await asyncio.wait(tasks)  # tasks是待执行的异步函数的list eg:[hello(), hello(), ...] 进行并行执行
+        finished_job, unfinished_job = await async_wait(tasks)
         all_result = [r.result() for r in finished_job]
         # print(all_result)
 
@@ -179,7 +193,7 @@ class MyAiohttp(object):
 
     def __del__(self):
         self.loop.close()
-        gc.collect()
+        collect()
 
 class AioHttp(MyAiohttp):
     '''改名'''
@@ -187,8 +201,8 @@ class AioHttp(MyAiohttp):
 
 # if __name__ == '__main__':
 #     start_time = time.time()
-#     loop = asyncio.get_event_loop()
-#     my_aiohttp = MyAiohttp(max_tasks=1)
+#     loop = get_event_loop()
+#     my_aiohttp = Aiohttp(max_tasks=1)
 #     result = loop.run_until_complete(my_aiohttp.run())
 #     print(result)
 #     end_time = time.time()

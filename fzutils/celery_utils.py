@@ -34,7 +34,7 @@ def init_celery_app(name='proxy_tasks',
                     accept_content=None,
                     task_serializer='pickle',
                     result_serializer='pickle',
-                    celeryd_max_tasks_per_child=500,
+                    celeryd_max_tasks_per_child=200,
                     result_expires=60*60,
                     task_soft_time_limit=None,
                     task_time_limit=None,
@@ -50,7 +50,7 @@ def init_celery_app(name='proxy_tasks',
     :param accept_content: 允许的内容类型/序列化的白名单, 默认: ['json',]
     :param task_serializer: 标识要使用的默认序列化方法的字符串(自4.0起:默认为'json', 早期为:'pickle')('pickle'是一种Python特有的自描述的数据编码, 可序列化自定义对象)
     :param result_serializer: 标识结果序列化的格式(自4.0起:默认为'json', 早期为:'pickle')
-    :param celeryd_max_tasks_per_child:
+    :param celeryd_max_tasks_per_child: 表示每个工作的进程／线程／绿程 在执行 n 次任务后，主动销毁，之后会起一个新的。主要解决一些资源释放的问题。
     :param result_expires: 存储的任务结果在过期后会被删除, 单位s, 默认值: 1天
     :param task_soft_time_limit: 任务软时间限制, 单位s, celery执行任务时, 超过软时间限制, 就在任务中抛出SoftTimeLimitExceeded(from celery.exceptions import SoftTimeLimitExceeded)
     :param task_time_limit: 任务困难时间限制, 单位s, 处理任务的worker将被杀死并在超出此任务时替换为新任务, 实际在task运用: eg: @app.task(time_soft_limit=60, time_limit=120, rate_limit='200/m')
