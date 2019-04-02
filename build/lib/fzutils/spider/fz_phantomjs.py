@@ -46,7 +46,7 @@ from selenium.common.exceptions import (
 from scrapy.selector import Selector
 
 import re
-import gc
+from gc import collect
 from time import sleep
 import os
 import shutil
@@ -568,7 +568,7 @@ class MyPhantomjs(object):
             del self.lg
         except:
             pass
-        gc.collect()
+        collect()
 
 class BaseDriver(MyPhantomjs):
     '''改名'''

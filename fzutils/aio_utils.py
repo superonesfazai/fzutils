@@ -138,7 +138,7 @@ async def unblock_request(url,
                           proxies=None,
                           proxy_type=PROXY_TYPE_HTTP,
                           logger=None) -> str:
-    '''
+    """
     非阻塞的request请求
     :param url:
     :param use_proxy:
@@ -158,10 +158,11 @@ async def unblock_request(url,
     :param get_session:
     :param proxies:
     :param proxy_type:
+    :param logger:
     :return:
-    '''
+    """
     async def _get_args() -> list:
-        '''获取args'''
+        """获取args"""
         return [
             url,
             use_proxy,
