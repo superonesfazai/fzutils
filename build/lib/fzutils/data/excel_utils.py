@@ -12,6 +12,7 @@ from pyexcel import iget_records
 from os.path import exists
 from asyncio import get_event_loop
 from gc import collect
+from time import time
 
 from ..common_utils import _print
 
@@ -32,10 +33,17 @@ def read_info_from_excel_file(excel_file_path) -> list:
 
     else:
         data = iget_records(file_name=excel_file_path)  # row a OrderedDict object
+        added_excel_row_num = 1
+        s_time = time()
         for index, row in enumerate(data):
-            row = dict(row)     # eg: {'关键词': '连衣裙', '一级类目': '女装/女士精品', '二级类目': '连衣裙', '三级类目': ''}
+            row = dict(row)  # eg: {'关键词': '连衣裙', '一级类目': '女装/女士精品', '二级类目': '连衣裙', '三级类目': ''}
             # print(row)
             result.append(row)
+            print('\r--->>> added_excel_row_num: {}'.format(added_excel_row_num), end='', flush=True)
+            added_excel_row_num += 1
+
+        time_consume = time() - s_time
+        print('\n执行完毕! 此次耗时 {} s!'.format(round(float(time_consume), 3)))
 
     return result
 

@@ -17,6 +17,7 @@ __all__ = [
     'u2_page_back',                     # u2的页面返回
     'u2_get_device_display_h_and_w',    # u2获取设备的高跟宽
     'u2_get_some_ele_height',           # u2得到某一个ele块的height
+    'u2_up_swipe_some_height',          # u2上滑某个高度
 ]
 
 async def u2_page_back(d, back_num=1):
@@ -52,3 +53,13 @@ async def u2_get_some_ele_height(ele):
     """
     return ele.info.get('bounds', {}).get('bottom') \
            - ele.info.get('bounds', {}).get('top')
+
+async def u2_up_swipe_some_height(d, swipe_height, base_height=.1) -> None:
+    """
+    u2 上滑某个高度
+    :param d:
+    :param height:
+    :param base_height:
+    :return:
+    """
+    d.swipe(0., base_height + swipe_height, 0., base_height)
