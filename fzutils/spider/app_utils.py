@@ -10,6 +10,10 @@
 app utils
 """
 
+from gc import collect
+from asyncio import get_event_loop
+
+from ..common_utils import _print
 from ..spider.async_always import async_sleep
 
 __all__ = [
@@ -18,6 +22,7 @@ __all__ = [
     'u2_get_device_display_h_and_w',    # u2获取设备的高跟宽
     'u2_get_some_ele_height',           # u2得到某一个ele块的height
     'u2_up_swipe_some_height',          # u2上滑某个高度
+    'async_get_u2_ele_info',            # 异步获取u2 ele 的info
 ]
 
 async def u2_page_back(d, back_num=1):
@@ -63,3 +68,38 @@ async def u2_up_swipe_some_height(d, swipe_height, base_height=.1) -> None:
     :return:
     """
     d.swipe(0., base_height + swipe_height, 0., base_height)
+
+async def async_get_u2_ele_info(ele, logger=None) -> tuple:
+    """
+    异步获取ele 的info
+    :param ele: UiObject [from uiautomator2.session import UiObject]
+    :return: (ele, ele_info)
+    """
+    async def _get_args() -> list:
+        '''获取args'''
+        return [
+            ele,
+        ]
+
+    def _get_ele_info(ele) -> dict:
+        return ele.info
+
+    loop = get_event_loop()
+    args = await _get_args()
+    ele_info = {}
+    try:
+        ele_info = await loop.run_in_executor(None, _get_ele_info, *args)
+        # print('*' * 50)
+        # print(ele_info)
+    except Exception as e:
+        _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
+    finally:
+        # loop.close()
+        try:
+            del loop
+        except:
+            pass
+        _print(msg='[{}] ele: {}'.format('+' if ele_info != {} else '-', ele))
+        collect()
+
+        return ele, ele_info
