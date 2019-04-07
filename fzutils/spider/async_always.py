@@ -42,8 +42,9 @@ from asyncio import (
 )
 from asyncio import sleep as async_sleep
 from asyncio import Lock as AsyncLock
-from async_timeout import timeout as async_timeout
 from asyncio import TimeoutError as AsyncTimeoutError
+# 原生超时设置
+from asyncio import wait_for as async_wait_for
 from uvloop import EventLoopPolicy
 
 from ..ip_pools import *

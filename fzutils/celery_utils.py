@@ -79,7 +79,7 @@ def init_celery_app(name='proxy_tasks',
 
     return app
 
-def block_get_celery_async_results(tasks:list) -> list:
+def block_get_celery_async_results(tasks:list, r_timeout=2.5) -> list:
     """
     得到celery worker的处理结果集合
     :param tasks: celery的tasks任务对象集
@@ -93,7 +93,7 @@ def block_get_celery_async_results(tasks:list) -> list:
             try:
                 if r.ready():
                     try:
-                        all.append(r.get(timeout=2, propagate=False))
+                        all.append(r.get(timeout=r_timeout, propagate=False))
                         print('\r--->>> success_num: {}'.format(success_num), end='', flush=True)
                     except TimeoutError:
                         pass
@@ -116,13 +116,25 @@ def block_get_celery_async_results(tasks:list) -> list:
 
     return all
 
-async def _get_celery_async_results(tasks:list) -> list:
+async def _get_celery_async_results(tasks:list, r_timeout=2.5) -> list:
     '''
     得到celery worker的处理结果集合
+        该函数超时可用 from asyncio import wait_for as async_wait_for来处理协程超时, 并捕获后续异常!(超时后协程会被取消，导致无结果!!)
+        eg:
+            async def run():
+                await async_sleep(3)
+
+            # 原生超时
+            try:
+                res = await async_wait_for(run(), timeout=2)
+            except AsyncTimeoutError as e:
+                print(e)
+
     :param tasks: celery的tasks任务对象集
+    :param r_timeout:
     :return:
     '''
-    return block_get_celery_async_results(tasks=tasks)
+    return block_get_celery_async_results(tasks=tasks, r_timeout=r_timeout)
 
 def get_current_all_celery_handled_results_list(one_res, logger=None) -> list:
     """
