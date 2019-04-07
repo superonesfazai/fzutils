@@ -15,6 +15,7 @@ from celery import Celery
 from celery.utils.log import get_task_logger
 
 from .common_utils import _print
+from .time_utils import fz_set_timeout
 
 __all__ = [
     'init_celery_app',                              # 初始化一个celery对象
@@ -79,44 +80,57 @@ def init_celery_app(name='proxy_tasks',
 
     return app
 
-def block_get_celery_async_results(tasks:list, r_timeout=2.5) -> list:
+def block_get_celery_async_results(tasks:list, r_timeout=2.5, func_timeout=30 * 60) -> list:
     """
     得到celery worker的处理结果集合
     :param tasks: celery的tasks任务对象集
+    :param r_timeout:
+    :param func_timeout: 函数执行超时时间, 单位秒
     :return:
     """
-    all = []
-    success_num = 1
-    s_time = time()
-    while len(tasks) > 0:
-        for r_index, r in enumerate(tasks):
-            try:
-                if r.ready():
-                    try:
-                        all.append(r.get(timeout=r_timeout, propagate=False))
-                        print('\r--->>> success_num: {}'.format(success_num), end='', flush=True)
-                    except TimeoutError:
+    @fz_set_timeout(seconds=func_timeout)
+    def get_res(tasks) -> list:
+        """获取结果"""
+        all = []
+        success_num = 1
+        while len(tasks) > 0:
+            for r_index, r in enumerate(tasks):
+                try:
+                    if r.ready():
+                        try:
+                            all.append(r.get(timeout=r_timeout, propagate=False))
+                            print('\r--->>> success_num: {}'.format(success_num), end='', flush=True)
+                        except TimeoutError:
+                            pass
+                        success_num += 1
+                        try:
+                            tasks.pop(r_index)
+                        except:
+                            pass
+                    else:
                         pass
-                    success_num += 1
-                    try:
-                        tasks.pop(r_index)
-                    except:
-                        pass
-                else:
-                    pass
-            except Exception as e:
-                # redis.exceptions.TimeoutError: Timeout reading from socket
-                print(e)
-                return []
+                except Exception as e:
+                    # redis.exceptions.TimeoutError: Timeout reading from socket
+                    print(e)
+                    return []
+        else:
+            pass
 
-    else:
-        pass
+        return all
+
+    s_time = time()
+    try:
+        all = get_res(tasks=tasks)
+    except Exception as e:
+        print(e)
+        return []
+
     time_consume = time() - s_time
     print('\n执行完毕! 此次耗时 {} s!'.format(round(float(time_consume), 3)))
 
     return all
 
-async def _get_celery_async_results(tasks:list, r_timeout=2.5) -> list:
+async def _get_celery_async_results(tasks:list, r_timeout=2.5, func_timeout=30 * 60) -> list:
     '''
     得到celery worker的处理结果集合
         该函数超时可用 from asyncio import wait_for as async_wait_for来处理协程超时, 并捕获后续异常!(超时后协程会被取消，导致无结果!!)
@@ -130,11 +144,17 @@ async def _get_celery_async_results(tasks:list, r_timeout=2.5) -> list:
             except AsyncTimeoutError as e:
                 print(e)
 
+        或者直接设置_get_celery_async_results 的func_timeout超时时长
+
     :param tasks: celery的tasks任务对象集
     :param r_timeout:
+    :param func_timeout:
     :return:
     '''
-    return block_get_celery_async_results(tasks=tasks, r_timeout=r_timeout)
+    return block_get_celery_async_results(
+        tasks=tasks,
+        r_timeout=r_timeout,
+        func_timeout=func_timeout,)
 
 def get_current_all_celery_handled_results_list(one_res, logger=None) -> list:
     """
