@@ -8,12 +8,10 @@
 '''
 
 install_requires = [
-    'ipython',
     'wheel',
     'utils',
     'db',
-    'greenlet==0.4.14',     # 之前0.4.13, 改成0.4.14(gevent依靠)
-    'pytz',
+    'pytz',                 # 时间国际化
     'pysocks',              # requests 进行socks代理必备!
     'requests',
     'requests_oauthlib',
@@ -24,16 +22,17 @@ install_requires = [
     'pyexecjs',
     'setuptools',
     'colorama',
-    'twine',
+    'twine',                # 用于在PYPI上发布python包
     'numpy',
     'pprint',
     'chardet',
-    'bs4',
+    'bs4',                  # 页面解析, 但解析速度较慢! [doc](https://www.crummy.com/software/BeautifulSoup/bs4/doc/index.zh.html)
     'scrapy',
     'demjson',
-    'gevent',
+    'greenlet==0.4.14',     # 之前0.4.13, 改成0.4.14(gevent依靠)
+    'gevent',               # celery改变单个worker并发量必备库(运行模式:gevent)
     'aiohttp',
-    'eventlet',             # celery改变单个worker并发量必备库
+    'eventlet',             # celery改变单个worker并发量必备库(运行模式:eventlet)
     'celery',
     'flower',               # web工具，用于监视和管理celery集群。
     'jsonpath',
@@ -56,7 +55,6 @@ install_requires = [
     'elasticsearch_dsl',
     'salt',                 # 为大规模复杂系统管理提供软件, 同步控制百万台服务器
     'pika',                 # rabbitmq客户端库
-    'items',
     'scapy',                # 功能强大的基于Python的交互式数据包操作程序和库
     'scapy-http',
     'baidu-aip',
@@ -83,6 +81,7 @@ install_requires = [
     'mongoengine',          # mongo engine
 
     # TODO 减少依赖
+    # 'ipython',
     # 'stem',                 # 操作tor
     # 'jupyter',
     # 'ipywidgets',           # jupyter笔记本和ipython内核的交互式HTML小部件
@@ -103,4 +102,6 @@ install_requires = [
     # 'bokeh',                # 一个用于Python的交互式可视化库，可在现代Web浏览器中实现美观且有意义的数据可视化呈现
     # 'requests-html',        # requests的html解析器 for human, 但是必须python >= 3.6
     # 'pycurl==7.43.0.1',
+    # 'glances',              # 跨平台监控工具
+    # 'items',
 ]
