@@ -25,6 +25,7 @@ __all__ = [
 
     'fz_timer',                                     # 一个装饰器或者上下文管理器, 用于计算某函数耗时
     'fz_set_timeout',                               # 可以给任意可能会hang住的函数添加超时功能[这个功能在编写外部API调用, 网络爬虫, 数据库查询的时候特别有用]
+    'func_time',                                    # 计算函数耗时
 ]
 
 def get_shanghai_time(retries=10):
@@ -176,3 +177,16 @@ def date_parse(target_date_str) -> datetime:
     from dateutil.parser import parse
 
     return parse(target_date_str)
+
+def func_time(func):
+    """
+    计算函数耗时
+    :param func:
+    :return:
+    """
+    def _wrapper(*args,**kwargs):
+        start_time = time.time()
+        func(*args, **kwargs)
+        print('func_name: {}, spent time: {}s'.format(func.__name__, time.time() - start_time))
+
+    return _wrapper
