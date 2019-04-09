@@ -46,6 +46,8 @@ from asyncio import TimeoutError as AsyncTimeoutError
 # 原生超时设置
 from asyncio import wait_for as async_wait_for
 from uvloop import EventLoopPolicy
+# with ThreadPoolExecutor(max_workers=10) as executor:
+from concurrent.futures import ThreadPoolExecutor
 
 from ..ip_pools import *
 from ..internet_utils import *
