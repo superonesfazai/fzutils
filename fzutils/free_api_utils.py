@@ -24,6 +24,7 @@ __all__ = [
     'get_phone_num_info',                                       # 获取手机号信息
     'get_baidu_baike_info',                                     # 获取某关键字的百度百科信息
     'get_bd_map_shop_info_list_by_keyword_and_area_name',       # 根据关键字和区域检索店铺信息(百度api 关键字搜索服务)[测试最多前400个]
+    'get_gd_map_shop_info_list_by_keyword_and_area_name',       # 根据关键字和区域检索店铺信息(高德api 关键字搜索服务)
 ]
 
 def get_jd_one_goods_price_info(goods_id) -> list:
@@ -124,7 +125,7 @@ def get_bd_map_shop_info_list_by_keyword_and_area_name(ak:str,
     :param ak: 百度地图申请的ak
     :param keyword: eg: '鞋子'
     :param area_name: eg: '杭州' 待搜索的区域, 多为省份, 城市, 具体区域
-    :param page_num: start 1
+    :param page_num: start 1, 最大20
     :param page_size: 固定
     :param ip_pool_type:
     :param num_retries:
@@ -160,6 +161,71 @@ def get_bd_map_shop_info_list_by_keyword_and_area_name(ak:str,
     data = json_2_dict(
         json_str=body,
         default_res={}, ).get('results', [])
+    # pprint(data)
+
+    return data
+
+def get_gd_map_shop_info_list_by_keyword_and_area_name(gd_key:str,
+                                                       keyword:str,
+                                                       area_name:str,
+                                                       page_num: int,
+                                                       page_size: int=20,
+                                                       use_proxy=True,
+                                                       ip_pool_type=tri_ip_pool,
+                                                       num_retries=6,
+                                                       timeout=20,
+                                                       children=0,
+                                                       extensions='all',
+                                                       poi_type='',) -> list:
+    """
+    根据关键字和区域检索店铺信息(高德api 关键字搜索服务)
+    :param gd_key: 申请的key
+    :param keyword: 关键字 eg: '鞋子'
+    :param area_name: eg: '杭州' 待搜索的区域, 城市名
+    :param page_num: 最大翻页数100
+    :param page_size: 默认值'20'
+    :param use_proxy:
+    :param ip_pool_type:
+    :param num_retries:
+    :param timeout:
+    :param children: 按照层级展示子POI数据, 取值0 or 1
+    :param extensions: 返回结果控制
+    :param poi_type: 查询POI类型, eg: '061205', 可默认为空值!
+    :return:
+    """
+    headers = {
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': get_random_pc_ua(),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    }
+    params = (
+        ('key', str(gd_key)),
+        ('keywords', str(keyword)),
+        ('types', str(poi_type)),
+        ('city', str(area_name)),
+        ('citylimit', 'true'),
+        ('children', str(children)),
+        ('offset', str(page_size)),
+        ('page', str(page_num)),
+        ('extensions', str(extensions)),
+    )
+    url = 'http://restapi.amap.com/v3/place/text'
+    body = Requests.get_url_body(
+        use_proxy=use_proxy,
+        url=url,
+        headers=headers,
+        params=params,
+        ip_pool_type=ip_pool_type,
+        timeout=timeout,
+        num_retries=num_retries,)
+    # print(body)
+    data = json_2_dict(
+        json_str=body,
+        default_res={},).get('pois', [])
     # pprint(data)
 
     return data
