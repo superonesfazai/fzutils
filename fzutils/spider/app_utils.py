@@ -12,17 +12,21 @@ app utils
 
 from gc import collect
 from asyncio import get_event_loop
+from pprint import pprint
 
 from ..common_utils import _print
 from ..spider.async_always import async_sleep
 
 __all__ = [
     # atx
-    'u2_page_back',                     # u2的页面返回
-    'u2_get_device_display_h_and_w',    # u2获取设备的高跟宽
-    'u2_get_some_ele_height',           # u2得到某一个ele块的height
-    'u2_up_swipe_some_height',          # u2上滑某个高度
-    'async_get_u2_ele_info',            # 异步获取u2 ele 的info
+    'u2_page_back',                                 # u2的页面返回
+    'u2_get_device_display_h_and_w',                # u2获取设备的高跟宽
+    'u2_get_some_ele_height',                       # u2得到某一个ele块的height
+    'u2_up_swipe_some_height',                      # u2上滑某个高度
+    'async_get_u2_ele_info',                        # 异步获取u2 ele 的info
+
+    # mitmproxy
+    'get_mitm_flow_request_headers_user_agent',     # 获取flow.request.headers的user_agent
 ]
 
 async def u2_page_back(d, back_num=1):
@@ -99,7 +103,35 @@ async def async_get_u2_ele_info(ele, logger=None) -> tuple:
             del loop
         except:
             pass
-        _print(msg='[{}] ele: {}'.format('+' if ele_info != {} else '-', ele))
+        _print(
+            msg='[{}] ele: {}'.format('+' if ele_info != {} else '-', ele),
+            logger=logger,)
         collect()
 
         return ele, ele_info
+
+def get_mitm_flow_request_headers_user_agent(headers, logger=None) -> str:
+    """
+    获取flow.request.headers的user_agent
+    :param headers: flow.request.headers obj
+    :return:
+    """
+    user_agent = ''
+    try:
+        headers = dict(headers)
+        # pprint(headers)
+        for key, value in headers.items():
+            if key == 'user-agent':
+                user_agent = value
+                break
+            else:
+                continue
+        assert user_agent != '', 'user_agent不为空str!'
+    except Exception as e:
+        _print(
+            msg='遇到错误',
+            logger=logger,
+            exception=e,
+            log_level=2)
+
+    return user_agent

@@ -46,6 +46,7 @@ class Crawler(object):
                  log_print=False,
                  logger=None,
                  log_save_path=None,
+                 logger_name='my_logger:' + get_uuid1(),
                  
                  # driver设置
                  is_use_driver=False,
@@ -55,14 +56,21 @@ class Crawler(object):
                  headless=False,
                  driver_obj=None,
                  driver_cookies=None,):
-        '''
+        """
         :param ip_pool_type: 使用ip池的类型
         :param user_agent_type:
         :param log_print: bool 打印类型是否为log/sys.stdout.write
+        :param logger:
         :param log_save_path: log文件的保存路径
+        :param logger_name:
         :param is_use_driver: 是否使用驱动
         :param driver_executable_path: 驱动path
-        '''
+        :param driver_type:
+        :param driver_load_images:
+        :param headless:
+        :param driver_obj:
+        :param driver_cookies:
+        """
         super(Crawler, self).__init__()
         self.ip_pool_type = ip_pool_type
         self.user_agent_type = user_agent_type
@@ -71,7 +79,9 @@ class Crawler(object):
         self.lg = logger
         if log_print:
             self.log_save_path = log_save_path
+            self.logger_name = logger_name
             self._set_logger()
+
         if is_use_driver:
             self.is_use_driver = is_use_driver
             # TODO 名字统一都为self.driver, 避免内存释放错误
@@ -104,6 +114,7 @@ class Crawler(object):
         :return:
         '''
         self.lg = set_logger(
+            logger_name=self.logger_name,
             log_file_name=self.log_save_path + str(get_shanghai_time())[0:10] + '.txt',
             console_log_level=INFO,
             file_log_level=ERROR
@@ -148,7 +159,10 @@ class AsyncCrawler(Crawler):
         :param logger:
         :param log_save_path: 日志存储路径
         '''
-        Crawler.__init__(self, *params, **kwargs)
+        Crawler.__init__(
+            self,
+            *params,
+            **kwargs)
         self.loop = get_event_loop()
         self.concurrency = 9            # 控制并发量
 

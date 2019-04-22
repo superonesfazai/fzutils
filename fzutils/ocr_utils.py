@@ -10,6 +10,8 @@
 光学识别
 """
 
+# mac
+# $ brew install opencv
 from cv2 import (
     imread,
     cvtColor,

@@ -12,6 +12,7 @@ install_requires = [
     'utils',
     'db',
     'pytz',                 # 时间国际化
+    'python-dateutil',
     'pysocks',              # requests 进行socks代理必备!
     'requests',
     'requests_oauthlib',
@@ -29,13 +30,12 @@ install_requires = [
     'bs4',                  # 页面解析, 但解析速度较慢! [doc](https://www.crummy.com/software/BeautifulSoup/bs4/doc/index.zh.html)
     'scrapy',
     'demjson',
+    'jsonpath',
     'greenlet==0.4.14',     # 之前0.4.13, 改成0.4.14(gevent依靠)
     'gevent',               # celery改变单个worker并发量必备库(运行模式:gevent)
     'aiohttp',
-    'eventlet',             # celery改变单个worker并发量必备库(运行模式:eventlet)
     'celery',
     'flower',               # web工具，用于监视和管理celery集群。
-    'jsonpath',
     'flask',
     'flask_login',
     'mitmproxy',            # shell 抓包代理
@@ -58,19 +58,17 @@ install_requires = [
     'scapy',                # 功能强大的基于Python的交互式数据包操作程序和库
     'scapy-http',
     'baidu-aip',
-    'pytesseract',
-    'scrapy-splash',
-    'opencv-python',
+    'scrapy-splash',        # splash是一个JavaScript渲染服务，是一个带有HTTP API的轻量浏览器
+    'opencv-python',        # import cv2
     'twilio',               # 免费发短信
     'fonttools',            # 用于操作字体的库, eg:爬虫中字形识别
     'xmltodict',
-    'python-dateutil',
     'ftfy',                 # 超级强大的unicode文本工具
     'tenacity',             # 强大的python重试库
     'pyzbar',               # 二维码识别库, 安装前提:(ubuntu: sudo apt-get install libzbar-dev | mac: brew install zbar)
     'termcolor',            # shell颜色化输出
     'pypinyin',             # 汉字转拼音包
-    'bitarray',             # bloom 需要
+    'bitarray',             # bloom filter需要
     'click',                # shell交互
 
     # db
@@ -104,4 +102,6 @@ install_requires = [
     # 'pycurl==7.43.0.1',
     # 'glances',              # 跨平台监控工具
     # 'items',
+    # 'eventlet',             # celery改变单个worker并发量必备库(运行模式:eventlet)
+    # 'pytesseract',          # 图像识别
 ]

@@ -13,14 +13,17 @@
 from pprint import pprint
 import re
 
+from .ip_pools import tri_ip_pool
 from .spider.fz_requests import Requests
 from .common_utils import json_2_dict
+from .internet_utils import get_random_pc_ua
 
 __all__ = [
-    'get_jd_one_goods_price_info',          # 获取京东单个商品价格
-    'get_express_info',                     # 获取快递信息
-    'get_phone_num_info',                   # 获取手机号信息
-    'get_baidu_baike_info',                 # 获取某关键字的百度百科信息
+    'get_jd_one_goods_price_info',                              # 获取京东单个商品价格
+    'get_express_info',                                         # 获取快递信息
+    'get_phone_num_info',                                       # 获取手机号信息
+    'get_baidu_baike_info',                                     # 获取某关键字的百度百科信息
+    'get_bd_map_shop_info_list_by_keyword_and_area_name',       # 根据关键字和区域检索店铺信息(百度api 关键字搜索服务)[测试最多前400个]
 ]
 
 def get_jd_one_goods_price_info(goods_id) -> list:
@@ -100,6 +103,63 @@ def get_baidu_baike_info(keyword, bk_length=1000) -> dict:
         ('bk_key', str(keyword)),
         ('bk_length', str(bk_length)),
     )
-    body = Requests.get_url_body(url=url, params=params, use_proxy=False)
+    body = Requests.get_url_body(
+        url=url,
+        params=params,
+        use_proxy=False)
 
     return json_2_dict(body)
+
+def get_bd_map_shop_info_list_by_keyword_and_area_name(ak:str,
+                                                       keyword:str,
+                                                       area_name:str,
+                                                       page_num:int,
+                                                       page_size:int=20,
+                                                       use_proxy=True,
+                                                       ip_pool_type=tri_ip_pool,
+                                                       num_retries=6,
+                                                       timeout=20,) -> list:
+    """
+    根据关键字和区域检索店铺信息(百度api 关键字搜索服务)[测试最多前400个]
+    :param ak: 百度地图申请的ak
+    :param keyword: eg: '鞋子'
+    :param area_name: eg: '杭州' 待搜索的区域, 多为省份, 城市, 具体区域
+    :param page_num: start 1
+    :param page_size: 固定
+    :param ip_pool_type:
+    :param num_retries:
+    :return:
+    """
+    headers = {
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': get_random_pc_ua(),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    }
+    params = (
+        ('query', str(keyword)),
+        ('region', str(area_name)),
+        ('output', 'json'),
+        ('ak', str(ak)),
+        ('page_num', str(page_num)),
+        ('page_size', str(page_size)),
+    )
+    url = 'http://api.map.baidu.com/place/v2/search'
+    body = Requests.get_url_body(
+        url=url,
+        headers=headers,
+        params=params,
+        use_proxy=use_proxy,
+        ip_pool_type=ip_pool_type,
+        num_retries=num_retries,
+        timeout=timeout,)
+    # print(body)
+    data = json_2_dict(
+        json_str=body,
+        default_res={}, ).get('results', [])
+    # pprint(data)
+
+    return data
