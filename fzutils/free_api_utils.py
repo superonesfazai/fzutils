@@ -13,18 +13,29 @@
 from pprint import pprint
 import re
 
+# from fzutils.ip_pools import tri_ip_pool
+# from fzutils.spider.fz_requests import Requests
+# from fzutils.common_utils import json_2_dict
+# from fzutils.internet_utils import (
+#     get_base_headers,)
+
 from .ip_pools import tri_ip_pool
 from .spider.fz_requests import Requests
 from .common_utils import json_2_dict
-from .internet_utils import get_random_pc_ua
+from .internet_utils import (
+    get_base_headers,)
 
 __all__ = [
     'get_jd_one_goods_price_info',                              # 获取京东单个商品价格
     'get_express_info',                                         # 获取快递信息
     'get_phone_num_info',                                       # 获取手机号信息
     'get_baidu_baike_info',                                     # 获取某关键字的百度百科信息
+
+    # map
     'get_bd_map_shop_info_list_by_keyword_and_area_name',       # 根据关键字和区域检索店铺信息(百度api 关键字搜索服务)[测试最多前400个]
     'get_gd_map_shop_info_list_by_keyword_and_area_name',       # 根据关键字和区域检索店铺信息(高德api 关键字搜索服务)
+    'get_gd_input_prompt_info',                                 # 根据关键字和城市名获取输入提示(高德api)
+    'get_gd_reverse_geocode_info',                              # 根据地址str获取逆向地理编码(高德api)
 ]
 
 def get_jd_one_goods_price_info(goods_id) -> list:
@@ -119,7 +130,8 @@ def get_bd_map_shop_info_list_by_keyword_and_area_name(ak:str,
                                                        use_proxy=True,
                                                        ip_pool_type=tri_ip_pool,
                                                        num_retries=6,
-                                                       timeout=20,) -> list:
+                                                       timeout=20,
+                                                       logger=None,) -> list:
     """
     根据关键字和区域检索店铺信息(百度api 关键字搜索服务)[测试最多前400个]
     :param ak: 百度地图申请的ak
@@ -131,15 +143,14 @@ def get_bd_map_shop_info_list_by_keyword_and_area_name(ak:str,
     :param num_retries:
     :return:
     """
-    headers = {
+    headers = get_base_headers()
+    headers.update({
         'Connection': 'keep-alive',
         'Cache-Control': 'max-age=0',
         'Upgrade-Insecure-Requests': '1',
-        'User-Agent': get_random_pc_ua(),
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-    }
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    })
     params = (
         ('query', str(keyword)),
         ('region', str(area_name)),
@@ -160,7 +171,8 @@ def get_bd_map_shop_info_list_by_keyword_and_area_name(ak:str,
     # print(body)
     data = json_2_dict(
         json_str=body,
-        default_res={}, ).get('results', [])
+        default_res={},
+        logger=logger,).get('results', [])
     # pprint(data)
 
     return data
@@ -176,7 +188,8 @@ def get_gd_map_shop_info_list_by_keyword_and_area_name(gd_key:str,
                                                        timeout=20,
                                                        children=0,
                                                        extensions='all',
-                                                       poi_type='',) -> list:
+                                                       poi_type='',
+                                                       logger=None,) -> list:
     """
     根据关键字和区域检索店铺信息(高德api 关键字搜索服务)
     :param gd_key: 申请的key
@@ -193,15 +206,14 @@ def get_gd_map_shop_info_list_by_keyword_and_area_name(gd_key:str,
     :param poi_type: 查询POI类型, eg: '061205', 可默认为空值!
     :return:
     """
-    headers = {
+    headers = get_base_headers()
+    headers.update({
         'Connection': 'keep-alive',
         'Cache-Control': 'max-age=0',
         'Upgrade-Insecure-Requests': '1',
-        'User-Agent': get_random_pc_ua(),
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-    }
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    })
     params = (
         ('key', str(gd_key)),
         ('keywords', str(keyword)),
@@ -225,7 +237,114 @@ def get_gd_map_shop_info_list_by_keyword_and_area_name(gd_key:str,
     # print(body)
     data = json_2_dict(
         json_str=body,
-        default_res={},).get('pois', [])
+        default_res={},
+        logger=logger,).get('pois', [])
+    # pprint(data)
+
+    return data
+
+def get_gd_input_prompt_info(gd_key:str,
+                             keyword,
+                             city_name:str,
+                             poi_type='',
+                             lng:float=0.,
+                             lat:float=0.,
+                             ip_pool_type=tri_ip_pool,
+                             num_retries=6,
+                             timeout=20,
+                             use_proxy=True,
+                             logger=None,) -> list:
+    """
+    根据关键字和城市名获取输入提示(高德api)
+    :param gd_key: 申请的key
+    :param keyword: eg: '美食'
+    :param city_name: eg: '杭州'
+    :param poi_type: eg: '050301'
+    :param lng:
+    :param lat:
+    :return:
+    """
+    headers = get_base_headers()
+    headers.update({
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        'Upgrade-Insecure-Requests': '1',
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    })
+    # eg: '116.481488,39.990464' 经纬度
+    location = ','.join([str(lng), str(lat)]) if lng != 0. or lat != 0. else ''
+    params = (
+        ('key', str(gd_key)),
+        ('keywords', str(keyword)),
+        ('type', poi_type),
+        ('location', location),
+        ('city', str(city_name)),
+        ('datatype', 'all'),
+    )
+    url= 'https://restapi.amap.com/v3/assistant/inputtips'
+    body = Requests.get_url_body(
+        use_proxy=use_proxy,
+        url=url,
+        headers=headers,
+        params=params,
+        ip_pool_type=ip_pool_type,
+        timeout=timeout,
+        num_retries=num_retries,)
+    # print(body)
+    data = json_2_dict(
+        json_str=body,
+        logger=logger,).get('tips', [])
+    # pprint(data)
+
+    return data
+
+def get_gd_reverse_geocode_info(gd_key:str,
+                                address:str,
+                                city_name:str,
+                                ip_pool_type=tri_ip_pool,
+                                num_retries=6,
+                                timeout=20,
+                                use_proxy=True,
+                                logger=None,) -> list:
+    """
+    根据地址str获取逆向地理编码(高德api)
+    :param gd_key:
+    :param address: eg: '方恒国际中心A座'
+    :param city_name: eg: '北京'
+    :param ip_pool_type:
+    :param num_retries:
+    :param timeout:
+    :param use_proxy:
+    :param logger:
+    :return:
+    """
+    headers = get_base_headers()
+    headers.update({
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        'Upgrade-Insecure-Requests': '1',
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    })
+    params = (
+        ('key', str(gd_key)),
+        ('address', str(address)),
+        ('city', str(city_name)),
+    )
+    url= 'https://restapi.amap.com/v3/geocode/geo'
+    body = Requests.get_url_body(
+        use_proxy=use_proxy,
+        url=url,
+        headers=headers,
+        params=params,
+        ip_pool_type=ip_pool_type,
+        timeout=timeout,
+        num_retries=num_retries,)
+    # print(body)
+    data = json_2_dict(
+        json_str=body,
+        logger=logger,).get('geocodes', [])
     # pprint(data)
 
     return data
