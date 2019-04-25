@@ -11,7 +11,6 @@ sms utils
 """
 
 from requests import post
-from twilio.rest import Client
 
 from .internet_utils import (
     get_base_headers,)
@@ -35,9 +34,15 @@ def sms_2_somebody_by_twilio(account_sid,
     :param auth_token:
     :return:
     '''
+    TwilioClinet = None
+    try:
+        from twilio.rest import Client as TwilioClinet
+    except ImportError:
+        print('ImportError: 不能导入twilio包, 可能未安装!!')
+
     res = False
     try:
-        client = Client(account_sid, auth_token)
+        client = TwilioClinet(account_sid, auth_token)
 
         message = client.messages.create(
             to="+{}".format(to),

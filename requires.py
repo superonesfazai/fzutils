@@ -22,8 +22,6 @@ install_requires = [
     'psutil',
     'pyexecjs',
     'setuptools',
-    'colorama',
-    'twine',                # 用于在PYPI上发布python包
     'numpy',
     'pprint',
     'chardet',
@@ -60,7 +58,6 @@ install_requires = [
     'baidu-aip',
     'scrapy-splash',        # splash是一个JavaScript渲染服务，是一个带有HTTP API的轻量浏览器
     'opencv-python',        # import cv2
-    'twilio',               # 免费发短信
     'fonttools',            # 用于操作字体的库, eg:爬虫中字形识别
     'xmltodict',
     'ftfy',                 # 超级强大的unicode文本工具
@@ -104,4 +101,7 @@ install_requires = [
     # 'items',
     # 'eventlet',             # celery改变单个worker并发量必备库(运行模式:eventlet)
     # 'pytesseract',          # 图像识别
+    # 'twilio',               # 免费发短信
+    # 'colorama',             # shell 颜色化输出
+    # 'twine',                # 用于本地在PYPI上发布python包用
 ]

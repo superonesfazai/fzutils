@@ -21,7 +21,7 @@ from requires import install_requires
     1. 现在从setup.py位于的同一目录运行此命令
     $ python3 setup.py sdist bdist_wheel
     
-    2. upload
+    2. upload  [使用前提本地已安装 $ pip3 install twine]
     $ twine upload dist/* --skip-existing
     
     3. 本地更新(发布完后过会才能更新Release)[注意: pycharm可能要单独更新]
@@ -60,7 +60,7 @@ py_modules = [
 
 setup(
     name="fzutils",
-    version="0.2.9.9",
+    version="0.3.0.0",
     author="super_fazai",
     author_email="superonesfazai@gmail.com",
     description="A Python utils for spider",
