@@ -530,6 +530,33 @@ class MyPhantomjs(object):
         """
         self.driver.switch_to_window(window_name=window_name)
 
+    def switch_to_active_element(self):
+        """
+        切换到当前的活跃元素
+        :return:
+        """
+        return self.driver.switch_to_active_element()
+
+    def switch_to_alert(self):
+        """
+        切换到alert弹窗
+        :return: 一个alert对象, 后续eg: alert = driver.switch_to_alert() alert.send_keys()
+        """
+        return self.driver.switch_to_alert()
+
+    def switch_to_default_content(self):
+        """
+        切换回默认内容
+        :return:
+        """
+        return self.driver.switch_to_default_content()
+
+    def switch_to_frame(self, frame_reference):
+        """
+        Deprecated use driver.switch_to.frame
+        """
+        return self.driver.switch_to_frame(frame_reference=frame_reference)
+
     @property
     def current_url(self):
         """

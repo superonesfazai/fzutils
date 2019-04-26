@@ -25,3 +25,23 @@ from selenium.common.exceptions import (
     TimeoutException,
     WebDriverException,
     NoSuchElementException,)
+
+# eg: 用于验证某些内容的颜色作为测试的一部分, 比如登入按钮的颜色变化!!
+# assert login_button_background_colour.hex == '#ff69b4'
+from selenium.webdriver.support.color import Color as SeleniumColor
+
+# 选择元素可能需要相当多的锅炉板代码来自动化, Selenium支持包中有一个 Select类提供
+# eg:
+# select_ele = driver.find_element_by_id('selectElementID')
+# select_obj = SeleniumSelect(select_ele)
+# select_obj.select_by_index(1)
+# select_obj.select_by_value('value1')
+# select_obj.select_by_visible_text('Bread')
+# 检查选择了哪些选项
+# Return a list[WebElement] of options that have been selected
+# all_selected_options = select_obj.all_selected_options
+# Return a WebElement referencing the first selection option found by walking down the DOM
+# first_selected_option = select_obj.first_selected_option
+from selenium.webdriver.support.select import Select as SeleniumSelect
+
+
