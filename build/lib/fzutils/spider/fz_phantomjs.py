@@ -540,7 +540,7 @@ class MyPhantomjs(object):
     def switch_to_alert(self):
         """
         切换到alert弹窗
-        :return: 一个alert对象, 后续eg: alert.send_keys()
+        :return: 一个alert对象, 后续eg: alert = driver.switch_to_alert() alert.send_keys()
         """
         return self.driver.switch_to_alert()
 

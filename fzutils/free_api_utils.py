@@ -36,6 +36,8 @@ __all__ = [
     'get_gd_map_shop_info_list_by_keyword_and_area_name',       # 根据关键字和区域检索店铺信息(高德api 关键字搜索服务)
     'get_gd_input_prompt_info',                                 # 根据关键字和城市名获取输入提示(高德api)
     'get_gd_reverse_geocode_info',                              # 根据地址str获取逆向地理编码(高德api)
+    'get_gd_map_shop_info_list_by_lng_and_lat_and_keyword',     # 根据经纬度(主要根据), 关键字(附加条件)等条件检索附近店铺信息(高德api 关键字搜索服务)
+    'get_gd_map_shop_info_list_by_gd_id',                       # 根据gd_id来得到指定的shop info list(一般为第一个)[测试发现不准确, 根据id, 常返回不相干商家]
 ]
 
 def get_jd_one_goods_price_info(goods_id) -> list:
@@ -345,6 +347,123 @@ def get_gd_reverse_geocode_info(gd_key:str,
     data = json_2_dict(
         json_str=body,
         logger=logger,).get('geocodes', [])
+    # pprint(data)
+
+    return data
+
+def get_gd_map_shop_info_list_by_lng_and_lat_and_keyword(gd_key:str,
+                                                         lng:float,
+                                                         lat:float,
+                                                         keyword:str='',
+                                                         radius:int=1000,
+                                                         page_num:int=1,
+                                                         page_size:int=20,
+                                                         poi_type='',
+                                                         extensions='all',
+                                                         use_proxy=True,
+                                                         ip_pool_type=tri_ip_pool,
+                                                         num_retries=6,
+                                                         timeout=20,
+                                                         logger=None,) -> list:
+    """
+    根据经纬度(主要根据), 关键字(附加条件)等条件检索附近店铺信息(高德api 关键字搜索服务)
+    :param gd_key: 申请的key
+    :param lng: 经度
+    :param lat: 纬度
+    :param keyword: 关键字 eg: '鞋子', 默认空值!
+    :param radius: 半径 (如果已知的经纬度能准确定位到某家店铺, 可将radius=100, 来提高定位返回信息精确度!!)
+    :param page_num: 最大翻页数100
+    :param page_size: 默认值'20'
+    :param poi_type: 查询POI类型, eg: '061205', 可默认为空值!
+    :param extensions: 返回结果控制
+    :param use_proxy:
+    :param ip_pool_type:
+    :param num_retries:
+    :param timeout:
+    :param logger:
+    :return:
+    """
+    headers = get_base_headers()
+    headers.update({
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        'Upgrade-Insecure-Requests': '1',
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    })
+    params = (
+        ('key', str(gd_key)),
+        ('location', ','.join([str(lng), str(lat)])),
+        ('keywords', str(keyword)),
+        ('types', str(poi_type)),
+        ('radius', str(radius)),
+        ('offset', str(page_size)),
+        ('page', str(page_num)),
+        ('extensions', str(extensions)),
+    )
+    url = 'https://restapi.amap.com/v3/place/around'
+    body = Requests.get_url_body(
+        use_proxy=use_proxy,
+        url=url,
+        headers=headers,
+        params=params,
+        ip_pool_type=ip_pool_type,
+        timeout=timeout,
+        num_retries=num_retries,)
+    # print(body)
+    data = json_2_dict(
+        json_str=body,
+        default_res={},
+        logger=logger,).get('pois', [])
+    # pprint(data)
+
+    return data
+
+def get_gd_map_shop_info_list_by_gd_id(gd_key:str,
+                                       gd_id:str,
+                                       use_proxy=True,
+                                       ip_pool_type=tri_ip_pool,
+                                       num_retries=6,
+                                       timeout=20,
+                                       logger=None,) -> list:
+    """
+    根据gd_id来得到指定的shop info list(一般为第一个)[测试发现不准确, 根据id, 常返回不相干商家]
+    :param gd_key: 申请的key
+    :param gd_id: eg: 'B0FFIR6P0B'
+    :param use_proxy:
+    :param ip_pool_type:
+    :param num_retries:
+    :param timeout:
+    :param logger:
+    :return:
+    """
+    headers = get_base_headers()
+    headers.update({
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        'Upgrade-Insecure-Requests': '1',
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    })
+    params = (
+        ('id', gd_id),
+        ('output', ''),
+        ('key', gd_key),
+    )
+    url = 'https://restapi.amap.com/v3/place/detail'
+    body = Requests.get_url_body(
+        use_proxy=use_proxy,
+        url=url,
+        headers=headers,
+        params=params,
+        ip_pool_type=ip_pool_type,
+        timeout=timeout,
+        num_retries=num_retries,)
+    # print(body)
+    data = json_2_dict(
+        json_str=body,
+        default_res={},
+        logger=logger,).get('pois', [])
     # pprint(data)
 
     return data
