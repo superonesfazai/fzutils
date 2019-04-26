@@ -4,6 +4,7 @@ import sys
 import os
 import subprocess
 import socket
+from platform import system as platform_system
 
 from .common_utils import (
     delete_list_null_str,
@@ -21,6 +22,9 @@ __all__ = [
     # shell
     'get_str_from_command',                             # shell下执行成功的命令有正常输出,执行不成功的命令得不到输出,得到输出为""
     'get_current_file_path',                            # 得到当前文件的绝对路径
+
+    # 系统
+    'get_system_type',                                  # 获取正在使用的系统的类型
 ]
 
 def daemon_init(stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
@@ -170,3 +174,9 @@ def _get_simulate_logger(retries=10) -> str:
 
     return time_str
 
+def get_system_type() -> str:
+    """
+    获取正在使用的系统的类型
+    :return: 'Darwin' mac系统 | 'Linux' | ...
+    """
+    return platform_system()
