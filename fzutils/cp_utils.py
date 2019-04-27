@@ -145,8 +145,10 @@ def block_calculate_tb_right_sign(_m_h5_tk: str, data: json) -> tuple:
     # with open('../static/js/get_h_func.js', 'r') as f:  # 打开js源文件
     #     js = f.read()
     #
-    # js_parser = execjs.compile(js)                      # 编译js得到python解析对象
-    t = str(time.time().__round__()) + str(randint(100, 999))  # time.time().__round__() 表示保留到个位
+    # 编译js得到python解析对象
+    # js_parser = execjs.compile(js)
+    # time.time().__round__() 表示保留到个位
+    t = str(time.time().__round__()) + str(randint(100, 999))
 
     # 构造参数e
     appKey = '12574478'
@@ -162,6 +164,7 @@ def block_get_tb_sign_and_body(base_url,
                                headers:dict,
                                params:dict,
                                data:json,
+                               cookies=None,
                                timeout=13,
                                _m_h5_tk='undefine',
                                session=None,
@@ -191,6 +194,7 @@ def block_get_tb_sign_and_body(base_url,
             url=base_url,
             headers=headers,
             params=params,
+            cookies=cookies,
             proxies=tmp_proxies,
             timeout=timeout,)
         _m_h5_tk = response.cookies.get('_m_h5_tk', '').split('_')[0]
