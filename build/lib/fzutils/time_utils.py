@@ -16,12 +16,15 @@ import re
 import functools
 from threading import Thread
 
+from .common_utils import get_random_int_number
+
 __all__ = [
     'get_shanghai_time',                            # 时区处理，得到上海时间
     'timestamp_to_regulartime',                     # 时间戳转规范的时间字符串
     'string_to_datetime',                           # 将字符串转换成时间
     'datetime_to_timestamp',                        # datetime转timestamp
     'date_parse',                                   # 不规范日期解析为datetime类型
+    'get_now_13_bit_timestamp',                     # 得到当前的13位时间戳
 
     'fz_timer',                                     # 一个装饰器或者上下文管理器, 用于计算某函数耗时
     'fz_set_timeout',                               # 可以给任意可能会hang住的函数添加超时功能[这个功能在编写外部API调用, 网络爬虫, 数据库查询的时候特别有用]
@@ -190,3 +193,10 @@ def func_time(func):
         print('func_name: {}, spent time: {}s'.format(func.__name__, time.time() - start_time))
 
     return _wrapper
+
+def get_now_13_bit_timestamp() -> str:
+    """
+    得到当前的13位时间戳
+    :return: eg: '1556963497711'
+    """
+    return str(datetime_to_timestamp(get_shanghai_time())) + str(get_random_int_number(100, 999))

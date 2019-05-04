@@ -9,10 +9,6 @@
 
 install_requires = [
     'wheel',
-    'utils',
-    'db',
-    'pytz',                 # 时间国际化
-    'python-dateutil',
     'pysocks',              # requests 进行socks代理必备!
     'requests',
     'requests_oauthlib',
@@ -21,14 +17,12 @@ install_requires = [
     'asyncio',
     'psutil',               # 检索有关正在运行的进程和系统利用率（CPU，内存，磁盘，网络，传感器）的信息
     'pyexecjs',
-    'setuptools',
+    'setuptools',           # 发包需要
     'numpy',
     'pprint',
     'chardet',
     'bs4',                  # 页面解析, 但解析速度较慢! [doc](https://www.crummy.com/software/BeautifulSoup/bs4/doc/index.zh.html)
     'scrapy',
-    'demjson',
-    'jsonpath',
     'greenlet==0.4.14',     # 之前0.4.13, 改成0.4.14(gevent依靠)
     'gevent',               # celery改变单个worker并发量必备库(运行模式:gevent)
     'aiohttp',
@@ -36,25 +30,16 @@ install_requires = [
     'flower',               # web工具，用于监视和管理celery集群。
     'flask',
     'flask_login',
-    'mitmproxy',            # shell 抓包代理
     'pyexcel',
     'pyexcel-xlsx',
     'fabric',               # 旨在通过SSH远程执行shell命令
-    'furl',                 # 可轻松解析和操作URL
-    'yarl',
-    'prettytable',
-    'xlrd',
     'jieba',                # 旨在做最好用的中文分词
     'scikit-image',         # 图像处理
     'appium-python-client',
-    'python-docx',
     'Jinja2',
     'elasticsearch',
     'elasticsearch_dsl',
     'salt',                 # 为大规模复杂系统管理提供软件, 同步控制百万台服务器
-    'pika',                 # rabbitmq客户端库
-    'scapy',                # 功能强大的基于Python的交互式数据包操作程序和库
-    'scapy-http',
     'baidu-aip',
     'scrapy-splash',        # splash是一个JavaScript渲染服务，是一个带有HTTP API的轻量浏览器
     'opencv-python',        # import cv2
@@ -64,9 +49,22 @@ install_requires = [
     'tenacity',             # 强大的python重试库
     'pyzbar',               # 二维码识别库, 安装前提:(ubuntu: sudo apt-get install libzbar-dev | mac: brew install zbar)
     'termcolor',            # shell颜色化输出
-    'pypinyin',             # 汉字转拼音包
+    'pypinyin',             # 汉字转拼音包(from pypinyin import lazy_pinyin)
     'bitarray',             # bloom filter需要
     'click',                # shell交互
+
+    # 抓包
+    'scapy',                # 功能强大的基于Python的交互式数据包操作程序和库
+    'scapy-http',
+    'mitmproxy',            # shell 抓包代理
+
+    # json
+    'demjson',
+    'jsonpath',
+
+    # time
+    'pytz',                 # 时间国际化
+    'python-dateutil',      # 时间解析
 
     # db
     'pymssql',
@@ -74,6 +72,8 @@ install_requires = [
     'pymongo',
     'redis',
     'mongoengine',          # mongo engine
+    'prettytable',
+    'pika',  # rabbitmq客户端库
 
     # TODO 减少依赖
     # 'ipython',
@@ -104,4 +104,14 @@ install_requires = [
     # 'twilio',               # 免费发短信
     # 'colorama',             # shell 颜色化输出
     # 'twine',                # 用于本地在PYPI上发布python包用
+    # 'utils',
+    # 'xlrd',                 # 处理excel
+    # 'python-docx',
+
+    # db
+    # 'db',
+
+    # url
+    # 'furl',                 # 可轻松解析和操作URL
+    # 'yarl',                 # url解析
 ]
