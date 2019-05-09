@@ -13,15 +13,18 @@ app utils
 from gc import collect
 from asyncio import get_event_loop
 from pprint import pprint
+from time import sleep
 
 from ..common_utils import _print
 from ..spider.async_always import async_sleep
 
 __all__ = [
     # atx
+    'u2_block_page_back',                           # [阻塞]u2的页面返回
     'u2_page_back',                                 # u2的页面返回
     'u2_get_device_display_h_and_w',                # u2获取设备的高跟宽
     'u2_get_some_ele_height',                       # u2得到某一个ele块的height
+    'u2_block_up_swipe_some_height',                # [阻塞]u2 上滑某个高度
     'u2_up_swipe_some_height',                      # u2上滑某个高度
     'async_get_u2_ele_info',                        # 异步获取u2 ele 的info
     'AndroidDeviceObj',                             # 设备信息类
@@ -30,6 +33,20 @@ __all__ = [
     'get_mitm_flow_request_headers_user_agent',     # 获取flow.request.headers的user_agent
 ]
 
+def u2_block_page_back(d, back_num=1):
+    """
+    [阻塞]u2的页面返回
+    :param d:
+    :param back_num:
+    :return:
+    """
+    while back_num > 0:
+        d.press('back')
+        back_num -= 1
+        sleep(.3)
+
+    return
+
 async def u2_page_back(d, back_num=1):
     """
     u2的页面返回
@@ -37,12 +54,9 @@ async def u2_page_back(d, back_num=1):
     :param back_num:
     :return:
     """
-    while back_num > 0:
-        d.press('back')
-        back_num -= 1
-        await async_sleep(.3)
-
-    return
+    return u2_block_page_back(
+        d=d,
+        back_num=back_num,)
 
 async def u2_get_device_display_h_and_w(d) -> tuple:
     """
@@ -64,6 +78,16 @@ async def u2_get_some_ele_height(ele):
     return ele.info.get('bounds', {}).get('bottom') \
            - ele.info.get('bounds', {}).get('top')
 
+def u2_block_up_swipe_some_height(d, swipe_height, base_height=.1) -> None:
+    """
+    [阻塞]u2 上滑某个高度
+    :param d:
+    :param swipe_height:
+    :param base_height:
+    :return:
+    """
+    d.swipe(0., base_height + swipe_height, 0., base_height)
+
 async def u2_up_swipe_some_height(d, swipe_height, base_height=.1) -> None:
     """
     u2 上滑某个高度
@@ -72,7 +96,10 @@ async def u2_up_swipe_some_height(d, swipe_height, base_height=.1) -> None:
     :param base_height:
     :return:
     """
-    d.swipe(0., base_height + swipe_height, 0., base_height)
+    return u2_block_up_swipe_some_height(
+        d=d,
+        swipe_height=swipe_height,
+        base_height=base_height,)
 
 async def async_get_u2_ele_info(ele, logger=None) -> tuple:
     """
