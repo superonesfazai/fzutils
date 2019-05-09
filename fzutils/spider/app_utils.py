@@ -24,6 +24,7 @@ __all__ = [
     'u2_get_some_ele_height',                       # u2得到某一个ele块的height
     'u2_up_swipe_some_height',                      # u2上滑某个高度
     'async_get_u2_ele_info',                        # 异步获取u2 ele 的info
+    'AndroidDeviceObj',                             # 设备信息类
 
     # mitmproxy
     'get_mitm_flow_request_headers_user_agent',     # 获取flow.request.headers的user_agent
@@ -135,3 +136,16 @@ def get_mitm_flow_request_headers_user_agent(headers, logger=None) -> str:
             log_level=2)
 
     return user_agent
+
+class AndroidDeviceObj(object):
+    """设备信息类"""
+    def __init__(self, d, device_id: str, device_product_name: str):
+        """
+        init
+        :param d: UIAutomatorServer类的对象[from uiautomator2 import UIAutomatorServer]
+        :param device_id: 设备唯一id
+        :param device_product_name: 设备名称 eg: d.info.get('productName', '')来获得
+        """
+        self.d = d
+        self.device_id = device_id
+        self.device_product_name = device_product_name
