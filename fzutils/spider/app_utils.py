@@ -17,6 +17,7 @@ from time import sleep
 
 from ..common_utils import _print
 from ..spider.async_always import async_sleep
+from ..aio_utils import async_wait_tasks_finished
 
 __all__ = [
     # atx
@@ -28,6 +29,9 @@ __all__ = [
     'u2_up_swipe_some_height',                      # u2上滑某个高度
     'async_get_u2_ele_info',                        # 异步获取u2 ele 的info
     'AndroidDeviceObj',                             # 设备信息类
+    'get_u2_init_device_list',                      # 得到初始化u2设备对象list
+    'u2_get_device_obj_by_device_id',               # [阻塞]根据device_id初始化获取到device_obj
+    'u2_unblock_get_device_obj_by_device_id',       # [异步非阻塞]根据device_id初始化获取到device_obj
 
     # mitmproxy
     'get_mitm_flow_request_headers_user_agent',     # 获取flow.request.headers的user_agent
@@ -176,3 +180,124 @@ class AndroidDeviceObj(object):
         self.d = d
         self.device_id = device_id
         self.device_product_name = device_product_name
+
+async def get_u2_init_device_list(loop,
+                                  u2,
+                                  pkg_name:str,
+                                  device_id_list:list,
+                                  d_debug=False,
+                                  set_fast_input_ime=True,
+                                  logger=None) -> list:
+    """
+    得到初始化u2设备对象list
+    :param loop:
+    :param u2: import uiautomator2 as u2的u2
+    :param pkg_name: app 包名
+    :param device_id_list: eg: ['816QECTK24ND8', ...]
+    :param d_debug: u2 是否为调试模式
+    :param set_fast_input_ime:
+    :param logger:
+    :return:
+    """
+    device_obj_list = []
+    tasks = []
+    for device_id in device_id_list:
+        tasks.append(loop.create_task(u2_unblock_get_device_obj_by_device_id(
+            u2=u2,
+            device_id=device_id,
+            pkg_name=pkg_name,
+            d_debug=d_debug,
+            set_fast_input_ime=set_fast_input_ime,
+            logger=logger,)))
+
+    all_res = await async_wait_tasks_finished(tasks=tasks)
+    # pprint(all_res)
+    for device_obj in all_res:
+        device_obj_list.append(device_obj)
+
+    try:
+        del tasks
+    except:
+        pass
+
+    return device_obj_list
+
+def u2_get_device_obj_by_device_id(u2,
+                                   device_id: str,
+                                   pkg_name: str,
+                                   d_debug: bool = False,
+                                   set_fast_input_ime=True,
+                                   logger=None):
+    """
+    [阻塞]根据device_id初始化获取到device_obj
+    :param u2: import uiautomator2 as u2的u2
+    :param device_id:
+    :param pkg_name: APP包名
+    :param d_debug: 是否为debug模式
+    :param set_fast_input_ime:
+    :param logger:
+    :return:
+    """
+    _print(msg='init device_id: {} ...'.format(device_id), logger=logger)
+    # 设置设备id
+    d = u2.connect(addr=device_id)
+    d_info = d.info
+    _print(msg='{}'.format(d_info), logger=logger)
+    device_product_name = d_info.get('productName', '')
+    assert device_product_name != '', 'device_product_name !=""'
+    d.set_fastinput_ime(set_fast_input_ime)
+    d.debug = d_debug
+    # 启动指定包
+    now_session = d.session(pkg_name=pkg_name)
+
+    device_obj = AndroidDeviceObj(
+        d=d,
+        device_id=device_id,
+        device_product_name=device_product_name,)
+    _print(msg='init device_id: {} over !'.format(device_id), logger=logger)
+
+    return device_obj
+
+async def u2_unblock_get_device_obj_by_device_id(u2,
+                                                 device_id: str,
+                                                 pkg_name: str,
+                                                 d_debug: bool = False,
+                                                 set_fast_input_ime=True,
+                                                 logger=None):
+    """
+    [异步非阻塞]根据device_id初始化获取到device_obj
+    :param u2: import uiautomator2 as u2的u2
+    :param device_id:
+    :param pkg_name:
+    :param d_debug:
+    :param set_fast_input_ime:
+    :param logger:
+    :return:
+    """
+    async def _get_args() -> list:
+        """获取args"""
+        return [
+            u2,
+            device_id,
+            pkg_name,
+            d_debug,
+            set_fast_input_ime,
+            logger,
+        ]
+
+    loop = get_event_loop()
+    args = await _get_args()
+    device_obj = None
+    try:
+        device_obj = await loop.run_in_executor(None, u2_get_device_obj_by_device_id, *args)
+    except Exception as e:
+        _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
+    finally:
+        # loop.close()
+        try:
+            del loop
+        except:
+            pass
+        collect()
+
+        return device_obj
