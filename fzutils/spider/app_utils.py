@@ -181,47 +181,6 @@ class AndroidDeviceObj(object):
         self.device_id = device_id
         self.device_product_name = device_product_name
 
-async def get_u2_init_device_list(loop,
-                                  u2,
-                                  pkg_name:str,
-                                  device_id_list:list,
-                                  d_debug=False,
-                                  set_fast_input_ime=True,
-                                  logger=None) -> list:
-    """
-    得到初始化u2设备对象list
-    :param loop:
-    :param u2: import uiautomator2 as u2的u2
-    :param pkg_name: app 包名
-    :param device_id_list: eg: ['816QECTK24ND8', ...]
-    :param d_debug: u2 是否为调试模式
-    :param set_fast_input_ime:
-    :param logger:
-    :return:
-    """
-    device_obj_list = []
-    tasks = []
-    for device_id in device_id_list:
-        tasks.append(loop.create_task(u2_unblock_get_device_obj_by_device_id(
-            u2=u2,
-            device_id=device_id,
-            pkg_name=pkg_name,
-            d_debug=d_debug,
-            set_fast_input_ime=set_fast_input_ime,
-            logger=logger,)))
-
-    all_res = await async_wait_tasks_finished(tasks=tasks)
-    # pprint(all_res)
-    for device_obj in all_res:
-        device_obj_list.append(device_obj)
-
-    try:
-        del tasks
-    except:
-        pass
-
-    return device_obj_list
-
 def u2_get_device_obj_by_device_id(u2,
                                    device_id: str,
                                    pkg_name: str,
@@ -301,3 +260,44 @@ async def u2_unblock_get_device_obj_by_device_id(u2,
         collect()
 
         return device_obj
+
+async def get_u2_init_device_list(loop,
+                                  u2,
+                                  pkg_name:str,
+                                  device_id_list:list,
+                                  d_debug=False,
+                                  set_fast_input_ime=True,
+                                  logger=None) -> list:
+    """
+    得到初始化u2设备对象list
+    :param loop:
+    :param u2: import uiautomator2 as u2的u2
+    :param pkg_name: app 包名
+    :param device_id_list: eg: ['816QECTK24ND8', ...]
+    :param d_debug: u2 是否为调试模式
+    :param set_fast_input_ime:
+    :param logger:
+    :return:
+    """
+    device_obj_list = []
+    tasks = []
+    for device_id in device_id_list:
+        tasks.append(loop.create_task(u2_unblock_get_device_obj_by_device_id(
+            u2=u2,
+            device_id=device_id,
+            pkg_name=pkg_name,
+            d_debug=d_debug,
+            set_fast_input_ime=set_fast_input_ime,
+            logger=logger,)))
+
+    all_res = await async_wait_tasks_finished(tasks=tasks)
+    # pprint(all_res)
+    for device_obj in all_res:
+        device_obj_list.append(device_obj)
+
+    try:
+        del tasks
+    except:
+        pass
+
+    return device_obj_list
