@@ -183,7 +183,8 @@ class AndroidDeviceObj(object):
 
 def u2_get_device_obj_by_device_id(u2,
                                    device_id: str,
-                                   pkg_name: str,
+                                   pkg_name: str='',
+                                   open_someone_pkg=True,
                                    d_debug: bool = False,
                                    set_fast_input_ime=True,
                                    logger=None):
@@ -192,6 +193,7 @@ def u2_get_device_obj_by_device_id(u2,
     :param u2: import uiautomator2 as u2的u2
     :param device_id:
     :param pkg_name: APP包名
+    :param open_someone_pkg: bool 初始化设备时是否打开指定pkg_name
     :param d_debug: 是否为debug模式
     :param set_fast_input_ime:
     :param logger:
@@ -206,8 +208,10 @@ def u2_get_device_obj_by_device_id(u2,
     assert device_product_name != '', 'device_product_name !=""'
     d.set_fastinput_ime(set_fast_input_ime)
     d.debug = d_debug
-    # 启动指定包
-    now_session = d.session(pkg_name=pkg_name)
+
+    if open_someone_pkg and pkg_name != '':
+        # 启动指定包
+        now_session = d.session(pkg_name=pkg_name)
 
     device_obj = AndroidDeviceObj(
         d=d,
@@ -219,7 +223,8 @@ def u2_get_device_obj_by_device_id(u2,
 
 async def u2_unblock_get_device_obj_by_device_id(u2,
                                                  device_id: str,
-                                                 pkg_name: str,
+                                                 pkg_name: str='',
+                                                 open_someone_pkg=True,
                                                  d_debug: bool = False,
                                                  set_fast_input_ime=True,
                                                  logger=None):
@@ -228,6 +233,7 @@ async def u2_unblock_get_device_obj_by_device_id(u2,
     :param u2: import uiautomator2 as u2的u2
     :param device_id:
     :param pkg_name:
+    :param open_someone_pkg: bool 初始化设备时是否打开指定pkg_name
     :param d_debug:
     :param set_fast_input_ime:
     :param logger:
@@ -239,6 +245,7 @@ async def u2_unblock_get_device_obj_by_device_id(u2,
             u2,
             device_id,
             pkg_name,
+            open_someone_pkg,
             d_debug,
             set_fast_input_ime,
             logger,
@@ -263,8 +270,9 @@ async def u2_unblock_get_device_obj_by_device_id(u2,
 
 async def get_u2_init_device_list(loop,
                                   u2,
-                                  pkg_name:str,
                                   device_id_list:list,
+                                  pkg_name: str = '',
+                                  open_someone_pkg=True,
                                   d_debug=False,
                                   set_fast_input_ime=True,
                                   logger=None) -> list:
@@ -272,8 +280,9 @@ async def get_u2_init_device_list(loop,
     得到初始化u2设备对象list
     :param loop:
     :param u2: import uiautomator2 as u2的u2
-    :param pkg_name: app 包名
     :param device_id_list: eg: ['816QECTK24ND8', ...]
+    :param pkg_name: app 包名
+    :param open_someone_pkg: bool 初始化设备时是否打开指定pkg_name
     :param d_debug: u2 是否为调试模式
     :param set_fast_input_ime:
     :param logger:
@@ -286,6 +295,7 @@ async def get_u2_init_device_list(loop,
             u2=u2,
             device_id=device_id,
             pkg_name=pkg_name,
+            open_someone_pkg=open_someone_pkg,
             d_debug=d_debug,
             set_fast_input_ime=set_fast_input_ime,
             logger=logger,)))
