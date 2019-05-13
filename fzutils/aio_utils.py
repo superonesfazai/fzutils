@@ -32,6 +32,7 @@ __all__ = [
     'unblock_request',              # 非阻塞的request请求
     'unblock_get_driver_obj',       # 异步获取driver obj
     'unblock_request_by_driver',    # 非阻塞的request by driver
+    'unblock_func',                 # 异步函数非阻塞
 ]
 
 class Asyncer(object):
@@ -313,3 +314,26 @@ async def unblock_request_by_driver(url,
 
         return body
 
+async def unblock_func(func_name:object, func_args, logger=None, default_res=None):
+    """
+    异步函数非阻塞
+    :param func_name: def 函数对象名
+    :param func_args: 请求参数可迭代对象(必须遵循元素入参顺序!)
+    :param logger:
+    :param default_res: 默认返回结果
+    :return:
+    """
+    loop = get_event_loop()
+    try:
+        default_res = await loop.run_in_executor(None, func_name, *func_args)
+    except Exception as e:
+        _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
+    finally:
+        # loop.close()
+        try:
+            del loop
+        except:
+            pass
+        collect()
+
+        return default_res

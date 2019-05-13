@@ -11,6 +11,7 @@ app utils
 """
 
 from gc import collect
+from random import uniform
 from asyncio import get_event_loop
 from pprint import pprint
 from time import sleep
@@ -36,6 +37,15 @@ __all__ = [
     # mitmproxy
     'get_mitm_flow_request_headers_user_agent',     # 获取flow.request.headers的user_agent
 ]
+
+# 上滑
+U2_SLIDE_UP = 'up'
+# 下滑
+U2_SLIDE_DOWN = 'down'
+# 左滑
+U2_SLIDE_LEFT = 'left'
+# 右滑
+U2_SLIDE_RIGHT = 'right'
 
 def u2_block_page_back(d, back_num=1):
     """
@@ -311,3 +321,47 @@ async def get_u2_init_device_list(loop,
         pass
 
     return device_obj_list
+
+def human_swipe(d,
+                slide_distance:(int, float),
+                slide_direction=U2_SLIDE_UP,
+                base_distance=.1,
+                x_or_y_no_slip_begin=.1,
+                x_or_y_no_slip_end=.2):
+    """
+    模拟人类滑动
+    :param d:
+    :param slide_distance: 滑动的距离
+    :param slide_direction: 滑动的方向
+    :param base_distance:
+    :param x_or_y_no_slip_begin: 不滑动方向的随机最小值
+    :param x_or_y_no_slip_end: 不滑动方向的随机最大值
+    :return:
+    """
+    if slide_direction == U2_SLIDE_UP:
+        # 上滑
+        x0 = uniform(x_or_y_no_slip_begin, x_or_y_no_slip_end)
+        x1 = uniform(x_or_y_no_slip_begin, x_or_y_no_slip_end)
+        d.swipe(x0, base_distance + slide_distance, x1, base_distance)
+
+    elif slide_direction == U2_SLIDE_DOWN:
+        # 下滑
+        x0 = uniform(x_or_y_no_slip_begin, x_or_y_no_slip_end)
+        x1 = uniform(x_or_y_no_slip_begin, x_or_y_no_slip_end)
+        d.swipe(x0, base_distance, x1, base_distance + slide_distance)
+
+    elif slide_direction == U2_SLIDE_LEFT:
+        # 左滑
+        assert base_distance > slide_distance, 'base_distance > slide_distance'
+        y0 = uniform(x_or_y_no_slip_begin, x_or_y_no_slip_end)
+        y1 = uniform(x_or_y_no_slip_begin, x_or_y_no_slip_end)
+        d.swipe(base_distance-slide_distance, y0, base_distance, y1)
+
+    elif slide_direction == U2_SLIDE_RIGHT:
+        # 右滑
+        y0 = uniform(x_or_y_no_slip_begin, x_or_y_no_slip_end)
+        y1 = uniform(x_or_y_no_slip_begin, x_or_y_no_slip_end)
+        d.swipe(base_distance, y0, base_distance + slide_distance, y1)
+
+    else:
+        raise ValueError('slide_direction value 异常!')

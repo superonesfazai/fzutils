@@ -32,6 +32,7 @@ from requires import install_requires
     
 报错及其解决方案:
     1. error: invalid command 'bdist_wheel'
+        or error: HTTPError: 403 Client Error: Invalid or non-existent authentication information. for url: https://upload.pypi.org/legacy/ 
         $ pip3 install pip setuptools -U && pip3 install wheel
 """
 
@@ -60,7 +61,7 @@ py_modules = [
 
 setup(
     name="fzutils",
-    version="0.3.1.8",
+    version="0.3.2.2",
     author="super_fazai",
     author_email="superonesfazai@gmail.com",
     description="A Python utils for spider",
