@@ -33,6 +33,7 @@ __all__ = [
     'get_u2_init_device_list',                      # 得到初始化u2设备对象list
     'u2_get_device_obj_by_device_id',               # [阻塞]根据device_id初始化获取到device_obj
     'u2_unblock_get_device_obj_by_device_id',       # [异步非阻塞]根据device_id初始化获取到device_obj
+    'u2_get_ui_obj',                                # u2获取指定UI元素对象(因为用u2编码时没有参数提示)
 
     # mitmproxy
     'get_mitm_flow_request_headers_user_agent',     # 获取flow.request.headers的user_agent
@@ -365,3 +366,154 @@ def human_swipe(d,
 
     else:
         raise ValueError('slide_direction value 异常!')
+
+def u2_get_ui_obj(d,
+                  resourceId=None,
+                  resourceIdMatches=None,
+                  text=None,
+                  textContains=None,
+                  textMatches=None,
+                  textStartsWith=None,
+                  className=None,
+                  classNameMatches=None,
+                  description=None,
+                  descriptionContains=None,
+                  descriptionMatches=None,
+                  descriptionStartsWith=None,
+                  packageName=None,
+                  packageNameMatches=None,
+                  checkable:bool=False,
+                  checked:bool=False,
+                  clickable:bool=False,
+                  longClickable:bool=False,
+                  scrollable:bool=False,
+                  enabled:bool=False,
+                  focusable:bool=False,
+                  focused:bool=False,
+                  selected:bool=False,
+                  index:int=0,
+                  instance:int=0,):
+    """
+    u2获取指定UI元素对象(因为用u2编码时没有参数提示)
+        note: (参数默认值可从 from uiautomator2.session import Selector查看)
+    :return: UiObject (from uiautomator2.session import UiObject) eg: ele: UiObject = u2_get_ui_obj(d=d, resourceId='xxxx') 来调用后续方法
+    """
+    # 必须进行对应的相面判断再赋值
+    # 因为u2的UiObject中接收的selector如果某参数为默认值是不进行传值的
+    # 否则报错: java.lang.IllegalStateException: Checkable selector is already defined
+    # 其源码地址: https://android.googlesource.com/platform/frameworks/uiautomator/+/android-support-test/src/main/java/android/support/test/uiautomator/BySelector.java
+    # TODO 不传值则 mCheckable == null, 不会抛出异常!
+    # public BySelector checkable(boolean isCheckable) {
+    #     if (mCheckable != null) {
+    #         throw new IllegalStateException("Checkable selector is already defined");
+    #     }
+    #     mCheckable = isCheckable;
+    #     return this;
+    # }
+
+    kwargs = {}
+    if resourceId is not None:
+        kwargs.update({
+            'resourceId': resourceId,
+        })
+    if resourceIdMatches is not None:
+        kwargs.update({
+            'resourceIdMatches': resourceIdMatches,
+        })
+    if text is not None:
+        kwargs.update({
+            'text': text,
+        })
+    if textContains is not None:
+        kwargs.update({
+            'textContains': textContains,
+        })
+    if textMatches is not None:
+        kwargs.update({
+            'textMatches': textMatches,
+        })
+    if textStartsWith is not None:
+        kwargs.update({
+            'textStartsWith': textStartsWith,
+        })
+    if className is not None:
+        kwargs.update({
+            'className': className,
+        })
+    if classNameMatches is not None:
+        kwargs.update({
+            'classNameMatches': classNameMatches,
+        })
+    if description is not None:
+        kwargs.update({
+            'description': description,
+        })
+    if descriptionContains is not None:
+        kwargs.update({
+            'descriptionContains': descriptionContains,
+        })
+    if descriptionMatches is not None:
+        kwargs.update({
+            'descriptionMatches': descriptionMatches,
+        })
+    if descriptionStartsWith is not None:
+        kwargs.update({
+            'descriptionStartsWith': descriptionStartsWith,
+        })
+    if packageName is not None:
+        kwargs.update({
+            'packageName': packageName,
+        })
+    if packageNameMatches is not None:
+        kwargs.update({
+            'packageNameMatches': packageNameMatches,
+        })
+
+    if checkable:
+        kwargs.update({
+            'checkable': checkable,
+        })
+    if checked:
+        kwargs.update({
+            'checked': checked,
+        })
+    if clickable:
+        kwargs.update({
+            'clickable': clickable,
+        })
+    if longClickable:
+        kwargs.update({
+            'longClickable': longClickable,
+        })
+    if scrollable:
+        kwargs.update({
+            'scrollable': scrollable,
+        })
+    if enabled:
+        kwargs.update({
+            'enabled': enabled,
+        })
+    if focusable:
+        kwargs.update({
+            'focusable': focusable,
+        })
+    if focused:
+        kwargs.update({
+            'focused': focused,
+        })
+    if selected:
+        kwargs.update({
+            'selected': selected,
+        })
+
+    if index != 0:
+        kwargs.update({
+            'index': index,
+        })
+    if instance != 0:
+        kwargs.update({
+            'instance': instance,
+        })
+
+    return d(**kwargs)
+
