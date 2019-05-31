@@ -36,20 +36,20 @@ __all__ = [
 ]
 
 class Asyncer(object):
-    '''异步类'''
+    """异步类"""
     async def get_async_requests_body(**kwargs):
         return await AioHttp.aio_get_url_body(**kwargs)
 
 def get_async_execute_result(obj=Asyncer,
                              obj_method_name='get_async_requests_body',
                              **kwargs):
-    '''
+    """
     获取异步执行结果
     :param obj: 对象的类
     :param obj_method_name: 对象的方法名
     :param kwargs: 该方法附带的参数
     :return:
-    '''
+    """
     loop = get_event_loop()
     if hasattr(obj, obj_method_name):
         method_callback = getattr(obj, obj_method_name)
@@ -62,11 +62,11 @@ def get_async_execute_result(obj=Asyncer,
     return result
 
 async def async_wait_tasks_finished(tasks:list) -> list:
-    '''
+    """
     异步等待目标tasks完成
     :param tasks: 任务集
     :return:
-    '''
+    """
     s_time = time()
     try:
         print('请耐心等待所有任务完成...')
@@ -94,11 +94,11 @@ class TasksParamsListObj(object):
                     break
     """
     def __init__(self, tasks_params_list, step, slice_start_index=0):
-        '''
+        """
         :param tasks_params_list: tasks 的参数list
         :param step: 步长，即并发量
         :param slice_start_index: 切片起始位置
-        '''
+        """
         self.tasks_params_list = tasks_params_list
         self.tasks_params_list_len = len(tasks_params_list)
         self.step = step
@@ -162,45 +162,33 @@ async def unblock_request(url,
     :param logger:
     :return:
     """
-    async def _get_args() -> list:
-        """获取args"""
-        return [
-            url,
-            use_proxy,
-            headers,
-            params,
-            data,
-            cookies,
-            had_referer,
-            encoding,
-            method,
-            timeout,
-            num_retries,
-            high_conceal,
-            ip_pool_type,
-            verify,
-            _session,
-            get_session,
-            proxies,
-            proxy_type,
-        ]
+    func_args = [
+        url,
+        use_proxy,
+        headers,
+        params,
+        data,
+        cookies,
+        had_referer,
+        encoding,
+        method,
+        timeout,
+        num_retries,
+        high_conceal,
+        ip_pool_type,
+        verify,
+        _session,
+        get_session,
+        proxies,
+        proxy_type,
+    ]
+    body = await unblock_func(
+        func_name=Requests.get_url_body,
+        func_args=func_args,
+        logger=logger,
+        default_res='',)
 
-    loop = get_event_loop()
-    args = await _get_args()
-    body = ''
-    try:
-        body = await loop.run_in_executor(None, Requests.get_url_body, *args)
-    except Exception as e:
-        _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
-    finally:
-        # loop.close()
-        try:
-            del loop
-        except:
-            pass
-        collect()
-
-        return body
+    return body
 
 async def unblock_get_driver_obj(type=PHANTOMJS,
                                  load_images=False,
@@ -214,42 +202,31 @@ async def unblock_get_driver_obj(type=PHANTOMJS,
                                  ip_pool_type=ip_proxy_pool,
                                  extension_path=None,
                                  driver_cookies=None,):
-    '''
+    """
     异步获取一个driver obj
     :return:
-    '''
-    async def _get_init_args() -> list:
-        '''获取args'''
-        return [
-            type,
-            load_images,
-            executable_path,
-            logger,
-            high_conceal,
-            headless,
-            driver_use_proxy,
-            user_agent_type,
-            driver_obj,
-            ip_pool_type,
-            extension_path,
-            driver_cookies,
-        ]
+    """
+    func_args = [
+        type,
+        load_images,
+        executable_path,
+        logger,
+        high_conceal,
+        headless,
+        driver_use_proxy,
+        user_agent_type,
+        driver_obj,
+        ip_pool_type,
+        extension_path,
+        driver_cookies,
+    ]
+    driver_obj = await unblock_func(
+        func_name=BaseDriver,
+        func_args=func_args,
+        logger=logger,
+        default_res=None,)
 
-    loop = get_event_loop()
-    driver_args = await _get_init_args()
-    try:
-        driver_obj = await loop.run_in_executor(None, BaseDriver, *driver_args)
-    except Exception as e:
-        _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
-    finally:
-        # loop.close()
-        try:
-            del loop
-        except:
-            pass
-        collect()
-
-        return driver_obj
+    return driver_obj
 
 async def unblock_request_by_driver(url,
                                     type=PHANTOMJS,
@@ -268,44 +245,40 @@ async def unblock_request_by_driver(url,
                                     css_selector='',
                                     exec_code='',
                                     timeout=20, ) -> str:
-    '''
+    """
     非阻塞的driver 的请求
     :return:
-    '''
-    async def _get_request_args() -> list:
-        return [
-            url,
-            css_selector,
-            exec_code,
-            timeout,
-        ]
-
-    loop = get_event_loop()
+    """
+    driver = await unblock_get_driver_obj(
+        type=type,
+        load_images=load_images,
+        executable_path=executable_path,
+        logger=logger,
+        high_conceal=high_conceal,
+        headless=headless,
+        driver_use_proxy=driver_use_proxy,
+        user_agent_type=user_agent_type,
+        driver_obj=driver_obj,
+        ip_pool_type=ip_pool_type,
+        extension_path=extension_path,
+        driver_cookies=driver_cookies,)
+    func_args = [
+        url,
+        css_selector,
+        exec_code,
+        timeout,
+    ]
     body = ''
-    request_args = await _get_request_args()
     try:
-        driver = await unblock_get_driver_obj(
-            type=type,
-            load_images=load_images,
-            executable_path=executable_path,
+        body = await unblock_func(
+            func_name=driver.get_url_body,
+            func_args=func_args,
             logger=logger,
-            high_conceal=high_conceal,
-            headless=headless,
-            driver_use_proxy=driver_use_proxy,
-            user_agent_type=user_agent_type,
-            driver_obj=driver_obj,
-            ip_pool_type=ip_pool_type,
-            extension_path=extension_path,
-            driver_cookies=driver_cookies,)
-        body = await loop.run_in_executor(None, driver.get_url_body, *request_args)
+            default_res='',)
     except Exception as e:
         _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
     finally:
         # loop.close()
-        try:
-            del loop
-        except:
-            pass
         try:
             del driver
         except:
