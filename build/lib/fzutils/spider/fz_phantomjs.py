@@ -19,6 +19,7 @@ from ..internet_utils import (
     get_random_phone_ua,
     driver_cookies_list_2_str,)
 from ..common_utils import _print
+from ..linux_utils import get_system_type
 
 # from fzutils.ip_pools import (
 #     MyIpPools,
@@ -34,6 +35,7 @@ from ..common_utils import _print
 from selenium import webdriver
 # WebDriver
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 import selenium.webdriver.support.ui as ui
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -132,11 +134,10 @@ class MyPhantomjs(object):
             else:
                 raise ValueError('type赋值异常!请检查!')
         except Exception as e:
-            # _print(msg='初始化phantomjs时出错:', logger=self.lg, log_level=2, exception=e)
             if num_retries > 0:
                 return self._set_driver(num_retries=num_retries-1)
             else:
-                _print(msg='初始化phantomjs时出错:', logger=self.lg, log_level=2, exception=e)
+                _print(msg='初始化driver时出错:', logger=self.lg, log_level=2, exception=e)
                 raise e
 
     def _init_phantomjs(self):
@@ -237,7 +238,7 @@ class MyPhantomjs(object):
         # 设置代理
         if self.driver_use_proxy:                                                   # 可以firefox通过about:config查看是否正确设置
             proxy_ip = self._get_random_proxy_ip()
-            assert proxy_ip != '', '给chrome设置代理失败, 异常抛出!'
+            assert proxy_ip != '', '给firefox设置代理失败, 异常抛出!'
             ip = proxy_ip.split(':')[0]
             port = proxy_ip.split(':')[1]
             profile.set_preference("network.proxy.type", 1)                         # 默认是0, 1表示手工配置
@@ -253,11 +254,19 @@ class MyPhantomjs(object):
         # 设置user-agent
         profile.set_preference("general.useragent.override", get_random_pc_ua() if self.user_agent_type == PC else get_random_phone_ua())
 
+        # 处理异常: selenium.common.exceptions.SessionNotCreatedException: Message: Expected browser binary location, but unable to find binary in default location, no 'moz:firefoxOptions.binary' capability provided, and no binary flag set on the command line
+        # 需要先安装firefox(默认安装最新版本)
+        # $ sudo apt-get install firefox
+        # 并且不能以root身份运行, 要以普通身份(eg: 远程调用接口)
+        firefox_binary = None \
+            if get_system_type() == 'Darwin' \
+            else FirefoxBinary('/usr/bin/firefox')
+
         self.driver = webdriver.Firefox(
+            firefox_binary=firefox_binary,
             executable_path=self.executable_path,
             firefox_options=options,
-            firefox_profile=profile
-        )
+            firefox_profile=profile,)
         ui.WebDriverWait(self.driver, 30)  # 显示等待n秒, 每过0.5检查一次页面是否加载完毕
         _print(msg='init over!', logger=self.lg)
 
