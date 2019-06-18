@@ -28,20 +28,16 @@ install_requires = [
     'aiohttp',
     'celery',
     'flower',               # web工具，用于监视和管理celery集群。
-    'flask',
-    'flask_login',
     'pyexcel',
     'pyexcel-xlsx',
     'fabric',               # 旨在通过SSH远程执行shell命令
     'jieba',                # 旨在做最好用的中文分词
     'scikit-image',         # 图像处理
     'appium-python-client',
-    'Jinja2',
     'elasticsearch',
     'elasticsearch_dsl',
     'salt',                 # 为大规模复杂系统管理提供软件, 同步控制百万台服务器
     'baidu-aip',
-    'scrapy-splash',        # splash是一个JavaScript渲染服务，是一个带有HTTP API的轻量浏览器
     'opencv-python',        # import cv2
     'fonttools',            # 用于操作字体的库, eg:爬虫中字形识别
     'xmltodict',
@@ -56,7 +52,6 @@ install_requires = [
     # 抓包
     'scapy',                # 功能强大的基于Python的交互式数据包操作程序和库
     'scapy-http',
-    'mitmproxy',            # shell 抓包代理
 
     # json
     'demjson',
@@ -73,7 +68,7 @@ install_requires = [
     'redis',
     'mongoengine',          # mongo engine
     'prettytable',
-    'pika',  # rabbitmq客户端库
+    'pika',                 # rabbitmq客户端库
 
     # TODO 减少依赖
     # 'ipython',
@@ -107,6 +102,17 @@ install_requires = [
     # 'utils',
     # 'xlrd',                 # 处理excel
     # 'python-docx',
+
+    # 抓包
+    # 'mitmproxy',            # shell 抓包代理
+
+    # driver
+    # 'scrapy-splash',        # splash是一个JavaScript渲染服务，是一个带有HTTP API的轻量浏览器
+
+    # server
+    # 'flask',
+    # 'flask_login',
+    # 'Jinja2',
 
     # db
     # 'db',
