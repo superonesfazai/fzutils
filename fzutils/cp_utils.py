@@ -57,11 +57,14 @@ def get_shelf_time_and_delete_time(tmp_data, is_delete, shelf_time, delete_time)
     tmp_shelf_time = shelf_time if shelf_time is not None else ''
     tmp_down_time = delete_time if delete_time is not None else ''
     _ = str(get_shanghai_time())
+    # print('最新状态: {}, 原先状态: {}'.format(tmp_data['is_delete'], is_delete))
 
     # 设置最后刷新的商品状态上下架时间
     # 1. is_delete由0->1 为下架时间点 delete_time
     # 2. is_delete由1->0 为上架时间点 shelf_time
-    if tmp_data['is_delete'] != is_delete:  # 表示状态改变
+    if tmp_data['is_delete'] != is_delete:
+        # 表示状态改变
+        # print('商品状态改变!')
         if is_delete == 1 and tmp_data['is_delete'] == 0:
             # is_delete由1->0 表示商品状态下架变为上架，记录上架时间点
             shelf_time = _
@@ -71,9 +74,11 @@ def get_shelf_time_and_delete_time(tmp_data, is_delete, shelf_time, delete_time)
             shelf_time = tmp_shelf_time
             delete_time = _
 
-    else:  # 表示状态不变
+    else:
+        # 表示状态不变
         # print('商品状态不变!')
-        if tmp_data['is_delete'] == 0:  # 原先还是上架状态的
+        if tmp_data['is_delete'] == 0:
+            # 原先还是上架状态的
             if tmp_shelf_time == '':
                 if tmp_down_time == '':
                     shelf_time = _
@@ -88,8 +93,13 @@ def get_shelf_time_and_delete_time(tmp_data, is_delete, shelf_time, delete_time)
                 else:
                     shelf_time = tmp_shelf_time
                     delete_time = tmp_down_time
+                    if delete_time > shelf_time:
+                        delete_time = str(timestamp_to_regulartime(datetime_to_timestamp(shelf_time) - 60 * 60 * 12))
+                    else:
+                        pass
 
-        else:                           # 原先还是下架状态的
+        else:
+            # 原先还是下架状态的
             if tmp_shelf_time == '':
                 if tmp_down_time == '':
                     shelf_time = ''
@@ -104,6 +114,15 @@ def get_shelf_time_and_delete_time(tmp_data, is_delete, shelf_time, delete_time)
                 else:
                     shelf_time = tmp_shelf_time
                     delete_time = tmp_down_time
+                    # 处理原先下架的商品, 上架时间点>下架时间点
+                    if shelf_time > delete_time:
+                        # print('上架时间点大于下架时间点')
+                        # 修改上架时间小于下架时间
+                        shelf_time = str(timestamp_to_regulartime(datetime_to_timestamp(delete_time) - 60 * 60 * 12))
+                    else:
+                        pass
+
+    # print('shelf_time: {}, delete_time: {}'.format(shelf_time, delete_time))
 
     return (shelf_time, delete_time)
 

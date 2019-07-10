@@ -2,6 +2,7 @@
 
 from requests import get
 import gc
+from gc import collect
 from pickle import dumps
 from random import randint
 from .sql_utils import BaseRedisCli
@@ -143,8 +144,9 @@ class MyIpPools(object):
     def __del__(self):
         try:
             del self.redis_cli
-        except: pass
-        gc.collect()
+        except:
+            pass
+        collect()
 
 class IpPools(MyIpPools):
     pass
