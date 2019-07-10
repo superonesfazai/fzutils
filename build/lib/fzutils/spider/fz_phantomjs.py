@@ -12,17 +12,22 @@ sys.path.append('..')
 from ..ip_pools import (
     MyIpPools,
     ip_proxy_pool,
+    IpPools,
     fz_ip_pool,
     tri_ip_pool,)
 from ..internet_utils import (
     get_random_pc_ua,
     get_random_phone_ua,
     driver_cookies_list_2_str,)
-from ..common_utils import _print
+from ..common_utils import (
+    _print,
+    delete_list_null_str,
+)
 from ..linux_utils import get_system_type
 
 # from fzutils.ip_pools import (
 #     MyIpPools,
+#     IpPools,
 #     ip_proxy_pool,
 #     fz_ip_pool,
 #     tri_ip_pool,)
@@ -30,7 +35,10 @@ from ..linux_utils import get_system_type
 #     get_random_pc_ua,
 #     get_random_phone_ua,
 #     driver_cookies_list_2_str,)
-# from fzutils.common_utils import _print
+# from fzutils.common_utils import (
+#     _print,
+#     delete_list_null_str,
+# )
 
 from selenium import webdriver
 # WebDriver
@@ -46,6 +54,9 @@ from selenium.common.exceptions import (
     NoSuchElementException,
 )
 from scrapy.selector import Selector
+
+from pyppeteer.launcher import launch as chromium_launch
+from pyppeteer.browser import Browser as PyppeteerBrowser
 
 import re
 from gc import collect
@@ -63,6 +74,7 @@ __all__ = [
 PHANTOMJS_DRIVER_PATH = '/Users/afa/myFiles/tools/phantomjs-2.1.1-macosx/bin/phantomjs'
 CHROME_DRIVER_PATH = '/Users/afa/myFiles/tools/chromedriver'
 FIREFOX_DRIVER_PATH = '/Users/afa/myFiles/tools/geckodriver'
+PYPPETEER_CHROMIUM_DRIVER_PATH = '/Users/afa/myFiles/tools/pyppeteer_driver/mac/chrome-mac/Chromium.app/Contents/MacOS/Chromium'
 
 # phantomjs驱动地址
 EXECUTABLE_PATH = PHANTOMJS_DRIVER_PATH
@@ -71,6 +83,7 @@ EXECUTABLE_PATH = PHANTOMJS_DRIVER_PATH
 CHROME = 0
 PHANTOMJS = 1
 FIREFOX = 2
+PYPPETEER = 0
 
 # user-agent类型
 PC = 0
@@ -609,6 +622,123 @@ class MyPhantomjs(object):
 class BaseDriver(MyPhantomjs):
     '''改名'''
     pass
+
+class ChromiumPuppeteer(object):
+    """
+    chromium 操作者
+    """
+    def __init__(self,
+                 type=PYPPETEER,
+                 load_images=False,
+                 executable_path=PYPPETEER_CHROMIUM_DRIVER_PATH,
+                 high_conceal=True,
+                 logger=None,
+                 headless=False,
+                 driver_use_proxy=True,
+                 user_agent_type=PC,
+                 driver_obj=None,
+                 ip_pool_type=tri_ip_pool,
+                 driver_cookies=None,
+                 driver_auto_close=True,
+                 driver_dumpio=False,
+                 driver_devtools=False,):
+        """
+        :param type:
+        :param load_images:
+        :param executable_path:
+        :param high_conceal:
+        :param logger:
+        :param headless:
+        :param driver_use_proxy:
+        :param user_agent_type:
+        :param driver_obj:
+        :param ip_pool_type:
+        :param driver_cookies:
+        :param driver_auto_close:
+        :param driver_dumpio: 把无头浏览器进程的 stderr 核 stdout pip 到主程序，也就是设置为 True 的话，chromium console 的输出就会在主程序中被打印出来
+        :param driver_devtools: 是否打开devtools
+        """
+        super(ChromiumPuppeteer, self).__init__()
+        self.type = type
+        self.executable_path = executable_path
+        self.high_conceal = high_conceal
+        self.load_images = load_images
+        self.headless = headless
+        self.driver_use_proxy = driver_use_proxy
+        self.lg = logger
+        self.user_agent_type = user_agent_type
+        self.ip_pool_type = ip_pool_type
+        self._cookies = driver_cookies
+        self.driver_auto_close = driver_auto_close
+        self.driver_dumpio = driver_dumpio
+        self.driver_devtools = driver_devtools
+        self.driver = None
+
+    async def create_chromium_puppeteer_browser(self,) -> PyppeteerBrowser:
+        _print(msg='init chromium_puppeteer ...', logger=self.lg)
+        # 设置代理
+        proxy_ip = ''
+        if self.driver_use_proxy:
+            proxy_ip = self._get_random_proxy_ip()
+            assert proxy_ip != '', '给chrome设置代理失败, 异常抛出!'
+            # print(proxy_ip)
+
+        # TODO chrome设置代理进行请求成功率较低
+        driver_args = [
+            '--disable-extensions',
+            '--hide-scrollbars',
+            '--disable-bundled-ppapi-flash',
+            '--mute-audio',
+            '--no-sandbox',
+            # 取消提示: chrome正在受自动软件控制
+            '--disable-infobars',
+            '--disable-setuid-sandbox',
+            '--disable-gpu',
+            '--proxy-server=http://{0}'.format(proxy_ip) if proxy_ip != '' else '',
+            '--user-agent={0}'.format(get_random_pc_ua() if self.user_agent_type == PC else get_random_phone_ua()),
+        ]
+        driver_args = delete_list_null_str(_list=driver_args)
+        self.driver = await chromium_launch({
+            'headless': self.headless,
+            'devtools': self.driver_devtools,
+            'executablePath': self.executable_path,
+            # 可选args: https://peter.sh/experiments/chromium-command-line-switches/
+            'args': driver_args,
+            'autoClose': self.driver_auto_close,
+            'dumpio': self.driver_dumpio,
+        })
+        _print(msg='init over!', logger=self.lg)
+
+        return self.driver
+
+    def _get_random_proxy_ip(self) -> str:
+        '''
+        得到一个随机代理
+        :return: 格式: ip:port or ''
+        '''
+        ip_object = IpPools(type=self.ip_pool_type, high_conceal=self.high_conceal)
+        _ = ip_object._get_random_proxy_ip()
+        proxy_ip = re.compile(r'https://|http://').sub('', _) if isinstance(_, str) else ''
+
+        return proxy_ip
+
+    def _get_driver(self):
+        '''
+        得到driver对象
+        :return:
+        '''
+        return self.driver
+
+    def __del__(self):
+        try:
+            del self.lg
+        except:
+            pass
+        try:
+            self.driver
+        except:
+            pass
+        collect()
 
 class ChromeExtensioner(object):
     '''

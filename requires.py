@@ -48,6 +48,8 @@ install_requires = [
     'pypinyin',             # 汉字转拼音包(from pypinyin import lazy_pinyin)
     'bitarray',             # bloom filter需要
     'click',                # shell交互
+    'websockets==7.0',      # 大于7.0的话 python3.5.2无法安装pyppeteer
+    'pyppeteer',            # chromium devtools protocol puppeteer
 
     # 抓包
     'scapy',                # 功能强大的基于Python的交互式数据包操作程序和库

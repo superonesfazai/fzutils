@@ -12,7 +12,9 @@ from .fz_phantomjs import (
     PHANTOMJS,
     FIREFOX,
     PC,
-    PHONE,)
+    PHONE,
+    ChromiumPuppeteer,
+    PYPPETEER,)
 
 __all__ = [
     'BaseDriver',       # 驱动控制类
@@ -20,3 +22,4 @@ __all__ = [
 
 class BaseDriver(MyPhantomjs):
     pass
+
