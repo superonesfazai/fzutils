@@ -2,6 +2,7 @@
 
 from requests import get
 import gc
+import re
 from gc import collect
 from pickle import dumps
 from random import randint
@@ -14,6 +15,7 @@ from .time_utils import *
 __all__ = [
     'MyIpPools',
     'IpPools',
+    'get_random_proxy_ip_from_ip_pool',
 ]
 
 ip_proxy_pool = 'IPProxyPool'
@@ -150,4 +152,16 @@ class MyIpPools(object):
 
 class IpPools(MyIpPools):
     pass
+
+def get_random_proxy_ip_from_ip_pool(ip_pool_type=tri_ip_pool, high_conceal=True) -> str:
+    '''
+    得到一个随机代理
+    :return: str 格式: ip:port or ''
+    '''
+    ip_object = IpPools(type=ip_pool_type, high_conceal=high_conceal)
+    _ = ip_object._get_random_proxy_ip()
+    proxy_ip = re.compile(r'https://|http://').sub('', _) if isinstance(_, str) else ''
+    # print(proxy_ip)
+
+    return proxy_ip
 

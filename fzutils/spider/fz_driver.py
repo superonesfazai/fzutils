@@ -14,7 +14,8 @@ from .fz_phantomjs import (
     PC,
     PHONE,
     ChromiumPuppeteer,
-    PYPPETEER,)
+    PYPPETEER,
+    ChromeSwitchProxyExtensioner,)
 
 __all__ = [
     'BaseDriver',       # 驱动控制类

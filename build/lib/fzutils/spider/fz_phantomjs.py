@@ -10,11 +10,10 @@ import sys
 sys.path.append('..')
 
 from ..ip_pools import (
-    MyIpPools,
     ip_proxy_pool,
-    IpPools,
     fz_ip_pool,
-    tri_ip_pool,)
+    tri_ip_pool,
+    get_random_proxy_ip_from_ip_pool,)
 from ..internet_utils import (
     get_random_pc_ua,
     get_random_phone_ua,
@@ -30,7 +29,8 @@ from ..linux_utils import get_system_type
 #     IpPools,
 #     ip_proxy_pool,
 #     fz_ip_pool,
-#     tri_ip_pool,)
+#     tri_ip_pool,
+#     get_random_proxy_ip_from_ip_pool,)
 # from fzutils.internet_utils import (
 #     get_random_pc_ua,
 #     get_random_phone_ua,
@@ -68,7 +68,8 @@ from zipfile import ZipFile
 __all__ = [
     'MyPhantomjs',
     'BaseDriver',
-    'ChromeExtensioner',
+    'ChromeSwitchProxyExtensioner',
+    'ChromiumPuppeteer',
 ]
 
 PHANTOMJS_DRIVER_PATH = '/Users/afa/myFiles/tools/phantomjs-2.1.1-macosx/bin/phantomjs'
@@ -204,7 +205,9 @@ class MyPhantomjs(object):
 
         # 设置代理
         if self.driver_use_proxy:
-            proxy_ip = self._get_random_proxy_ip()
+            proxy_ip = get_random_proxy_ip_from_ip_pool(
+                ip_pool_type=self.ip_pool_type,
+                high_conceal=self.high_conceal,)
             assert proxy_ip != '', '给chrome设置代理失败, 异常抛出!'
             chrome_options.add_argument('--proxy-server=http://{0}'.format(proxy_ip))
 
@@ -250,7 +253,9 @@ class MyPhantomjs(object):
 
         # 设置代理
         if self.driver_use_proxy:                                                   # 可以firefox通过about:config查看是否正确设置
-            proxy_ip = self._get_random_proxy_ip()
+            proxy_ip = get_random_proxy_ip_from_ip_pool(
+                ip_pool_type=self.ip_pool_type,
+                high_conceal=self.high_conceal,)
             assert proxy_ip != '', '给firefox设置代理失败, 异常抛出!'
             ip = proxy_ip.split(':')[0]
             port = proxy_ip.split(':')[1]
@@ -290,7 +295,9 @@ class MyPhantomjs(object):
         给phantomjs切换代理
         :return:
         '''
-        proxy_ip = self._get_random_proxy_ip()
+        proxy_ip = get_random_proxy_ip_from_ip_pool(
+            ip_pool_type=self.ip_pool_type,
+            high_conceal=self.high_conceal,)
         assert proxy_ip != '', '动态切换ip失败!'
 
         try:
@@ -405,17 +412,6 @@ class MyPhantomjs(object):
             _print(msg='遇到错误:', logger=self.lg, exception=e, log_level=2)
 
         return cookies_str
-
-    def _get_random_proxy_ip(self) -> str:
-        '''
-        得到一个随机代理
-        :return: 格式: ip:port or ''
-        '''
-        ip_object = MyIpPools(type=self.ip_pool_type, high_conceal=self.high_conceal)
-        _ = ip_object._get_random_proxy_ip()
-        proxy_ip = re.compile(r'https://|http://').sub('', _) if isinstance(_, str) else ''
-
-        return proxy_ip
 
     def _wash_html(self, html):
         '''
@@ -641,7 +637,11 @@ class ChromiumPuppeteer(object):
                  driver_cookies=None,
                  driver_auto_close=True,
                  driver_dumpio=False,
-                 driver_devtools=False,):
+                 driver_devtools=False,
+                 disable_extensions=True,
+                 load_extensions=False,
+                 extension_is_switch_proxy=False,
+                 extension_path=None,):
         """
         :param type:
         :param load_images:
@@ -657,6 +657,10 @@ class ChromiumPuppeteer(object):
         :param driver_auto_close:
         :param driver_dumpio: 把无头浏览器进程的 stderr 核 stdout pip 到主程序，也就是设置为 True 的话，chromium console 的输出就会在主程序中被打印出来
         :param driver_devtools: 是否打开devtools
+        :param disable_extensions: 是否禁用所有扩展
+        :param load_extensions: 是否加载扩展程序
+        :param extension_is_switch_proxy: 扩展程序是否为修改代理的扩展
+        :param extension_path: 扩展程序的路径
         """
         super(ChromiumPuppeteer, self).__init__()
         self.type = type
@@ -672,6 +676,10 @@ class ChromiumPuppeteer(object):
         self.driver_auto_close = driver_auto_close
         self.driver_dumpio = driver_dumpio
         self.driver_devtools = driver_devtools
+        self.disable_extensions = disable_extensions
+        self.load_extensions = load_extensions
+        self.extension_is_switch_proxy = extension_is_switch_proxy
+        self.extension_path = extension_path
         self.driver = None
 
     async def create_chromium_puppeteer_browser(self,) -> PyppeteerBrowser:
@@ -679,13 +687,24 @@ class ChromiumPuppeteer(object):
         # 设置代理
         proxy_ip = ''
         if self.driver_use_proxy:
-            proxy_ip = self._get_random_proxy_ip()
+            proxy_ip = get_random_proxy_ip_from_ip_pool(
+                ip_pool_type=self.ip_pool_type,
+                high_conceal=self.high_conceal,)
             assert proxy_ip != '', '给chrome设置代理失败, 异常抛出!'
             # print(proxy_ip)
 
+        if self.load_extensions:
+            assert self.extension_path is not None, '未设置extension_path'
+            # 设置启用所有扩展
+            self.disable_extensions = False
+            if self.extension_is_switch_proxy:
+                # --proxy-server不进行设置, 因为已在修改代理的扩展中进行设置代理
+                self.driver_use_proxy = False
+
         # TODO chrome设置代理进行请求成功率较低
         driver_args = [
-            '--disable-extensions',
+            # 禁用扩展
+            '--disable-extensions' if self.disable_extensions else '',
             '--hide-scrollbars',
             '--disable-bundled-ppapi-flash',
             '--mute-audio',
@@ -694,8 +713,10 @@ class ChromiumPuppeteer(object):
             '--disable-infobars',
             '--disable-setuid-sandbox',
             '--disable-gpu',
-            '--proxy-server=http://{0}'.format(proxy_ip) if proxy_ip != '' else '',
+            '--proxy-server=http://{0}'.format(proxy_ip) if proxy_ip != '' and self.driver_use_proxy else '',
             '--user-agent={0}'.format(get_random_pc_ua() if self.user_agent_type == PC else get_random_phone_ua()),
+            # 修改代理的扩展
+            '--load-extension={0}'.format(self.extension_path) if self.load_extensions else '',
         ]
         driver_args = delete_list_null_str(_list=driver_args)
         self.driver = await chromium_launch({
@@ -710,17 +731,6 @@ class ChromiumPuppeteer(object):
         _print(msg='init over!', logger=self.lg)
 
         return self.driver
-
-    def _get_random_proxy_ip(self) -> str:
-        '''
-        得到一个随机代理
-        :return: 格式: ip:port or ''
-        '''
-        ip_object = IpPools(type=self.ip_pool_type, high_conceal=self.high_conceal)
-        _ = ip_object._get_random_proxy_ip()
-        proxy_ip = re.compile(r'https://|http://').sub('', _) if isinstance(_, str) else ''
-
-        return proxy_ip
 
     def _get_driver(self):
         '''
@@ -740,12 +750,12 @@ class ChromiumPuppeteer(object):
             pass
         collect()
 
-class ChromeExtensioner(object):
+class ChromeSwitchProxyExtensioner(object):
     '''
     chrome扩展插件: 旨在动态设置代理
         用法:
             chrome_options = webdriver.ChromeOptions()
-            ext = ChromeExtensioner()
+            ext = ChromeSwitchProxyExtensioner()
             chrome_options.add_argument('--load-extension={0}'.format(ext.get_extension_dir_path()))
     '''
     def __init__(self, extension_dir='./extensions', schema='http',
@@ -829,9 +839,9 @@ class ChromeExtensioner(object):
                 mode: "fixed_servers",
                 rules: {{
                     singleProxy: {{
-                        scheme: "{0}",
-                        host: "{1}",
-                        port: {2}
+                        scheme: "{schema}",
+                        host: "{host}",
+                        port: {port}
                     }},
                     bypassList: ["foobar.com"]
                 }}
@@ -843,15 +853,20 @@ class ChromeExtensioner(object):
             function (details) {{
                 return {{
                     authCredentials: {{
-                        username: "{3}",
-                        password: "{4}"
+                        username: "{username}",
+                        password: "{password}"
                     }}
                 }};
             }},
             {{ urls: ["<all_urls>"] }},
             [ 'blocking' ]
         );
-        '''.format(self.ip_pools_info['schema'], self.ip_pools_info['host'], self.ip_pools_info['port'], self.ip_pools_info['username'], self.ip_pools_info['password'])
+        '''.format(
+            schema=self.ip_pools_info['schema'],
+            host=self.ip_pools_info['host'],
+            port=self.ip_pools_info['port'],
+            username=self.ip_pools_info['username'],
+            password=self.ip_pools_info['password'])
 
 def test_fz_driver_obj():
     """
