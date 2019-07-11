@@ -77,6 +77,7 @@ class Crawler(object):
         self._set_headers()
         # TODO logger name 都统一为self.lg
         self.lg = logger
+        self.headless = headless
         if log_print:
             self.log_save_path = log_save_path
             self.logger_name = logger_name
@@ -90,7 +91,7 @@ class Crawler(object):
                 load_images=driver_load_images,
                 executable_path=driver_executable_path,
                 logger=self.lg,
-                headless=headless,
+                headless=self.headless,
                 user_agent_type=user_agent_type,
                 driver_obj=driver_obj,
                 ip_pool_type=ip_pool_type,

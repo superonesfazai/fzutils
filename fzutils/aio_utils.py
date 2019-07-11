@@ -4,13 +4,16 @@
 aio 异步utils
 """
 
-import re
 from time import time
 from gc import collect
 from asyncio import get_event_loop, wait
 from scrapy.selector import Selector
 
-from .ip_pools import ip_proxy_pool, fz_ip_pool
+from .ip_pools import (
+    ip_proxy_pool,
+    fz_ip_pool,
+    tri_ip_pool,
+)
 from .spider.fz_aiohttp import AioHttp
 from .common_utils import _print
 from .spider.fz_requests import (
@@ -18,21 +21,22 @@ from .spider.fz_requests import (
     PROXY_TYPE_HTTP,
     PROXY_TYPE_HTTPS,)
 from .internet_utils import get_base_headers
+from .spider.fz_phantomjs import PHANTOMJS_DRIVER_PATH
 from .spider.fz_driver import (
     BaseDriver,
     PC,
-    PHANTOMJS,)
-from .spider.fz_phantomjs import PHANTOMJS_DRIVER_PATH
+    PHANTOMJS,
+)
 
 __all__ = [
     'Asyncer',
-    'get_async_execute_result',     # 获取异步执行结果
-    'async_wait_tasks_finished',    # 异步等待目标tasks完成
-    'TasksParamsListObj',           # 任务参数List
-    'unblock_request',              # 非阻塞的request请求
-    'unblock_get_driver_obj',       # 异步获取driver obj
-    'unblock_request_by_driver',    # 非阻塞的request by driver
-    'unblock_func',                 # 异步函数非阻塞
+    'get_async_execute_result',                         # 获取异步执行结果
+    'async_wait_tasks_finished',                        # 异步等待目标tasks完成
+    'TasksParamsListObj',                               # 任务参数List
+    'unblock_request',                                  # 非阻塞的request请求
+    'unblock_get_driver_obj',                           # 异步获取driver obj
+    'unblock_request_by_driver',                        # 非阻塞的request by driver
+    'unblock_func',                                     # 异步函数非阻塞
 ]
 
 class Asyncer(object):

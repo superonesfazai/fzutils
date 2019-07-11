@@ -15,6 +15,8 @@
 from time import sleep
 
 from selenium import webdriver
+# WebDriver
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -24,7 +26,10 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import (
     TimeoutException,
     WebDriverException,
-    NoSuchElementException,)
+    NoSuchElementException,
+)
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
+
 
 # eg: 用于验证某些内容的颜色作为测试的一部分, 比如登入按钮的颜色变化!!
 # assert login_button_background_colour.hex == '#ff69b4'
