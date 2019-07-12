@@ -11,6 +11,8 @@ chrome remote interface
 """
 
 from gc import collect
+from termcolor import colored
+from asyncio import sleep as async_sleep
 from ..ip_pools import (
     tri_ip_pool,
     get_random_proxy_ip_from_ip_pool,
@@ -143,6 +145,8 @@ class ChromiumPuppeteer(object):
             # 禁用GPU硬件加速
             '--disable-gpu',
             '--allow-running-insecure-content',
+            # 写入共享内存文件/tmp而不是/dev/shm
+            '--disable-dev-shm-usage',
             '--proxy-server=http://{0}'.format(proxy_ip) if proxy_ip != '' and self.driver_use_proxy else '',
             '--user-agent={0}'.format(get_random_pc_ua() if self.user_agent_type == PC else get_random_phone_ua()),
             # 修改代理的扩展
@@ -179,3 +183,116 @@ class ChromiumPuppeteer(object):
         except:
             pass
         collect()
+
+class NetworkInterceptor(object):
+    """网络拦截器: 可根据具体需求进行继承重载!"""
+    def __init__(self,
+                 logger=None,
+                 load_images=False):
+        """
+        :param logger:
+        :param load_images: 是否加载图片
+        """
+        self.lg = logger
+        self.load_images = load_images
+
+    async def intercept_request(self, request: PyppeteerRequest):
+        """
+        截获request(do something you like ...)
+        :param request:
+        :return:
+        """
+        url = request.url
+        headers = request.headers
+        post_data = request.postData
+        request_resource_type = request.resourceType
+
+        msg='[{:8s}] url: {}, post_data: {}'.format('request', url, post_data,)
+        _print(msg=msg, logger=self.lg, log_level=1)
+
+        if not self.load_images and request_resource_type in ['image', 'media']:
+            await request.abort()
+        else:
+            # 放行请求
+            await request.continue_()
+
+    async def intercept_response(self, response: PyppeteerResponse):
+        """
+        截获response(do something you like ...)
+        :param response:
+        :return:
+        """
+        response_status = response.status
+        request = response.request
+        request_url = request.url
+        request_headers = request.headers
+        request_method = request.method
+        request_resource_type = request.resourceType
+        post_data = request.postData
+
+        msg = '[{:8s}] request_resource_type: {:10s}, request_method: {:6s}, response_status: {:5s}, request_url: {}'.format(
+            'response',
+            request_resource_type,
+            request_method,
+            str(response_status),
+            request_url, )
+        _print(msg=msg, logger=self.lg, log_level=1)
+
+        if request_resource_type in ['xhr', 'fetch', 'document', 'script', 'websocket']:
+            try:
+                body = await response.text()
+                intercept_body = body[0:1500].replace('\n', '').replace('\t', '').replace('  ', '')
+                msg = '[{:8s}] {}'.format(colored('@-data-@', 'green'), intercept_body)
+                _print(msg=msg, logger=self.lg)
+            except (PyppeteerNetworkError, IndexError, Exception) as e:
+                _print(msg='遇到错误:', logger=self.lg, log_level=2, exception=e)
+
+        else:
+            pass
+
+    async def request_finished(self, request: PyppeteerRequest):
+        """
+        请求完成
+        :param kwargs:
+        :return:
+        """
+        pass
+
+    def __del__(self):
+        try:
+            del self.lg
+            del self.load_images
+        except:
+            pass
+        collect()
+
+async def goto_plus(page: PyppeteerPage,
+                    url: str,
+                    options: dict,
+                    num_retries: int=6,
+                    sleep_time: (float, int)=2.):
+    """
+    goto_plus(增加请求成功率!)
+    :param page:
+    :param url:
+    :param options:
+    :param num_retries: 避免无限循环
+    :param sleep_time: 合理的num_retries跟sleep_time能提高成功率!
+    :return:
+    """
+    while True:
+        try:
+            await page.goto(
+                url=url,
+                options=options,)
+            break
+        except (PyppeteerNetworkError, PyppeteerPageError) as e:
+            # 无网络 'net::ERR_INTERNET_DISCONNECTED', 'net::ERR_TUNNEL_CONNECTION_FAILED'
+            if num_retries > 0:
+                if 'net::' in str(e):
+                    num_retries -= 1
+                    await async_sleep(sleep_time)
+                else:
+                    raise e
+            else:
+                raise e
