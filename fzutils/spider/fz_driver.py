@@ -13,16 +13,9 @@ from .fz_phantomjs import (
     FIREFOX,
     PC,
     PHONE,)
-from .chrome_remote_interface import (
-    ChromiumPuppeteer,
-    PYPPETEER,
-)
-from .chrome_extensions import ChromeSwitchProxyExtensioner
 
 __all__ = [
     'BaseDriver',
-    'ChromiumPuppeteer',
-    'ChromeSwitchProxyExtensioner',
 ]
 
 class BaseDriver(MyPhantomjs):

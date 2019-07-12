@@ -36,11 +36,12 @@ def set_logger(log_file_name,
 
     # 创建一个handler，用于写入日志文件
     # fh = LoggingFileHandler(os.path.join(os.getcwd(), './my_log.txt'))
+    # 通过下面这句话就可以输出中文, encoding='utf-8'
     file_handler = handlers.RotatingFileHandler(
         filename=log_file_name,
         maxBytes=1024 * 1024,
         backupCount=5,
-        encoding='utf-8',)  # 通过下面这句话就可以输出中文, encoding='utf-8'
+        encoding='utf-8',)
 
     file_handler.setLevel(file_log_level)
 

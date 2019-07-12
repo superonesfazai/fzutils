@@ -94,7 +94,7 @@ def get_shelf_time_and_delete_time(tmp_data, is_delete, shelf_time, delete_time)
                     shelf_time = tmp_shelf_time
                     delete_time = tmp_down_time
                     if delete_time > shelf_time:
-                        delete_time = str(timestamp_to_regulartime(datetime_to_timestamp(shelf_time) - 60 * 60 * 12))
+                        shelf_time = _
                     else:
                         pass
 
@@ -118,7 +118,7 @@ def get_shelf_time_and_delete_time(tmp_data, is_delete, shelf_time, delete_time)
                     if shelf_time > delete_time:
                         # print('上架时间点大于下架时间点')
                         # 修改上架时间小于下架时间
-                        shelf_time = str(timestamp_to_regulartime(datetime_to_timestamp(delete_time) - 60 * 60 * 12))
+                        delete_time = _
                     else:
                         pass
 

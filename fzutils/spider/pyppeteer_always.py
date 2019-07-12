@@ -12,3 +12,4 @@ from pyppeteer.network_manager import Request as PyppeteerRequest
 from pyppeteer.network_manager import Response as PyppeteerResponse
 from pyppeteer.errors import NetworkError as PyppeteerNetworkError
 from pyppeteer.page import Page as PyppeteerPage
+from pyppeteer.errors import PageError as PyppeteerPageError

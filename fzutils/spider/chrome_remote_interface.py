@@ -142,6 +142,7 @@ class ChromiumPuppeteer(object):
             '--disable-setuid-sandbox',
             # 禁用GPU硬件加速
             '--disable-gpu',
+            '--allow-running-insecure-content',
             '--proxy-server=http://{0}'.format(proxy_ip) if proxy_ip != '' and self.driver_use_proxy else '',
             '--user-agent={0}'.format(get_random_pc_ua() if self.user_agent_type == PC else get_random_phone_ua()),
             # 修改代理的扩展
