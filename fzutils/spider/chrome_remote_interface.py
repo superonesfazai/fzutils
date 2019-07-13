@@ -31,7 +31,10 @@ from ..internet_utils import (
 )
 
 __all__ = [
-    'ChromiumPuppeteer',
+    'ChromiumPuppeteer',                        # chromium 操作者
+    'goto_plus',
+    'NetworkInterceptor',                       # 网络拦截器
+    'bypass_chrome_spiders_detection',          # 绕过chrome反爬虫检测[非阻塞]
 ]
 
 # 启动类型
@@ -166,7 +169,7 @@ class ChromiumPuppeteer(object):
 
         return self.driver
 
-    def _get_driver(self):
+    def _get_driver(self) -> PyppeteerBrowser:
         '''
         得到driver对象
         :return:
@@ -238,10 +241,10 @@ class NetworkInterceptor(object):
             request_url, )
         _print(msg=msg, logger=self.lg, log_level=1)
 
-        if request_resource_type in ['xhr', 'fetch', 'document', 'script', 'websocket']:
+        if request_resource_type in ['xhr', 'fetch', 'document', 'script', 'websocket', 'eventsource', 'other']:
             try:
                 body = await response.text()
-                intercept_body = body[0:1500].replace('\n', '').replace('\t', '').replace('  ', '')
+                intercept_body = body[0:2500].replace('\n', '').replace('\t', '').replace('  ', '')
                 msg = '[{:8s}] {}'.format(colored('@-data-@', 'green'), intercept_body)
                 _print(msg=msg, logger=self.lg)
             except (PyppeteerNetworkError, IndexError, Exception) as e:
@@ -249,6 +252,28 @@ class NetworkInterceptor(object):
 
         else:
             pass
+
+    async def request_failed(self, request: PyppeteerRequest):
+        """
+        请求失败
+        :param request:
+        :return:
+        """
+        url = request.url
+        headers = request.headers
+        post_data = request.postData
+        request_resource_type = request.resourceType
+
+        msg = '[{:8s}] request_resource_type: {:10s}, url: {}, post_data: {}'.format(
+            colored('req_fail', 'red'),
+            request_resource_type,
+            url,
+            post_data,)
+
+        if not self.load_images and request_resource_type in ['image', 'media']:
+            pass
+        else:
+            _print(msg=msg, logger=self.lg, log_level=1)
 
     async def request_finished(self, request: PyppeteerRequest):
         """
@@ -296,3 +321,62 @@ async def goto_plus(page: PyppeteerPage,
                     raise e
             else:
                 raise e
+
+async def bypass_chrome_spiders_detection(page: PyppeteerPage, logger=None) -> None:
+    """
+    绕过chrome反爬虫检测[非阻塞]
+    :return:
+    """
+    try:
+        # 注意: 避免反爬检测window.navigator.webdriver为true, 认为非正常浏览器
+        await page.evaluate(
+            pageFunction="""
+                () => {
+                    Object.defineProperty(navigator, 'webdriver', {
+                        get: () => false,
+                    });
+                }
+                """)
+        # 绕过chrome属性检测
+        await page.evaluate(
+            pageFunction="""
+                () => {
+                    window.navigator.chrome = {
+                        runtime: {},
+                    };
+                }
+                """)
+        # 绕过Permissions检测
+        await page.evaluate(
+            pageFunction="""
+                () => {
+                    const originalQuery = window.navigator.permissions.query;
+                    return window.navigator.permissions.query = (parameters) => (
+                        parameters.name === 'notifications' ?
+                        Promise.resolve({ state: Notification.permission }) :
+                        originalQuery(parameters)
+                    );
+                }
+                """)
+        # 绕过Plugins长度检测
+        await page.evaluate(
+            pageFunction="""
+                () => {
+                    Object.defineProperty(navigator, 'plugins', {
+                        get: () => [1, 2, 3, 4, 5],
+                    });
+                }
+                """)
+        # 绕过the languages检测
+        await page.evaluate(
+            pageFunction="""
+                () => {
+                    Object.defineProperty(navigator, 'languages', {
+                        get: () => ['en-US', 'en'],
+                    });
+                }
+                """)
+    except Exception as e:
+        _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
+
+    return
