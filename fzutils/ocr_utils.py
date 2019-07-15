@@ -10,14 +10,6 @@
 光学识别
 """
 
-# mac
-# $ brew install opencv
-from cv2 import (
-    imread,
-    cvtColor,
-    COLOR_BGR2GRAY,
-    matchTemplate,
-    TM_CCOEFF_NORMED,)
 from numpy import where
 from aip import AipOcr
 import requests
@@ -370,6 +362,19 @@ def dichotomy_match_gap_distance(bg_img_path, slide_img_path) -> (int, float):
     如果结果数量为0，则说明阈值太大，右端应该减小，即R -= (R - L) / 2；
     当结果数量为1时，说明阈值刚好
     """
+    try:
+        # mac
+        # 1. $ brew install opencv
+        # 2. $ pip3 install opencv-python
+        from cv2 import (
+            imread,
+            cvtColor,
+            COLOR_BGR2GRAY,
+            matchTemplate,
+            TM_CCOEFF_NORMED, )
+    except ImportError as e:
+        raise e
+
     img_rgb = imread(slide_img_path)
     img_gray = cvtColor(img_rgb, COLOR_BGR2GRAY)
     template = imread(bg_img_path, 0)

@@ -21,7 +21,6 @@ install_requires = [
     'numpy',
     'pprint',
     'chardet',
-    'bs4',                  # 页面解析, 但解析速度较慢! [doc](https://www.crummy.com/software/BeautifulSoup/bs4/doc/index.zh.html)
     'scrapy',
     'greenlet==0.4.14',     # 之前0.4.13, 改成0.4.14(gevent依靠)
     'gevent',               # celery改变单个worker并发量必备库(运行模式:gevent)
@@ -118,6 +117,9 @@ install_requires = [
 
     # db
     # 'db',
+
+    # 页面解析
+    # 'bs4',                  # 页面解析, 但解析速度较慢! [doc](https://www.crummy.com/software/BeautifulSoup/bs4/doc/index.zh.html)
 
     # url
     # 'furl',                 # 可轻松解析和操作URL
