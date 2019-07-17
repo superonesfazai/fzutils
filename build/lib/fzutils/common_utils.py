@@ -164,14 +164,18 @@ def get_random_int_number(start_num=0, end_num=1000):
     '''
     return randint(start_num, end_num)
 
-def wash_sensitive_info(data, replace_str_list=None, add_sensitive_str_list=None):
-    '''
+def wash_sensitive_info(data,
+                        replace_str_list=None,
+                        add_sensitive_str_list=None,
+                        is_default_filter: bool=True):
+    """
     清洗敏感字符
     :param data: 待清洗的str
     :param replace_str_list: 需要被替换的list(会被替换为元组中的第2个元素) eg: [('123', '456'), ...]
     :param add_sensitive_str_list: 增加的过滤敏感词汇(会被替换为'') eg: ['123', '456', ...]
+    :param is_default_filter: 是否启用默认过滤
     :return: a str
-    '''
+    """
     data = data.lower()
     if replace_str_list is not None:            # replace
         if isinstance(replace_str_list, list):
@@ -195,14 +199,18 @@ def wash_sensitive_info(data, replace_str_list=None, add_sensitive_str_list=None
         else:
             raise TypeError('add_sensitive_str_list只支持list类型! eg: ["123", "456", ...]')
 
-    # TODO 不过滤\u200a, \u200d类似字符(显示后有实际意义)
-    tmp_str = r'''
-    淘宝|taobao|TAOBAO|天猫|tmall|TMALL|
-    京东|JD|jd|红书爸爸|共产党|邪教|艹|折800|
-    杀人|胡锦涛|江泽民|习近平|小红薯|毛泽东|
-    拉粑粑
-    '''.replace(' ', '').replace('\n', '')
-    data = re.compile(tmp_str).sub('', data)
+    if is_default_filter:
+        # TODO 不过滤\u200a, \u200d类似字符(显示后有实际意义)
+        tmp_str = r'''
+        淘宝|taobao|TAOBAO|天猫|tmall|TMALL|
+        京东|JD|jd|红书爸爸|共产党|邪教|艹|折800|
+        杀人|胡锦涛|江泽民|习近平|小红薯|毛泽东|
+        拉粑粑
+        '''.replace(' ', '').replace('\n', '')
+        data = re.compile(tmp_str).sub('', data)
+    else:
+        pass
+
     # '\xa0' 是不间断空白符 &nbsp;
     data = re.compile(r'\xa0').sub(' ', data)
 

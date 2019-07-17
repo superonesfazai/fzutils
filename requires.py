@@ -49,6 +49,7 @@ install_requires = [
     'click',                # shell交互
     'websockets==7.0',      # 大于7.0的话 python3.5.2无法安装pyppeteer
     'pyppeteer',            # chromium devtools protocol puppeteer
+    'bunch',                # 像操作类属性一样操作dict, 可序列化
 
     # 抓包
     'scapy',                # 功能强大的基于Python的交互式数据包操作程序和库
