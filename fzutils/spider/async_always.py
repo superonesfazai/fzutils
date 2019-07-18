@@ -12,7 +12,12 @@
 使用只需: from fzutils.spider.async_always import *
 """
 
+# 异常捕获美化
+import better_exceptions
+better_exceptions.hook()
+
 import re
+from gc import collect
 from time import sleep
 from pprint import pprint
 from scrapy.selector import Selector

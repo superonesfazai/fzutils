@@ -6,6 +6,7 @@
 @connect : superonesfazai@gmail.com
 '''
 
+import better_exceptions
 from sys import exc_info
 from traceback import format_tb
 
@@ -44,18 +45,22 @@ def catch_exceptions(logger=None, default_res=None):
     :return:
     """
     def decorator(func):
+        nonlocal logger, default_res
         def handle_problems(*args, **kwargs):
+            nonlocal logger, default_res
             try:
-                return func(*args, **kwargs)
+                default_res = func(*args, **kwargs)
             except Exception:
                 exc_type, exc_instance, exc_traceback = exc_info()
                 formatted_traceback = ''.join(format_tb(exc_traceback))
-                message = '\n{0}\n{1}:\n{2}'.format(
+                message = '\n{0}\n{1}: {2}'.format(
                     formatted_traceback,
                     exc_type.__name__,
                     exc_instance,)
                 # raise exc_type(message)
 
+                # 放置此处进行异常优化捕获
+                better_exceptions.hook()
                 # print(logger)
                 if logger is None:
                     print(exc_type(message))
@@ -65,7 +70,9 @@ def catch_exceptions(logger=None, default_res=None):
                 # 其他你喜欢的操作
             finally:
                 return default_res
+
         return handle_problems
+
     return decorator
 
 def catch_exceptions_with_class_logger(default_res=None):
@@ -87,23 +94,30 @@ def catch_exceptions_with_class_logger(default_res=None):
     :return:
     """
     def decorator(func):
+        nonlocal default_res
         def handle_problems(self, *args, **kwargs):
+            nonlocal default_res
             # print(self.lg)
             try:
-                return func(self, *args, **kwargs)
+                default_res = func(self, *args, **kwargs)
             except Exception:
+                # 异常类型, 异常说明, 发生异常的traceback
                 exc_type, exc_instance, exc_traceback = exc_info()
                 formatted_traceback = ''.join(format_tb(exc_traceback))
-                message = '\n{0}\n{1}:\n{2}'.format(
+                message = '\n{0}\n{1}: {2}'.format(
                     formatted_traceback,
                     exc_type.__name__,
                     exc_instance,)
                 # raise exc_type(message)
 
+                # 放置此处进行异常优化捕获
+                better_exceptions.hook()
                 self.lg.error('遇到错误:', exc_info=True)
 
                 # 其他你喜欢的操作
             finally:
                 return default_res
+
         return handle_problems
+
     return decorator
