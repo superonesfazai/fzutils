@@ -167,22 +167,24 @@ def get_random_int_number(start_num=0, end_num=1000):
 def wash_sensitive_info(data,
                         replace_str_list=None,
                         add_sensitive_str_list=None,
-                        is_default_filter: bool=True):
+                        is_default_filter: bool=True,
+                        is_lower=True,):
     """
     清洗敏感字符
     :param data: 待清洗的str
     :param replace_str_list: 需要被替换的list(会被替换为元组中的第2个元素) eg: [('123', '456'), ...]
     :param add_sensitive_str_list: 增加的过滤敏感词汇(会被替换为'') eg: ['123', '456', ...]
     :param is_default_filter: 是否启用默认过滤
+    ":param is_lower: bool, ** 清洗html时必须设置为False(避免错误清洗,)
     :return: a str
     """
-    data = data.lower()
+    data = data.lower() if is_lower else data
     if replace_str_list is not None:            # replace
         if isinstance(replace_str_list, list):
             for item in replace_str_list:
                 try:
-                    before_str = r'{0}'.format(item[0]).lower()
-                    end_str = r'{0}'.format(item[1]).lower()
+                    before_str = r'{0}'.format(item[0]).lower() if is_lower else r'{0}'.format(item[0])
+                    end_str = r'{0}'.format(item[1]).lower() if is_lower else r'{0}'.format(item[1])
                 except IndexError:
                     raise IndexError('获取replace_str_list的子元素时索引异常, 请检查!')
                 data = re.compile(before_str).sub(end_str, data)
@@ -193,7 +195,8 @@ def wash_sensitive_info(data,
         if isinstance(add_sensitive_str_list, list):
             for item in add_sensitive_str_list:
                 try:
-                    data = re.compile(r'{0}'.format(item).lower()).sub('', data)
+                    _str = r'{0}'.format(item).lower() if is_lower else r'{0}'.format(item)
+                    data = re.compile(_str).sub('', data)
                 except:
                     continue
         else:
