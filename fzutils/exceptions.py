@@ -34,7 +34,7 @@ def catch_exceptions(logger=None, default_res=None):
     """
     异常捕获装饰器(只适用于常规函数, 不适用于协程函数)
         simple use:
-            @try_except(default_res='test')
+            @catch_exceptions(default_res='test')
             def test():
                 assert '1' != ''
 
@@ -83,7 +83,7 @@ def catch_exceptions_with_class_logger(default_res=None):
                 def __init__():
                     self.lg = xxx
 
-                @try_except(default_res='test')
+                @catch_exceptions_with_class_logger(default_res='test')
                 def test():
                     assert '1' != ''
 
