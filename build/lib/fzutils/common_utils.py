@@ -175,7 +175,7 @@ def wash_sensitive_info(data,
     :param replace_str_list: 需要被替换的list(会被替换为元组中的第2个元素) eg: [('123', '456'), ...]
     :param add_sensitive_str_list: 增加的过滤敏感词汇(会被替换为'') eg: ['123', '456', ...]
     :param is_default_filter: 是否启用默认过滤
-    ":param is_lower: bool, ** 清洗html时必须设置为False(避免错误清洗)
+    ":param is_lower: bool, ** 清洗html时必须设置为False(避免错误清洗,)
     :return: a str
     """
     data = data.lower() if is_lower else data

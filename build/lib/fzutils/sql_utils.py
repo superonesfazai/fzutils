@@ -13,7 +13,6 @@ sql utils
 
 import sqlite3
 from pymssql import *
-import asyncio
 from time import sleep
 from redis import (
     ConnectionPool,

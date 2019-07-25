@@ -11,9 +11,11 @@
 sql utils
 """
 
+import better_exceptions
+better_exceptions.hook()
+
 import sqlite3
 from pymssql import *
-import asyncio
 from time import sleep
 from redis import (
     ConnectionPool,
