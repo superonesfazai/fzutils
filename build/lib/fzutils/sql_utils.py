@@ -11,6 +11,9 @@
 sql utils
 """
 
+import better_exceptions
+better_exceptions.hook()
+
 import sqlite3
 from pymssql import *
 from time import sleep

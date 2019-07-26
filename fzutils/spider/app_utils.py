@@ -10,6 +10,9 @@
 app utils
 """
 
+import better_exceptions
+better_exceptions.hook()
+
 from gc import collect
 from random import uniform
 from asyncio import get_event_loop

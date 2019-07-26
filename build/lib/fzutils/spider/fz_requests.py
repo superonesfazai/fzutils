@@ -7,6 +7,9 @@
 @connect : superonesfazai@gmail.com
 '''
 
+import better_exceptions
+better_exceptions.hook()
+
 import sys
 sys.path.append('..')
 

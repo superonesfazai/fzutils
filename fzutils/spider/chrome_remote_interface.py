@@ -10,6 +10,9 @@
 chrome remote interface
 """
 
+import better_exceptions
+better_exceptions.hook()
+
 from gc import collect
 from termcolor import colored
 from asyncio import sleep as async_sleep

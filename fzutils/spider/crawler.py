@@ -10,6 +10,9 @@
 爬虫基类
 """
 
+import better_exceptions
+better_exceptions.hook()
+
 from logging import INFO, ERROR
 from gc import collect
 from asyncio import (
@@ -55,7 +58,8 @@ class Crawler(object):
                  driver_load_images=False,
                  headless=False,
                  driver_obj=None,
-                 driver_cookies=None,):
+                 driver_cookies=None,
+                 chrome_enable_automation=False,):
         """
         :param ip_pool_type: 使用ip池的类型
         :param user_agent_type:
@@ -70,6 +74,7 @@ class Crawler(object):
         :param headless:
         :param driver_obj:
         :param driver_cookies:
+        :param chrome_enable_automation:
         """
         super(Crawler, self).__init__()
         self.ip_pool_type = ip_pool_type
@@ -95,7 +100,8 @@ class Crawler(object):
                 user_agent_type=user_agent_type,
                 driver_obj=driver_obj,
                 ip_pool_type=ip_pool_type,
-                driver_cookies=driver_cookies,)
+                driver_cookies=driver_cookies,
+                chrome_enable_automation=chrome_enable_automation,)
 
     def _set_headers(self) -> None:
         '''

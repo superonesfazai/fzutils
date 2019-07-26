@@ -1,5 +1,8 @@
 # coding:utf-8
 
+import better_exceptions
+better_exceptions.hook()
+
 import re
 import base64
 import os

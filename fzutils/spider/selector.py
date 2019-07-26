@@ -10,6 +10,9 @@
 selector
 """
 
+import better_exceptions
+better_exceptions.hook()
+
 import re
 from scrapy.selector import Selector
 from ..common_utils import _print

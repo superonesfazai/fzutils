@@ -10,6 +10,9 @@
 celery常用函数
 """
 
+import better_exceptions
+better_exceptions.hook()
+
 from time import time
 from celery import Celery
 from celery.utils.log import get_task_logger

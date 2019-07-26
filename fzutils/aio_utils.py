@@ -205,7 +205,8 @@ async def unblock_get_driver_obj(type=PHANTOMJS,
                                  driver_obj=None,
                                  ip_pool_type=ip_proxy_pool,
                                  extension_path=None,
-                                 driver_cookies=None,):
+                                 driver_cookies=None,
+                                 chrome_enable_automation=False,):
     """
     异步获取一个driver obj
     :return:
@@ -223,6 +224,7 @@ async def unblock_get_driver_obj(type=PHANTOMJS,
         ip_pool_type,
         extension_path,
         driver_cookies,
+        chrome_enable_automation,
     ]
     driver_obj = await unblock_func(
         func_name=BaseDriver,

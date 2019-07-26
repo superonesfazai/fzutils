@@ -7,6 +7,9 @@
 @connect : superonesfazai@gmail.com
 '''
 
+import better_exceptions
+better_exceptions.hook()
+
 import sys
 sys.path.append('..')
 
@@ -82,7 +85,8 @@ class MyPhantomjs(object):
                  driver_obj=None,
                  ip_pool_type=ip_proxy_pool,
                  extension_path=None,
-                 driver_cookies=None,):
+                 driver_cookies=None,
+                 chrome_enable_automation=False,):
         '''
         初始化
         :param load_images: 是否加载图片
@@ -93,6 +97,7 @@ class MyPhantomjs(object):
         :param driver_obj: webdriver对象
         :param ip_pool_type: ip_pool type
         :param extension_path: 扩展插件路径
+        :param chrome_enable_automation: 是否enable-automation
         '''
         super(MyPhantomjs, self).__init__()
         self.type = type
@@ -106,6 +111,7 @@ class MyPhantomjs(object):
         self.ip_pool_type = ip_pool_type
         self.extension_path = extension_path
         self._cookies = driver_cookies
+        self.chrome_enable_automation = chrome_enable_automation
         if driver_obj is None:
             self._set_driver()
         else:
@@ -126,6 +132,8 @@ class MyPhantomjs(object):
                 self._init_firefox()
             else:
                 raise ValueError('type赋值异常!请检查!')
+            # 无法执行
+            # self.bypass_spiders_derection()
         except Exception as e:
             if num_retries > 0:
                 return self._set_driver(num_retries=num_retries-1)
@@ -193,7 +201,13 @@ class MyPhantomjs(object):
         # 修改user-agent
         chrome_options.add_argument('--user-agent={0}'.format(get_random_pc_ua() if self.user_agent_type == PC else get_random_phone_ua()))
 
-        chrome_options.add_experimental_option('excludeSwitches', ['ignore-certificate-errors'])    # 忽视证书错误
+        # 忽视证书错误
+        chrome_options.add_experimental_option('excludeSwitches', ['ignore-certificate-errors'])
+        if self.chrome_enable_automation:
+            # eg: 处理知乎登录不弹验证码
+            chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        else:
+            pass
         chrome_options.add_argument('--allow-running-insecure-content')
 
         self.driver = webdriver.Chrome(
@@ -268,6 +282,65 @@ class MyPhantomjs(object):
         _print(msg='init over!', logger=self.lg)
 
         return True
+
+    def bypass_spiders_derection(self) -> None:
+        """
+        绕过浏览器反爬检测
+        :return:
+        """
+        # 注意: 避免反爬检测window.navigator.webdriver为true, 认为非正常浏览器
+        _js1 = """
+        () => {
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => false,
+            });
+        }
+        """
+        # 绕过chrome属性检测
+        _js2 = """
+        () => {
+            window.navigator.chrome = {
+                runtime: {},
+            };
+        }
+        """
+        # 绕过Permissions检测
+        _js3 = """
+        () => {
+            const originalQuery = window.navigator.permissions.query;
+            return window.navigator.permissions.query = (parameters) => (
+                parameters.name === 'notifications' ?
+                Promise.resolve({ state: Notification.permission }) :
+                originalQuery(parameters)
+            );
+        }
+        """
+        # 绕过Plugins长度检测
+        _js4 = """
+        () => {
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5],
+            });
+        }
+        """
+        # 绕过the languages检测
+        _js5 = """
+        () => {
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['en-US', 'en'],
+            });
+        }
+        """
+        # print(self.driver.execute_script(script='console.log(window.navigator.webdriver);'))
+        # 获取日志输出
+        # print(self.driver.get_log('browser'))
+        self.driver.execute_script(script=_js1)
+        self.driver.execute_script(script=_js2)
+        self.driver.execute_script(script=_js3)
+        self.driver.execute_script(script=_js4)
+        self.driver.execute_script(script=_js5)
+
+        return
 
     def from_ip_pool_set_proxy_ip_to_phantomjs(self) -> bool:
         '''
