@@ -11,6 +11,7 @@ from asyncio import (
     wait,
     iscoroutinefunction,
 )
+from pprint import pprint
 from scrapy.selector import Selector
 
 from .ip_pools import (
@@ -351,9 +352,9 @@ async def get_or_handle_target_data_by_task_params_list(loop,
         """
         根据task_params_list并发 获取 or 处理 所有目标数据
         :param tasks_params_list:
-        :param func_name_where_get_create_task_msg:     eg: def get_create_task_msg(self, k) -> str: return 'create task[where page_num: {}]...'.format(k['page_num'])
+        :param func_name_where_get_create_task_msg:     (多用闭包形式) or eg: def get_create_task_msg(self, k) -> str: return 'create task[where page_num: {}]...'.format(k['page_num'])
         :param func_name:                               阻塞函数名
-        :param func_name_where_get_now_args:            eg: def get_now_args(self, k) -> list: return [k['page_num'],]
+        :param func_name_where_get_now_args:            (多用闭包形式) or eg: def get_now_args(self, k) -> list: return [k['page_num'],]
         :param func_name_where_handle_one_res:          数据量较大时处理用于单独处理one_res
         :param func_name_where_add_one_res_2_all_res:   根据需求处理one_res到all_res中
         :param one_default_res:                         单个task 出现异常时, 返回的默认参数
