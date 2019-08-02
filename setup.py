@@ -18,16 +18,19 @@ from requires import install_requires
 
 """
 发布新包步骤:
-    1. 现在从setup.py位于的同一目录运行此命令
+    1. 删掉老包
+    $ rm -rf fzutils.egg-info dist build 
+    
+    2. 现在从setup.py位于的同一目录运行此命令
     $ python3 setup.py sdist bdist_wheel
     
-    2. upload  [使用前提本地已安装 $ pip3 install twine]
+    3. upload  [使用前提本地已安装 $ pip3 install twine]
     $ twine upload dist/* --skip-existing
     
-    3. 本地更新(发布完后过会才能更新Release)[注意: pycharm可能要单独更新]
+    4. 本地更新(发布完后过会才能更新Release)[注意: pycharm可能要单独更新]
     $ pip3 install fzutils -U
     
-    4. 服务器上安装install fzutils解决方案(更新最后加个'-U')
+    5. 服务器上安装install fzutils解决方案(更新最后加个'-U')
     $ pip3 install -i http://pypi.douban.com/simple/ fzutils --trusted-host pypi.douban.com
     
 报错及其解决方案:
@@ -61,7 +64,7 @@ py_modules = [
 
 setup(
     name="fzutils",
-    version="0.3.6.3",
+    version="0.3.6.4",
     author="super_fazai",
     author_email="superonesfazai@gmail.com",
     description="A Python utils for spider",

@@ -27,7 +27,6 @@ from asyncio import (
     new_event_loop,
     get_event_loop,
     wait,
-    Queue,                      # 一个队列，用于协调生产者和消费者协同程序。
     PriorityQueue,              # 子类Queue; 按优先级顺序检索条目(最低的第一个)
     LifoQueue,
     ensure_future,
@@ -45,6 +44,8 @@ from asyncio import (
     as_completed,
     set_event_loop_policy,      # 修改事件循环规则
 )
+# 队列，用于协调生产者和消费者协同程序
+from asyncio import Queue as AsyncioQueue
 from asyncio import sleep as async_sleep
 from asyncio import Lock as AsyncLock
 from asyncio import TimeoutError as AsyncTimeoutError
