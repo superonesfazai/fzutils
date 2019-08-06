@@ -24,9 +24,11 @@ __all__ = [
     'chrome_copy_requests_header_2_dict_headers',           # 将直接从chrome复制的Request Headers转换为dict的headers
     'chrome_copy_query_string_parameters_2_tuple_params',   # 将直接从chrome复制的Query String Parameters转换为tuple类型的params
 
-    'get_random_pc_ua',                                     # 得到一个随机pc headers
-    'get_random_phone_ua',                                  # 得到一个随机phone headers
+    'get_random_pc_ua',                                     # 得到一个随机pc ua
+    'get_random_phone_ua',                                  # 得到一个随机phone ua
     'get_base_headers',                                     # 得到一个base headers
+    'get_random_headers',                                   # 获取随机headers
+    'async_get_random_headers',                             # 异步获取随机headers
 
     # ip判断
     'is_ipv4',                                              # 判断是否为ipv4地址
@@ -572,6 +574,38 @@ def get_base_headers():
         'user-agent': get_random_pc_ua(),
         'accept': '*/*'
     }
+
+def get_random_headers(user_agent_type: int=0) -> dict:
+    """
+    获取随机headers
+    :param user_agent_type: 0 pc | 1 phone
+    :return:
+    """
+    if user_agent_type == 0:
+        user_agent = get_random_pc_ua()
+    elif user_agent_type == 1:
+        user_agent = get_random_phone_ua()
+    else:
+        raise ValueError('user_agent value异常!')
+
+    return {
+        'connection': 'keep-alive',
+        'cache-control': 'max-age=0',
+        'upgrade-insecure-requests': '1',
+        'user-agent': user_agent,
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'accept-encoding': 'gzip, deflate, br',
+        'accept-language': 'zh-CN,zh;q=0.9',
+    }
+
+async def async_get_random_headers(user_agent_type: int=0) -> dict:
+    """
+    异步获取随机headers
+    :param user_agent_type: 0 pc | 1 phone
+    :return:
+    """
+    return get_random_headers(
+        user_agent_type=user_agent_type,)
 
 def dict_cookies_2_str(dict_cookies):
     '''
