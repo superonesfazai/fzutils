@@ -575,10 +575,16 @@ def get_base_headers():
         'accept': '*/*'
     }
 
-def get_random_headers(user_agent_type: int=0) -> dict:
+def get_random_headers(user_agent_type: int=0,
+                       connection_status_keep_alive: bool=True,
+                       upgrade_insecure_requests: bool=True,
+                       cache_control: str='max-age=0',) -> dict:
     """
     获取随机headers
     :param user_agent_type: 0 pc | 1 phone
+    :param connection_status_keep_alive:
+    :param upgrade_insecure_requests:
+    :param cache_control:
     :return:
     """
     if user_agent_type == 0:
@@ -588,24 +594,43 @@ def get_random_headers(user_agent_type: int=0) -> dict:
     else:
         raise ValueError('user_agent value异常!')
 
-    return {
-        'connection': 'keep-alive',
-        'cache-control': 'max-age=0',
-        'upgrade-insecure-requests': '1',
+    headers = {
         'user-agent': user_agent,
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
         'accept-encoding': 'gzip, deflate, br',
         'accept-language': 'zh-CN,zh;q=0.9',
     }
+    if connection_status_keep_alive:
+        headers.update({
+            'connection': 'keep-alive',
+        })
 
-async def async_get_random_headers(user_agent_type: int=0) -> dict:
+    if upgrade_insecure_requests:
+        headers.update({
+            'upgrade-insecure-requests': '1',
+        })
+
+    if cache_control != '':
+        headers.update({
+            'cache-control': cache_control,
+        })
+
+    return headers
+
+async def async_get_random_headers(user_agent_type: int=0,
+                                   connection_status_keep_alive: bool=True,
+                                   upgrade_insecure_requests: bool=True,
+                                   cache_control: str='max-age=0',) -> dict:
     """
     异步获取随机headers
     :param user_agent_type: 0 pc | 1 phone
     :return:
     """
     return get_random_headers(
-        user_agent_type=user_agent_type,)
+        user_agent_type=user_agent_type,
+        connection_status_keep_alive=connection_status_keep_alive,
+        upgrade_insecure_requests=upgrade_insecure_requests,
+        cache_control=cache_control,)
 
 def dict_cookies_2_str(dict_cookies):
     '''
