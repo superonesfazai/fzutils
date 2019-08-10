@@ -10,6 +10,7 @@ from asyncio import (
     get_event_loop,
     wait,
     iscoroutinefunction,
+    new_event_loop,
 )
 from pprint import pprint
 from scrapy.selector import Selector
@@ -42,7 +43,8 @@ __all__ = [
     'unblock_get_driver_obj',                           # 异步获取driver obj
     'unblock_request_by_driver',                        # 非阻塞的request by driver
     'unblock_func',                                     # 异步函数非阻塞
-    'default_add_one_res_2_all_res',                    # 默认函数: one_res 增加到all_res
+    'default_add_one_res_2_all_res',                    # 默认函数1: one_res 增加到all_res
+    'default_add_one_res_2_all_res2',                   # 默认函数2: one_res 增加到all_res
     'get_or_handle_target_data_by_task_params_list',    # 根据task_params_list并发 获取 or 处理 所有目标数据
 ]
 
@@ -300,16 +302,21 @@ async def unblock_request_by_driver(url,
 
         return body
 
-async def unblock_func(func_name:object, func_args, logger=None, default_res=None):
+async def unblock_func(func_name:object,
+                       func_args,
+                       logger=None,
+                       default_res=None,
+                       is_new_loop=False,):
     """
     异步函数非阻塞
     :param func_name: def 函数对象名
     :param func_args: 请求参数可迭代对象(必须遵循元素入参顺序!)
     :param logger:
     :param default_res: 默认返回结果
+    :param is_new_loop: 是否开启新loop, True容易造成OSError, too many file open错误
     :return:
     """
-    loop = get_event_loop()
+    loop = get_event_loop() if not is_new_loop else new_event_loop()
     try:
         default_res = await loop.run_in_executor(None, func_name, *func_args)
     except Exception as e:
@@ -326,7 +333,7 @@ async def unblock_func(func_name:object, func_args, logger=None, default_res=Non
 
 def default_add_one_res_2_all_res(one_res: list, all_res: list) -> list:
     """
-    默认函数: one_res 增加到all_res
+    默认函数1: one_res 增加到all_res
     :param one_res:
     :param all_res:
     :return:
@@ -334,6 +341,18 @@ def default_add_one_res_2_all_res(one_res: list, all_res: list) -> list:
     for i in one_res:
         for j in i:
             all_res.append(j)
+
+    return all_res
+
+def default_add_one_res_2_all_res2(one_res: list, all_res: list) -> list:
+    """
+    默认函数2: one_res 增加到all_res
+    :param one_res:
+    :param all_res:
+    :return:
+    """
+    for i in one_res:
+        all_res.append(i)
 
     return all_res
 
@@ -345,6 +364,7 @@ async def get_or_handle_target_data_by_task_params_list(loop,
                                                         func_name_where_handle_one_res=None,
                                                         func_name_where_add_one_res_2_all_res=default_add_one_res_2_all_res,
                                                         one_default_res=None,
+                                                        is_new_loop: bool=False,
                                                         step: int=10,
                                                         slice_start_index: int=0,
                                                         logger=None,
@@ -358,6 +378,7 @@ async def get_or_handle_target_data_by_task_params_list(loop,
         :param func_name_where_handle_one_res:          数据量较大时处理用于单独处理one_res
         :param func_name_where_add_one_res_2_all_res:   根据需求处理one_res到all_res中
         :param one_default_res:                         单个task 出现异常时, 返回的默认参数
+        :param is_new_loop:                             unblock_func是否为新loop, True容易造成OSError, too many file open错误
         :param step:                                    并发量 eg: step=self.concurrency
         :param slice_start_index:
         :param logger:
@@ -384,7 +405,8 @@ async def get_or_handle_target_data_by_task_params_list(loop,
                     func_name=func_name,
                     func_args=func_name_where_get_now_args(k=k),
                     logger=logger,
-                    default_res=one_default_res,)))
+                    default_res=one_default_res,
+                    is_new_loop=is_new_loop,)))
 
             one_res = await async_wait_tasks_finished(tasks=tasks)
             # pprint(one_res)

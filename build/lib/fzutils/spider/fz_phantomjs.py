@@ -218,6 +218,16 @@ class MyPhantomjs(object):
         wait = ui.WebDriverWait(self.driver, 30)  # 显示等待n秒, 每过0.5检查一次页面是否加载完毕
         _print(msg='init over!', logger=self.lg)
 
+        """报错处理"""
+        # linux
+        # 报错处理: selenium.common.exceptions.WebDriverException: Message: Service /root/myFiles/linux_drivers/chromedriver unexpectedly exited. Status code was: 127
+        # 尝试运行chromedriver
+        # $ ./chromedriver
+        # 报错: ./chromedriver: error while loading shared libraries: libgconf-2.so.4: cannot open shared object file: No such file or directory
+        # method1(推荐):
+        # 解决:
+        # apt-get install chromium-browser && apt-get install libnss3 libgconf-2-4
+
         return True
 
     def _init_firefox(self):
