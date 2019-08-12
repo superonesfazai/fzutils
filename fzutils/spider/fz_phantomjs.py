@@ -189,6 +189,14 @@ class MyPhantomjs(object):
         # 设置插件
         if self.extension_path is not None:
             chrome_options.add_argument(self.extension_path)
+            # 修改chrome设置相关, 开个窗口访问: chrome://settings/content, 像操作普通网页一样，进行设置，保存即可
+            # 查看chromedriver版本: chrome://version/
+            # 操作扩展程序(可以看到所有扩展程序id): chrome://extensions/
+            # eg:
+            # 播放m3u8
+            # chrome-extension://emnphkkblegpebimobpbekeedfgemhof/player.html#目标.m3u8
+            # chrono下载管理器
+            # chrome-extension://mciiogijehkdemklbdcbfkefimifhecn/ui/index.htm
 
         # 设置代理
         if self.driver_use_proxy:

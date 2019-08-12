@@ -18,8 +18,10 @@ from gc import collect
 from asyncio import (
     get_event_loop,
     new_event_loop,
+    set_event_loop,
 )
 
+from ..common_utils import _print
 from ..ip_pools import (
     fz_ip_pool,
     ip_proxy_pool,)
@@ -62,7 +64,8 @@ class Crawler(object):
                  driver_cookies=None,
                  chrome_enable_automation=False,
 
-                 is_new_loop=False,):
+                 is_new_loop=False,
+                 loop=None,):
         """
         :param ip_pool_type: 使用ip池的类型
         :param user_agent_type:
@@ -79,6 +82,7 @@ class Crawler(object):
         :param driver_cookies:
         :param chrome_enable_automation:
         :param is_new_loop: 是否为新loop
+        :param loop: 事件循环对象
         """
         super(Crawler, self).__init__()
         self.ip_pool_type = ip_pool_type
@@ -88,6 +92,7 @@ class Crawler(object):
         self.lg = logger
         self.headless = headless
         self.is_new_loop = is_new_loop
+        self.loop = loop
         if log_print:
             self.log_save_path = log_save_path
             self.logger_name = logger_name
@@ -175,7 +180,10 @@ class AsyncCrawler(Crawler):
             self,
             *params,
             **kwargs)
-        self.loop = get_event_loop() if not self.is_new_loop else new_event_loop()
+        if self.loop is None:
+            self.loop = get_event_loop() if not self.is_new_loop else new_event_loop()
+        else:
+            pass
         self.concurrency = 9            # 控制并发量
 
     async def _get_phone_headers(self):

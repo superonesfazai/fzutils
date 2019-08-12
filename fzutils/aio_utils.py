@@ -11,7 +11,9 @@ from asyncio import (
     wait,
     iscoroutinefunction,
     new_event_loop,
+    set_event_loop,
 )
+from threading import Thread
 from pprint import pprint
 from scrapy.selector import Selector
 
@@ -46,6 +48,7 @@ __all__ = [
     'default_add_one_res_2_all_res',                    # 默认函数1: one_res 增加到all_res
     'default_add_one_res_2_all_res2',                   # 默认函数2: one_res 增加到all_res
     'get_or_handle_target_data_by_task_params_list',    # 根据task_params_list并发 获取 or 处理 所有目标数据
+    'start_bg_loop',                                    # 开启一个在后台永远运行的事件循环(多用于主线程与子线程并行执行)
 ]
 
 class Asyncer(object):
@@ -151,7 +154,8 @@ async def unblock_request(url,
                           get_session=False,
                           proxies=None,
                           proxy_type=PROXY_TYPE_HTTP,
-                          logger=None) -> str:
+                          logger=None,
+                          is_new_loop=False,) -> str:
     """
     非阻塞的request请求
     :param url:
@@ -173,6 +177,7 @@ async def unblock_request(url,
     :param proxies:
     :param proxy_type:
     :param logger:
+    :param is_new_loop:
     :return:
     """
     func_args = [
@@ -199,7 +204,8 @@ async def unblock_request(url,
         func_name=Requests.get_url_body,
         func_args=func_args,
         logger=logger,
-        default_res='',)
+        default_res='',
+        is_new_loop=is_new_loop,)
 
     return body
 
@@ -215,7 +221,8 @@ async def unblock_get_driver_obj(type=PHANTOMJS,
                                  ip_pool_type=ip_proxy_pool,
                                  extension_path=None,
                                  driver_cookies=None,
-                                 chrome_enable_automation=False,):
+                                 chrome_enable_automation=False,
+                                 is_new_loop=False,):
     """
     异步获取一个driver obj
     :return:
@@ -239,7 +246,8 @@ async def unblock_get_driver_obj(type=PHANTOMJS,
         func_name=BaseDriver,
         func_args=func_args,
         logger=logger,
-        default_res=None,)
+        default_res=None,
+        is_new_loop=is_new_loop,)
 
     return driver_obj
 
@@ -259,7 +267,9 @@ async def unblock_request_by_driver(url,
 
                                     css_selector='',
                                     exec_code='',
-                                    timeout=20, ) -> str:
+                                    timeout=20,
+
+                                    is_new_loop=False,) -> str:
     """
     非阻塞的driver 的请求
     :return:
@@ -289,7 +299,8 @@ async def unblock_request_by_driver(url,
             func_name=driver.get_url_body,
             func_args=func_args,
             logger=logger,
-            default_res='',)
+            default_res='',
+            is_new_loop=is_new_loop,)
     except Exception as e:
         _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
     finally:
@@ -316,6 +327,7 @@ async def unblock_func(func_name:object,
     :param is_new_loop: 是否开启新loop, True容易造成OSError, too many file open错误
     :return:
     """
+    # todo notice: 一个进程/线程只能一个 event loop
     loop = get_event_loop() if not is_new_loop else new_event_loop()
     try:
         default_res = await loop.run_in_executor(None, func_name, *func_args)
@@ -441,3 +453,11 @@ async def get_or_handle_target_data_by_task_params_list(loop,
 
         return all_res
 
+def start_bg_loop(loop):
+    """
+    开启一个在后台永远运行的事件循环(多用于主线程与子线程并行执行)
+    :param loop:
+    :return:
+    """
+    set_event_loop(loop)
+    loop.run_forever()
