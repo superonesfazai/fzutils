@@ -15,6 +15,7 @@ install_requires = [
     'selenium==3.8.0',      # 3.8.1及其以上版本不支持phantomjs了
     'uvloop',               # asyncio默认事件循环替代品
     'asyncio',
+    'nest_asyncio',         # [非官方]处理'RuntimeError: This event loop is already running', import nest_asyncio nest_asyncio.apply()
     'psutil',               # 检索有关正在运行的进程和系统利用率（CPU，内存，磁盘，网络，传感器）的信息
     'pyexecjs',
     'setuptools',           # 发包需要
