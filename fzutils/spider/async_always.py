@@ -55,6 +55,9 @@ from uvloop import EventLoopPolicy
 # with ThreadPoolExecutor(max_workers=10) as executor:
 from concurrent.futures import ThreadPoolExecutor
 
+# get_event_loop 非阻塞
+from nest_asyncio import apply as nest_asyncio_apply
+
 from ..ip_pools import *
 from ..internet_utils import *
 from .fz_requests import Requests
