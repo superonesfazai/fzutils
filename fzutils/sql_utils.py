@@ -36,7 +36,6 @@ class BaseSqlServer(object):
     """
     def __init__(self, host, user, passwd, db, port):
         super(BaseSqlServer, self).__init__()
-        self.is_connect_success = True
         # 死锁重试次数
         self.dead_lock_retry_num = 3
         self.host = host
@@ -47,6 +46,7 @@ class BaseSqlServer(object):
         self._init_conn()
 
     def _init_conn(self):
+        self.is_connect_success = True
         try:
             self.conn = connect(
                 host=self.host,
@@ -56,8 +56,8 @@ class BaseSqlServer(object):
                 port=self.port,
                 charset='utf8')
         except Exception:
-            print('数据库连接失败!!')
             self.is_connect_success = False
+            print('数据库连接失败!!')
 
     def _select_table(self, sql_str, params=None, lock_timeout=20000, logger=None):
         '''
