@@ -13,10 +13,13 @@ from asyncio import (
     new_event_loop,
     set_event_loop,
 )
-from threading import Thread
 from pprint import pprint
 from scrapy.selector import Selector
 
+from .thread_utils import (
+    ThreadTaskObj,
+    Thread,
+    start_thread_tasks_and_get_thread_tasks_res,)
 from .ip_pools import (
     ip_proxy_pool,
     fz_ip_pool,
@@ -380,7 +383,9 @@ async def get_or_handle_target_data_by_task_params_list(loop,
                                                         step: int=10,
                                                         slice_start_index: int=0,
                                                         logger=None,
-                                                        get_all_res=True,) -> list:
+                                                        get_all_res=True,
+                                                        concurrent_type: int=0,
+                                                        func_timeout=None,) -> list:
         """
         根据task_params_list并发 获取 or 处理 所有目标数据
         :param tasks_params_list:
@@ -395,8 +400,11 @@ async def get_or_handle_target_data_by_task_params_list(loop,
         :param slice_start_index:
         :param logger:
         :param get_all_res:                             bool 是否获取所有结果, 默认获取
+        :param concurrent_type:                         并发的类型: 0 协程 | 1 线程
+        :param func_timeout:                            线程模式下的函数超时, 单位秒
         :return:
         """
+        assert concurrent_type in [0, 1], 'concurrent_type value异常!'
         all_res = []
         tasks_params_list_obj = TasksParamsListObj(
             tasks_params_list=tasks_params_list,
@@ -413,14 +421,35 @@ async def get_or_handle_target_data_by_task_params_list(loop,
                 _print(
                     msg=func_name_where_get_create_task_msg(k=k),
                     logger=logger,)
-                tasks.append(loop.create_task(unblock_func(
-                    func_name=func_name,
-                    func_args=func_name_where_get_now_args(k=k),
-                    logger=logger,
-                    default_res=one_default_res,
-                    is_new_loop=is_new_loop,)))
 
-            one_res = await async_wait_tasks_finished(tasks=tasks)
+                if concurrent_type == 0:
+                    tasks.append(loop.create_task(unblock_func(
+                        func_name=func_name,
+                        func_args=func_name_where_get_now_args(k=k),
+                        logger=logger,
+                        default_res=one_default_res,
+                        is_new_loop=is_new_loop,)))
+
+                elif concurrent_type == 1:
+                    tasks.append(ThreadTaskObj(
+                        func_name=func_name,
+                        args=func_name_where_get_now_args(k=k),
+                        logger=logger,
+                        default_res=one_default_res,
+                        func_timeout=func_timeout,))
+
+                else:
+                    continue
+
+            one_res = []
+            if concurrent_type == 0:
+                one_res = await async_wait_tasks_finished(tasks=tasks)
+            elif concurrent_type == 1:
+                one_res = start_thread_tasks_and_get_thread_tasks_res(
+                    tasks=tasks,
+                    logger=logger,)
+            else:
+                pass
             # pprint(one_res)
             if func_name_where_handle_one_res is not None:
                 # 执行需要处理one_res函数

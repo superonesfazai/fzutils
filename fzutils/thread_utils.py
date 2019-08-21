@@ -82,6 +82,23 @@ class ThreadTaskObj(Thread):
 def start_thread_tasks_and_get_thread_tasks_res(tasks: list, logger=None) -> list:
     """
     开启线程任务集合病获取目标任务集合所有执行结果
+    simple use:
+        def do_something(index):
+            return 'xxx'
+
+        tasks = []
+        for index in range(1, 100):
+            print('create task[where is index: {}] ...'.format(index))
+            task = ThreadTaskObj(
+                func_name=do_something,
+                args=[
+                    index,
+                ],
+                default_res=None,
+                func_timeout=None,)
+            tasks.append(task)
+        one_res = start_thread_tasks_and_get_thread_tasks_res(tasks=tasks)
+
     :param tasks:
     :param logger:
     :return:
