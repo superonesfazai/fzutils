@@ -103,23 +103,35 @@ def start_thread_tasks_and_get_thread_tasks_res(tasks: list, logger=None) -> lis
     :param logger:
     :return:
     """
-    # 同时开启每个线程
-    for task in tasks:
-        try:
-            task.start()
-        except Exception as e:
-            _print(
-                msg='开启线程出错:',
-                logger=logger,
-                log_level=2,
-                exception=e)
-            continue
+    from time import time
 
-    # 获取所有线程的执行结果
+    s_time = time()
     one_res = []
-    for task in tasks:
-        res = task._get_result()
-        one_res.append(res)
-    # pprint(one_res)
+    try:
+        _print(msg='请耐心等待所有任务完成...', logger=logger,)
+
+        # 同时开启每个线程
+        for task in tasks:
+            try:
+                task.start()
+            except Exception as e:
+                _print(
+                    msg='开启线程出错:',
+                    logger=logger,
+                    log_level=2,
+                    exception=e)
+                continue
+
+        # 获取所有线程的执行结果
+        for task in tasks:
+            res = task._get_result()
+            one_res.append(res)
+        # pprint(one_res)
+
+        _print(msg='此次耗时 {} s!'.format(round(float(time() - s_time), 3)), logger=logger)
+
+    except Exception as e:
+        _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
+        return one_res
 
     return one_res
