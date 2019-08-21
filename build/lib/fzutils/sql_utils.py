@@ -446,7 +446,17 @@ class BaseSqlServer(object):
     
     def __del__(self):
         try:
-            self.conn.close()
+            if self.is_connect_success:
+                # 连接成功才进行释放
+                self.conn.close()
+            else:
+                pass
+            del self.is_connect_success
+            del self.host
+            del self.user
+            del self.passwd
+            del self.db
+            del self.port
         except Exception:
             pass
         collect()

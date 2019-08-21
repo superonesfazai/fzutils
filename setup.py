@@ -64,7 +64,7 @@ py_modules = [
 
 setup(
     name="fzutils",
-    version="0.3.7.8",
+    version="0.3.7.9",
     author="super_fazai",
     author_email="superonesfazai@gmail.com",
     description="A Python utils for spider",
