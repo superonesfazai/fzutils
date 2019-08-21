@@ -58,9 +58,13 @@ from concurrent.futures import ThreadPoolExecutor
 # get_event_loop 非阻塞
 from nest_asyncio import apply as nest_asyncio_apply
 
+from ..exceptions import *
 from ..ip_pools import *
 from ..internet_utils import *
-from .fz_requests import Requests
+from .fz_requests import (
+    Requests,
+    PROXY_TYPE_HTTPS,
+    PROXY_TYPE_HTTP,)
 from ..common_utils import *
 from ..aio_utils import *
 from ..time_utils import *
@@ -73,3 +77,4 @@ from ..cp_utils import *
 from ..url_utils import *
 from ..img_utils import *
 from ..map_utils import *
+from ..thread_utils import *

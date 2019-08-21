@@ -11,14 +11,16 @@ thread utils
 """
 
 from functools import wraps
+from pprint import pprint
 from threading import (
     Thread,
 )
 from .common_utils import _print
 
 __all__ = [
-    'thread_safe',      # 线程安全装饰器
-    'ThreadTaskObj',    # 重写任务线程
+    'thread_safe',                                      # 线程安全装饰器
+    'ThreadTaskObj',                                    # 重写任务线程
+    'start_thread_tasks_and_get_thread_tasks_res',      # 开启线程任务集合病获取目标任务集合所有执行结果
 ]
 
 def thread_safe(lock):
@@ -76,3 +78,31 @@ class ThreadTaskObj(Thread):
                 exception=e)
 
             return self.default_res
+
+def start_thread_tasks_and_get_thread_tasks_res(tasks: list, logger=None) -> list:
+    """
+    开启线程任务集合病获取目标任务集合所有执行结果
+    :param tasks:
+    :param logger:
+    :return:
+    """
+    # 同时开启每个线程
+    for task in tasks:
+        try:
+            task.start()
+        except Exception as e:
+            _print(
+                msg='开启线程出错:',
+                logger=logger,
+                log_level=2,
+                exception=e)
+            continue
+
+    # 获取所有线程的执行结果
+    one_res = []
+    for task in tasks:
+        res = task._get_result()
+        one_res.append(res)
+    # pprint(one_res)
+
+    return one_res
