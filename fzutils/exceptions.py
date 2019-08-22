@@ -10,6 +10,8 @@ import better_exceptions
 from sys import exc_info
 from traceback import format_tb
 
+from .common_utils import _print
+
 __all__ = [
     'ResponseBodyIsNullStrException',       # 请求的应答返回的body为空str异常, 多用于处理proxy异常中, 避免数据误删
     'NoNextPageException',                  # 没有后续页面的异常
@@ -51,21 +53,29 @@ def catch_exceptions(logger=None, default_res=None):
             try:
                 default_res = func(*args, **kwargs)
             except Exception:
-                exc_type, exc_instance, exc_traceback = exc_info()
-                formatted_traceback = ''.join(format_tb(exc_traceback))
-                message = '\n{0}\n{1}: {2}'.format(
-                    formatted_traceback,
-                    exc_type.__name__,
-                    exc_instance,)
-                # raise exc_type(message)
+                try:
+                    exc_type, exc_instance, exc_traceback = exc_info()
+                    formatted_traceback = ''.join(format_tb(exc_traceback))
+                    message = '\n{0}\n{1}: {2}'.format(
+                        formatted_traceback,
+                        exc_type.__name__,
+                        exc_instance,)
+                    # raise exc_type(message)
 
-                # 放置此处进行异常优化捕获
-                better_exceptions.hook()
-                # print(logger)
-                if logger is None:
-                    print(exc_type(message))
-                else:
-                    logger.error('遇到错误:', exc_info=True)
+                    # 放置此处进行异常优化捕获
+                    better_exceptions.hook()
+                    # print(logger)
+                    if logger is None:
+                        print(exc_type(message))
+                    else:
+                        logger.error('遇到错误:', exc_info=True)
+
+                except Exception as e:
+                    _print(
+                        msg='遇到错误:',
+                        logger=logger,
+                        log_level=2,
+                        exception=e,)
 
                 # 其他你喜欢的操作
             finally:
@@ -101,20 +111,27 @@ def catch_exceptions_with_class_logger(default_res=None):
             try:
                 default_res = func(self, *args, **kwargs)
             except Exception:
-                # 异常类型, 异常说明, 发生异常的traceback
-                exc_type, exc_instance, exc_traceback = exc_info()
-                formatted_traceback = ''.join(format_tb(exc_traceback))
-                message = '\n{0}\n{1}: {2}'.format(
-                    formatted_traceback,
-                    exc_type.__name__,
-                    exc_instance,)
-                # raise exc_type(message)
+                try:
+                    # 异常类型, 异常说明, 发生异常的traceback
+                    exc_type, exc_instance, exc_traceback = exc_info()
+                    formatted_traceback = ''.join(format_tb(exc_traceback))
+                    message = '\n{0}\n{1}: {2}'.format(
+                        formatted_traceback,
+                        exc_type.__name__,
+                        exc_instance,)
+                    # raise exc_type(message)
 
-                # 放置此处进行异常优化捕获
-                better_exceptions.hook()
-                self.lg.error('遇到错误:', exc_info=True)
+                    # 放置此处进行异常优化捕获
+                    better_exceptions.hook()
+                    self.lg.error('遇到错误:', exc_info=True)
+                    # 其他你喜欢的操作
+                except Exception as e:
+                    _print(
+                        msg='遇到错误:',
+                        logger=self.lg,
+                        log_level=2,
+                        exception=e)
 
-                # 其他你喜欢的操作
             finally:
                 return default_res
 

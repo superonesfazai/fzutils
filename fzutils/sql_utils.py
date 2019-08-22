@@ -14,13 +14,16 @@ sql utils
 import better_exceptions
 better_exceptions.hook()
 
+from gc import collect
 import sqlite3
-from pymssql import *
+# from pymssql import *
+from pymssql import connect as pymssql_connect
+from pymssql import IntegrityError
 from time import sleep
 from redis import (
     ConnectionPool,
     StrictRedis,)
-from gc import collect
+
 from .common_utils import _print
 
 __all__ = [
@@ -48,7 +51,7 @@ class BaseSqlServer(object):
     def _init_conn(self):
         self.is_connect_success = True
         try:
-            self.conn = connect(
+            self.conn = pymssql_connect(
                 host=self.host,
                 user=self.user,
                 password=self.passwd,
