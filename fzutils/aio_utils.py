@@ -4,7 +4,6 @@
 aio 异步utils
 """
 
-from time import time
 from gc import collect
 from asyncio import (
     get_event_loop,
@@ -18,7 +17,6 @@ from scrapy.selector import Selector
 
 from .thread_utils import (
     ThreadTaskObj,
-    Thread,
     start_thread_tasks_and_get_thread_tasks_res,)
 from .ip_pools import (
     ip_proxy_pool,
@@ -86,6 +84,8 @@ async def async_wait_tasks_finished(tasks:list) -> list:
     :param tasks: 任务集
     :return:
     """
+    from time import time
+
     s_time = time()
     try:
         print('请耐心等待所有任务完成...')

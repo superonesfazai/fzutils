@@ -76,7 +76,9 @@ class ThreadTaskObj(Thread):
     def _get_result(self):
         try:
             # 等待线程执行完毕
-            Thread.join(self, timeout=self.func_timeout)
+            # Thread.join(self, timeout=self.func_timeout)
+            # 改成下面
+            self.join(timeout=self.func_timeout)
             return self.res
         except Exception as e:
             _print(
