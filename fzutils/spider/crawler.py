@@ -53,6 +53,8 @@ class Crawler(object):
                  logger=None,
                  log_save_path=None,
                  logger_name='my_logger:' + get_uuid1(),
+                 console_log_level=INFO,
+                 file_log_level=ERROR,
                  
                  # driver设置
                  is_use_driver=False,
@@ -73,6 +75,8 @@ class Crawler(object):
         :param logger:
         :param log_save_path: log文件的保存路径
         :param logger_name:
+        :param console_log_level:
+        :param file_log_level:
         :param is_use_driver: 是否使用驱动
         :param driver_executable_path: 驱动path
         :param driver_type:
@@ -96,6 +100,8 @@ class Crawler(object):
         if log_print:
             self.log_save_path = log_save_path
             self.logger_name = logger_name
+            self.console_log_level = console_log_level
+            self.file_log_level = file_log_level
             self._set_logger()
 
         if is_use_driver:
@@ -133,8 +139,8 @@ class Crawler(object):
         self.lg = set_logger(
             logger_name=self.logger_name,
             log_file_name=self.log_save_path + str(get_shanghai_time())[0:10] + '.txt',
-            console_log_level=INFO,
-            file_log_level=ERROR
+            console_log_level=self.console_log_level,
+            file_log_level=self.file_log_level,
         ) if self.lg is None else self.lg
 
     def __del__(self):
