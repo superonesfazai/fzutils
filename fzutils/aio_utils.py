@@ -12,12 +12,19 @@ from asyncio import (
     new_event_loop,
     set_event_loop,
 )
+from gevent import spawn as gevent_spawn
+from gevent import monkey as gevent_monkey
+
 from pprint import pprint
 from scrapy.selector import Selector
 
 from .thread_utils import (
     ThreadTaskObj,
-    start_thread_tasks_and_get_thread_tasks_res,)
+    start_thread_tasks_and_get_thread_tasks_res,
+)
+from .gevent_utils import (
+    wait_for_every_greenlet_obj_run_over_and_get_tasks_res,
+)
 from .ip_pools import (
     ip_proxy_pool,
     fz_ip_pool,
@@ -385,7 +392,12 @@ async def get_or_handle_target_data_by_task_params_list(loop,
                                                         logger=None,
                                                         get_all_res=True,
                                                         concurrent_type: int=0,
-                                                        func_timeout=None,) -> list:
+                                                        # thread
+                                                        func_timeout=None,
+                                                        # gevent
+                                                        gevent_joinall_timeout=None,
+                                                        gevent_joinall_raise_error: bool=True,
+                                                        gevent_joinall_count=None,) -> list:
         """
         根据task_params_list并发 获取 or 处理 所有目标数据
         :param tasks_params_list:
@@ -400,11 +412,20 @@ async def get_or_handle_target_data_by_task_params_list(loop,
         :param slice_start_index:
         :param logger:
         :param get_all_res:                             bool 是否获取所有结果, 默认获取
-        :param concurrent_type:                         并发的类型: 0 协程 | 1 线程
+        :param concurrent_type:                         并发的类型: 0 协程 | 1 线程 | 2 gevent
         :param func_timeout:                            线程模式下的函数超时, 单位秒
         :return:
         """
-        assert concurrent_type in [0, 1], 'concurrent_type value异常!'
+        assert concurrent_type in [0, 1, 2], 'concurrent_type value异常!'
+
+        # todo 不可放在执行时导monkey
+        # 报错: gevent.exceptions.LoopExit: This operation would block forever
+        # 解决方案: 在脚本的导包处的最下端, 进行concurrent_type == 2判断, 相等则gevent_monkey.patch_all() else pass
+        # if concurrent_type == 2:
+        #     gevent_monkey.patch_all()
+        # else:
+        #     pass
+
         all_res = []
         tasks_params_list_obj = TasksParamsListObj(
             tasks_params_list=tasks_params_list,
@@ -438,6 +459,14 @@ async def get_or_handle_target_data_by_task_params_list(loop,
                         default_res=one_default_res,
                         func_timeout=func_timeout,))
 
+                elif concurrent_type == 2:
+                    # notice 无法设置func_name执行的异常默认值, 需func_name中进行补货设置异常默认值
+                    func_args = func_name_where_get_now_args(k=k)
+                    tasks.append(gevent_spawn(
+                        func_name,
+                        *func_args,
+                    ))
+
                 else:
                     continue
 
@@ -447,6 +476,13 @@ async def get_or_handle_target_data_by_task_params_list(loop,
             elif concurrent_type == 1:
                 one_res = start_thread_tasks_and_get_thread_tasks_res(
                     tasks=tasks,
+                    logger=logger,)
+            elif concurrent_type == 2:
+                one_res = wait_for_every_greenlet_obj_run_over_and_get_tasks_res(
+                    tasks=tasks,
+                    gevent_joinall_timeout=gevent_joinall_timeout,
+                    gevent_joinall_raise_error=gevent_joinall_raise_error,
+                    gevent_joinall_count=gevent_joinall_count,
                     logger=logger,)
             else:
                 pass
