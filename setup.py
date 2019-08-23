@@ -32,6 +32,8 @@ from requires import install_requires
     
     5. 服务器上安装install fzutils解决方案(更新最后加个'-U')
     $ pip3 install -i http://pypi.douban.com/simple/ fzutils --trusted-host pypi.douban.com
+    $ (推荐下面官方的速度极快)
+    $ pip3 install -i https://pypi.org/simple/ fzutils --trusted-host pypi.org
     
 报错及其解决方案:
     1. error: invalid command 'bdist_wheel'
@@ -64,7 +66,7 @@ py_modules = [
 
 setup(
     name="fzutils",
-    version="0.3.8.8",
+    version="0.3.9.0",
     author="super_fazai",
     author_email="superonesfazai@gmail.com",
     description="A Python utils for spider",
