@@ -153,7 +153,10 @@ def local_compress_folders(father_folders_path, folders_name, default_save_path=
 
     return _
 
-def remote_decompress_folders(connect_object:Connection, folders_path, target_decompress_path):
+def remote_decompress_folders(connect_object:Connection,
+                              folders_path,
+                              target_decompress_path,
+                              language_control='-O CP936',):
     '''
     server端解压文件, 并删除原压缩文件(默认解压到当前目录)
         use: eg:
@@ -165,6 +168,7 @@ def remote_decompress_folders(connect_object:Connection, folders_path, target_de
     :param connect_object:
     :param folders_path: 压缩文件的保存路径(绝对路径)
     :param target_decompress_path: 目标解压路径(绝对路径)
+    :param language_control: 解压时语言控制, 树莓派不需要此项(我已设置系统其为中文)
     :return:
     '''
     if not exists(folders_path):
@@ -177,9 +181,10 @@ def remote_decompress_folders(connect_object:Connection, folders_path, target_de
 
     _ = False
     # 先删除原始文件夹, 再进行解压覆盖, (否则无法覆盖)
-    cmd = 'cd {0} && rm -rf {1} && unzip -o -O CP936 {2} && rm {3}'.format(
+    cmd = 'cd {0} && rm -rf {1} && unzip -o {2} {3} && rm {4}'.format(
         target_decompress_path,
         basename(folders_path).split('.')[0],
+        language_control if language_control != '' else '',
         folders_path,
         folders_path)
     # print(cmd)

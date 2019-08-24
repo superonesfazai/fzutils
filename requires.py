@@ -32,7 +32,6 @@ install_requires = [
     'pyexcel-xlsx',
     'fabric',               # 旨在通过SSH远程执行shell命令
     'jieba',                # 旨在做最好用的中文分词
-    'appium-python-client',
     'elasticsearch',
     'elasticsearch_dsl',
     'salt',                 # 为大规模复杂系统管理提供软件, 同步控制百万台服务器
@@ -103,6 +102,9 @@ install_requires = [
     # 'utils',
     # 'xlrd',                 # 处理excel
     # 'python-docx',
+
+    # phone
+    # 'appium-python-client',
 
     # 'matplotlib',
     # 'scikit-image',         # 图像处理
