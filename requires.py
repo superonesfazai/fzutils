@@ -32,13 +32,11 @@ install_requires = [
     'pyexcel-xlsx',
     'fabric',               # 旨在通过SSH远程执行shell命令
     'jieba',                # 旨在做最好用的中文分词
-    'scikit-image',         # 图像处理
     'appium-python-client',
     'elasticsearch',
     'elasticsearch_dsl',
     'salt',                 # 为大规模复杂系统管理提供软件, 同步控制百万台服务器
     'baidu-aip',
-    'opencv-python',        # import cv2
     'fonttools',            # 用于操作字体的库, eg:爬虫中字形识别
     'xmltodict',
     'ftfy',                 # 超级强大的unicode文本工具
@@ -79,7 +77,6 @@ install_requires = [
     # 'stem',                 # 操作tor
     # 'jupyter',
     # 'ipywidgets',           # jupyter笔记本和ipython内核的交互式HTML小部件
-    # 'matplotlib',
     # 'shadowsocks',
     # 'wget',
     # 'fake-useragent',       # 随机user-agent
@@ -106,6 +103,11 @@ install_requires = [
     # 'utils',
     # 'xlrd',                 # 处理excel
     # 'python-docx',
+
+    # 'matplotlib',
+    # 'scikit-image',         # 图像处理
+
+    # 'opencv-python',        # import cv2
 
     # 抓包
     # 'mitmproxy',            # shell 抓包代理

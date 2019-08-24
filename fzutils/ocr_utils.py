@@ -366,6 +366,10 @@ def dichotomy_match_gap_distance(bg_img_path, slide_img_path) -> (int, float):
         # mac
         # 1. $ brew install opencv
         # 2. $ pip3 install opencv-python
+        # linux
+        # 1. $ sudo apt-get install python-opencv
+        # 2. $ pip3 install opencv-python
+        # 树莓派安装超级麻烦需编译源码耗时很久
         from cv2 import (
             imread,
             cvtColor,
