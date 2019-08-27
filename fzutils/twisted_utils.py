@@ -6,6 +6,10 @@
 @connect : superonesfazai@gmail.com
 '''
 
+"""
+twisted utils
+"""
+
 from pprint import pprint
 from twisted.internet import defer as twisted_defer
 from twisted.internet import reactor as twisted_reactor
