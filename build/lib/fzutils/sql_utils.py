@@ -62,20 +62,21 @@ class BaseSqlServer(object):
             self.is_connect_success = False
             print('数据库连接失败!!')
 
-    def _select_table(self, sql_str, params=None, lock_timeout=20000, logger=None):
-        '''
-        搜索
-        :param sql_str:
-        :param params:
-        :param lock_timeout:
-        :return:
-        '''
-        result = None
+    def _select_table(self,
+                      sql_str,
+                      params=None,
+                      lock_timeout=20000,
+                      logger=None,):
+        res = None
         try:
             cs = self.conn.cursor()
         except AttributeError as e:
-            _print(msg=str(e.args[0]), logger=logger, log_level=2)
-            return result
+            _print(
+                msg='遇到错误:',
+                logger=logger,
+                log_level=2,
+                exception=e,)
+            return res
 
         try:
             # 设置隔离级别为脏读
@@ -88,28 +89,32 @@ class BaseSqlServer(object):
             else:
                 cs.execute(sql_str)
             # self.conn.commit()
-            result = cs.fetchall()
+            res = cs.fetchall()
         except Exception as e:
-            _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
+            _print(
+                msg='遇到错误:',
+                logger=logger,
+                log_level=2,
+                exception=e,)
         finally:
             try:
                 cs.close()
             except Exception:
                 pass
-            return result
+            return res
 
-    def _insert_into_table(self, sql_str, params: tuple):
-        '''
+    def _insert_into_table(self, sql_str, params: tuple) -> bool:
+        """
         插入表数据
         :param sql_str:
         :param params:
         :return:
-        '''
+        """
         _ = False
         try:
             cs = self.conn.cursor()
         except AttributeError as e:
-            _print(msg=str(e.args[0]))
+            _print(msg='遇到错误:', exception=e,)
             return _
 
         try:
@@ -123,8 +128,9 @@ class BaseSqlServer(object):
             _ = True
         except Exception as e:
             print('-' * 9 + '| 修改信息失败, 未能将该页面信息存入到sqlserver中 |')
-            print('-' * 9 + '| 错误如下: ', e)
-            print('-' * 9 + '| 报错的原因：可能是重复插入导致, 可以忽略 ... |')
+            _print(
+                msg='遇到错误:',
+                exception=e,)
         finally:
             try:
                 cs.close()
@@ -132,7 +138,11 @@ class BaseSqlServer(object):
                 pass
             return _
 
-    def _insert_into_table_2(self, sql_str, params: tuple, logger, set_deadlock_priority_low=True):
+    def _insert_into_table_2(self,
+                             sql_str,
+                             params: tuple,
+                             logger,
+                             set_deadlock_priority_low=True) -> bool:
         """
         :param sql_str:
         :param params:
@@ -144,7 +154,11 @@ class BaseSqlServer(object):
         try:
             cs = self.conn.cursor()
         except AttributeError as e:
-            _print(msg=str(e.args[0]), logger=logger, log_level=2)
+            _print(
+                msg='遇到错误:',
+                logger=logger,
+                log_level=2,
+                exception=e, )
             return _
 
         try:
@@ -168,8 +182,12 @@ class BaseSqlServer(object):
                 pass
             return _
 
-    async def _insert_into_table_3(self, sql_str, params: tuple, logger, error_msg_dict=None):
-        '''
+    async def _insert_into_table_3(self,
+                                   sql_str,
+                                   params: tuple,
+                                   logger,
+                                   error_msg_dict=None) -> bool:
+        """
         异步
             error_msg_dict参数:
                 eg: {
@@ -189,12 +207,16 @@ class BaseSqlServer(object):
         :param logger:
         :param error_msg_dict: logger记录的额外信息
         :return:
-        '''
+        """
         _ = False
         try:
             cs = self.conn.cursor()
         except AttributeError as e:
-            _print(msg=str(e.args[0]), logger=logger, log_level=2)
+            _print(
+                msg='遇到错误:',
+                logger=logger,
+                log_level=2,
+                exception=e, )
             return _
 
         try:
@@ -241,20 +263,20 @@ class BaseSqlServer(object):
                 pass
             return _
 
-    def _update_table(self, sql_str, params: tuple):
-        '''
+    def _update_table(self, sql_str, params: tuple) -> bool:
+        """
         更新表数据
         :param sql_str:
         :param params:
-        :return: bool
-        '''
+        :return:
+        """
         ERROR_NUMBER = 0
         RETRY_NUM = self.dead_lock_retry_num    # 死锁重试次数
         _ = False
         try:
             cs = self.conn.cursor()
         except AttributeError as e:
-            _print(msg='遇到错误:', exception=e)
+            _print(msg='遇到错误:', exception=e,)
             return _
 
         while RETRY_NUM > 0:
@@ -287,19 +309,25 @@ class BaseSqlServer(object):
 
         return _
 
-    def _update_table_2(self, sql_str, params: tuple, logger):
+    def _update_table_2(self, sql_str, params: tuple, logger) -> bool:
         ERROR_NUMBER = 0
-        RETRY_NUM = self.dead_lock_retry_num    # 死锁重试次数
+        # 死锁重试次数
+        RETRY_NUM = self.dead_lock_retry_num
         _ = False
         try:
             cs = self.conn.cursor()
         except AttributeError as e:
-            _print(msg=str(e.args[0]), logger=logger, log_level=2)
+            _print(
+                msg='遇到错误:',
+                logger=logger,
+                log_level=2,
+                exception=e, )
             return _
 
         while RETRY_NUM > 0:
             try:
-                cs.execute('set deadlock_priority low;')    # 设置死锁释放级别
+                # 设置死锁释放级别
+                cs.execute('set deadlock_priority low;')
                 cs.execute(sql_str, params)
                 self.conn.commit()        # 不进行事务提交
                 logger.info('[+] add to db!')
@@ -310,7 +338,8 @@ class BaseSqlServer(object):
                     ERROR_NUMBER = e.number
                 except:
                     pass
-                if ERROR_NUMBER == 1025:  # 死锁状态码
+                if ERROR_NUMBER == 1025:
+                    # 死锁状态码
                     logger.error('遇到死锁!!进入等待...')
                     sleep(1)
                     RETRY_NUM -= 1
@@ -324,10 +353,11 @@ class BaseSqlServer(object):
                     cs.close()
                 except Exception:
                     pass
+
         return _
 
-    async def _update_table_3(self, sql_str, params: tuple, logger, error_msg_dict=None):
-        '''
+    async def _update_table_3(self, sql_str, params: tuple, logger, error_msg_dict=None) -> bool:
+        """
         异步更新数据
             error_msg_dict参数:
                 eg: {
@@ -342,19 +372,25 @@ class BaseSqlServer(object):
         :param logger:
         :param error_msg_dict: logger记录的额外信息
         :return:
-        '''
+        """
         ERROR_NUMBER = 0
-        RETRY_NUM = self.dead_lock_retry_num    # 死锁重试次数
+        # 死锁重试次数
+        RETRY_NUM = self.dead_lock_retry_num
         _ = False
         try:
             cs = self.conn.cursor()
         except AttributeError as e:
-            _print(msg=str(e.args[0]), logger=logger, log_level=2)
+            _print(
+                msg='遇到错误:',
+                logger=logger,
+                log_level=2,
+                exception=e,)
             return _
 
         while RETRY_NUM > 0:
             try:
-                cs.execute('set deadlock_priority low;')    # 设置死锁释放级别
+                # 设置死锁释放级别
+                cs.execute('set deadlock_priority low;')
                 cs.execute(sql_str, params)
                 self.conn.commit()
                 logger.info('[+] add to db!')
@@ -365,7 +401,8 @@ class BaseSqlServer(object):
                     ERROR_NUMBER = e.number
                 except:
                     pass
-                if ERROR_NUMBER == 1025:    # 死锁状态码
+                if ERROR_NUMBER == 1025:
+                    # 死锁状态码
                     sleep(1)
                     RETRY_NUM -= 1
                     logger.error('遇到死锁!!进入等待...')
@@ -393,16 +430,19 @@ class BaseSqlServer(object):
 
         return _
 
-    def _delete_table(self, sql_str, params=None, lock_timeout=20000):
+    def _delete_table(self, sql_str, params=None, lock_timeout=20000) -> bool:
         _ = False
         try:
             cs = self.conn.cursor()
         except AttributeError as e:
-            _print(msg='遇到错误:', exception=e)
+            _print(
+                msg='遇到错误:',
+                exception=e, )
             return _
 
         try:
-            cs.execute('set lock_timeout {0};'.format(lock_timeout))  # 设置客户端执行超时等待为20秒
+            # 设置客户端执行超时等待为20秒
+            cs.execute('set lock_timeout {0};'.format(lock_timeout))
             if params is not None:
                 if not isinstance(params, tuple):
                     params = tuple(params)
@@ -412,24 +452,29 @@ class BaseSqlServer(object):
             self.conn.commit()        # 不进行事务提交
             _ = True
         except Exception as e:
-            print('删除时报错: ', e)
+            _print(
+                msg='遇到错误:',
+                exception=e,)
         finally:
             try:
                 cs.close()
             except Exception:
                 pass
+
             return _
     
     def _get_one_select_cursor(self, sql_str, params=None, lock_timeout=20000):
-        '''
+        """
         获得一个select执行结果的cursor(用于美化打印table)
         :return: 查询失败 None | 成功的cursor
-        '''
+        """
         cursor = None
         try:
             cursor = self.conn.cursor()
         except AttributeError as e:
-            print(e.args[0])
+            _print(
+                msg='遇到错误:',
+                exception=e,)
             return cursor
 
         try:
@@ -441,7 +486,9 @@ class BaseSqlServer(object):
             else:
                 cursor.execute(sql_str)
         except Exception as e:
-            print(e)
+            _print(
+                msg='遇到错误:',
+                exception=e,)
             cursor = None
             return cursor
 
@@ -462,7 +509,10 @@ class BaseSqlServer(object):
             del self.port
         except Exception:
             pass
-        collect()
+        try:
+            collect()
+        except Exception:
+            pass
 
 def pretty_table(cursor):
     '''
