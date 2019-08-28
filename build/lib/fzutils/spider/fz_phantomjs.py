@@ -468,10 +468,10 @@ class MyPhantomjs(object):
             self.change_proxy = True
             if self.change_proxy:
                 try:
-                    self.from_ip_pool_set_proxy_ip_to_phantomjs()
+                    self.dynamic_handover_ip_proxy_in_phantomjs()
                 except Exception:
                     try:    # 第二次尝试
-                        self.from_ip_pool_set_proxy_ip_to_phantomjs()
+                        self.dynamic_handover_ip_proxy_in_phantomjs()
                     except Exception:
                         _print(
                             msg='动态切换ip失败!',
@@ -501,7 +501,7 @@ class MyPhantomjs(object):
             # 其他类型不动态改变代理
             pass
 
-    def from_ip_pool_set_proxy_ip_to_phantomjs(self) -> bool:
+    def dynamic_handover_ip_proxy_in_phantomjs(self) -> bool:
         '''
         给phantomjs切换代理
         :return:
@@ -511,15 +511,29 @@ class MyPhantomjs(object):
             high_conceal=self.high_conceal, )
         assert proxy_ip != '', '动态切换ip失败!'
 
+        # 下面方法已失效
+        # try:
+        #     ip, port = proxy_ip.split(':')
+        #     tmp_js = {
+        #         'script': 'phantom.setProxy({}, {});'.format(ip, port),
+        #         'args': []
+        #     }
+        #     self.driver.command_executor._commands['executePhantomScript'] = ('POST', '/session/$sessionId/phantom/execute')
+        #     self.driver.execute('executePhantomScript', tmp_js)
+        # except Exception:
+        #     raise AssertionError('动态切换ip失败!')
+
+        # 改用这个
         try:
-            tmp_js = {
-                'script': 'phantom.setProxy({}, {});'.format(proxy_ip.split(':')[0], proxy_ip.split(':')[1]),
-            # 切割成['xxxx', '端口']
-                'args': []
-            }
-            self.driver.command_executor._commands['executePhantomScript'] = (
-            'POST', '/session/$sessionId/phantom/execute')
-            self.driver.execute('executePhantomScript', tmp_js)
+            # 利用DesiredCapabilities(代理设置)参数值
+            # 重新打开一个sessionId，相当于浏览器清空缓存后，加上代理重新访问一次url
+            webdriver_proxy = WebdriverProxy()
+            webdriver_proxy.proxy_type = WebdriverProxyType.MANUAL
+            # eg: '1.9.171.51:800'
+            webdriver_proxy.http_proxy = proxy_ip
+            # 将代理设置添加到webdriver.DesiredCapabilities.PHANTOMJS中
+            webdriver_proxy.add_to_capabilities(webdriver.DesiredCapabilities.PHANTOMJS)
+            self.driver.start_session(webdriver.DesiredCapabilities.PHANTOMJS)
         except Exception:
             raise AssertionError('动态切换ip失败!')
 

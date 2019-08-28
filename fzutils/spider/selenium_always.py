@@ -29,7 +29,9 @@ from selenium.common.exceptions import (
     NoSuchElementException,
 )
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-
+# proxy相关
+from selenium.webdriver import Proxy as WebdriverProxy
+from selenium.webdriver.common.proxy import ProxyType as WebdriverProxyType
 
 # eg: 用于验证某些内容的颜色作为测试的一部分, 比如登入按钮的颜色变化!!
 # assert login_button_background_colour.hex == '#ff69b4'
