@@ -285,10 +285,31 @@ async def unblock_request_by_driver(url,
                                     css_selector='',
                                     exec_code='',
                                     timeout=20,
+                                    change_proxy: bool=False,
+                                    change_user_agent: bool=False,
 
                                     is_new_loop=False,) -> str:
     """
     非阻塞的driver 的请求
+    :param url:
+    :param type:
+    :param load_images:
+    :param executable_path:
+    :param logger:
+    :param high_conceal:
+    :param headless:
+    :param driver_use_proxy:
+    :param user_agent_type:
+    :param driver_obj:
+    :param ip_pool_type:
+    :param extension_path:
+    :param driver_cookies:
+    :param css_selector:
+    :param exec_code:
+    :param timeout:
+    :param change_proxy:
+    :param change_user_agent:
+    :param is_new_loop:
     :return:
     """
     driver = await unblock_get_driver_obj(
@@ -309,6 +330,8 @@ async def unblock_request_by_driver(url,
         css_selector,
         exec_code,
         timeout,
+        change_proxy,
+        change_user_agent,
     ]
     body = ''
     try:

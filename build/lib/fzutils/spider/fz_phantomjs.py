@@ -360,45 +360,25 @@ class MyPhantomjs(object):
 
         return
 
-    def from_ip_pool_set_proxy_ip_to_phantomjs(self) -> bool:
-        '''
-        给phantomjs切换代理
-        :return:
-        '''
-        proxy_ip = get_random_proxy_ip_from_ip_pool(
-            ip_pool_type=self.ip_pool_type,
-            high_conceal=self.high_conceal,)
-        assert proxy_ip != '', '动态切换ip失败!'
-
-        try:
-            tmp_js = {
-                'script': 'phantom.setProxy({}, {});'.format(proxy_ip.split(':')[0], proxy_ip.split(':')[1]),   # 切割成['xxxx', '端口']
-                'args': []
-            }
-            self.driver.command_executor._commands['executePhantomScript'] = ('POST', '/session/$sessionId/phantom/execute')
-            self.driver.execute('executePhantomScript', tmp_js)
-        except Exception:
-            raise AssertionError('动态切换ip失败!')
-
-        return True
-
-    def use_phantomjs_to_get_url_body(self, url, css_selector='', exec_code='', timeout=20):
+    def use_phantomjs_to_get_url_body(self,
+                                      url,
+                                      css_selector='',
+                                      exec_code='',
+                                      timeout=20,
+                                      change_proxy: bool=False,
+                                      change_user_agent: bool=False,):
         '''
         通过phantomjs来获取url的body
-        :param url: 待获取的url
+        :param url:
+        :param css_selector:
+        :param timeout:
+        :param change_proxy:
+        :param change_user_agent:
         :return: 字符串类型
         '''
-        if self.type == PHANTOMJS:
-            try:
-                self.from_ip_pool_set_proxy_ip_to_phantomjs()
-            except Exception:
-                try:    # 第二次尝试
-                    self.from_ip_pool_set_proxy_ip_to_phantomjs()
-                except Exception:
-                    _print(msg='动态切换ip失败!', logger=self.lg, log_level=2)
-                    return ''
-        else:                                                               # 其他类型不动态改变代理
-            pass
+        self.change_proxy = change_proxy
+        self.change_user_agent = change_user_agent
+        self.change_driver_proxy()
 
         try:
             self.driver.set_page_load_timeout(timeout)
@@ -409,7 +389,8 @@ class MyPhantomjs(object):
 
         try:
             self.driver.get(url)
-            self.driver.implicitly_wait(timeout)                            # 隐式等待和显式等待可以同时使用
+            # 隐式等待和显式等待可以同时使用
+            self.driver.implicitly_wait(timeout)
 
             if css_selector != '':
                 locator = (By.CSS_SELECTOR, css_selector)
@@ -422,8 +403,10 @@ class MyPhantomjs(object):
                     _print(msg='{0}加载完毕'.format(css_selector), logger=self.lg)
 
             # self.driver.save_screenshot('tmp_screen.png')
-            if exec_code != '':                                             # 动态执行代码
-                try:                                                        # 执行代码前先替换掉'  '
+            if exec_code != '':
+                # 动态执行代码
+                try:
+                    # 执行代码前先替换掉'  '
                     _ = compile(exec_code.replace('  ', ''), '', 'exec')
                     exec(_)
                 except Exception as e:
@@ -435,44 +418,183 @@ class MyPhantomjs(object):
 
             main_body = self._wash_html(self.driver.page_source)
             # _print(msg=str(main_body), logger=self.lg)
-        except Exception as e:                                              # 如果超时, 终止加载并继续后续操作
+        except Exception as e:
+            # 如果超时, 终止加载并继续后续操作
             _print(msg='-->>time out after {0} seconds when loading page'.format(timeout), logger=self.lg, log_level=2)
             _print(msg='报错如下: ', logger=self.lg, log_level=2, exception=e)
             try:
-                self.driver.execute_script('window.stop()')                 # 终止后续js执行
-            except Exception: pass                                          # 内部urllib.error.URLError or WebDriverException
+                # 终止后续js执行
+                self.driver.execute_script('window.stop()')
+            except Exception:
+                # 内部urllib.error.URLError or WebDriverException
+                pass
             _print(msg='main_body为空!', logger=self.lg, log_level=2)
             main_body = ''
 
         return main_body
 
-    def get_url_body(self, url, css_selector='', exec_code='', timeout=20):
+    def get_url_body(self,
+                     url,
+                     css_selector='',
+                     exec_code='',
+                     timeout=20,
+                     change_proxy: bool=False,
+                     change_user_agent: bool=False,):
         '''
         重命名
         :param url:
         :param css_selector:
         :param exec_code:
         :param timeout:
+        :param change_proxy:
+        :param change_user_agent:
         :return:
         '''
         return self.use_phantomjs_to_get_url_body(
             url=url,
             css_selector=css_selector,
             exec_code=exec_code,
-            timeout=timeout)
+            timeout=timeout,
+            change_proxy=change_proxy,
+            change_user_agent=change_user_agent,)
 
-    def get_url_cookies_from_phantomjs_session(self, url, css_selector='', exec_code='', timeout=20):
+    def change_driver_proxy(self):
+        """
+        动态修改代理
+        :return:
+        """
+        if self.type == PHANTOMJS:
+            # phantomjs必进行更改ip, 因为刚开始启动时, 并未设置代理
+            self.change_proxy = True
+            if self.change_proxy:
+                try:
+                    self.from_ip_pool_set_proxy_ip_to_phantomjs()
+                except Exception:
+                    try:    # 第二次尝试
+                        self.from_ip_pool_set_proxy_ip_to_phantomjs()
+                    except Exception:
+                        _print(
+                            msg='动态切换ip失败!',
+                            logger=self.lg,
+                            log_level=2,)
+                        return ''
+            else:
+                pass
+
+        elif self.type == FIREFOX:
+            if self.change_proxy:
+                try:
+                    self.dynamic_handover_ip_proxy_and_user_agent_in_fifefox()
+                except Exception:
+                    try:
+                        self.dynamic_handover_ip_proxy_and_user_agent_in_fifefox()
+                    except Exception:
+                        _print(
+                            msg='动态切换ip失败!',
+                            logger=self.lg,
+                            log_level=2,)
+                        return ''
+            else:
+                pass
+
+        else:
+            # 其他类型不动态改变代理
+            pass
+
+    def from_ip_pool_set_proxy_ip_to_phantomjs(self) -> bool:
         '''
+        给phantomjs切换代理
+        :return:
+        '''
+        proxy_ip = get_random_proxy_ip_from_ip_pool(
+            ip_pool_type=self.ip_pool_type,
+            high_conceal=self.high_conceal, )
+        assert proxy_ip != '', '动态切换ip失败!'
+
+        try:
+            tmp_js = {
+                'script': 'phantom.setProxy({}, {});'.format(proxy_ip.split(':')[0], proxy_ip.split(':')[1]),
+            # 切割成['xxxx', '端口']
+                'args': []
+            }
+            self.driver.command_executor._commands['executePhantomScript'] = (
+            'POST', '/session/$sessionId/phantom/execute')
+            self.driver.execute('executePhantomScript', tmp_js)
+        except Exception:
+            raise AssertionError('动态切换ip失败!')
+
+        return True
+
+    def dynamic_handover_ip_proxy_and_user_agent_in_fifefox(self) -> bool:
+        """
+        firefox动态切换proxy
+        :return:
+        """
+        proxy_ip = get_random_proxy_ip_from_ip_pool(
+            ip_pool_type=self.ip_pool_type,
+            high_conceal=self.high_conceal, )
+        assert proxy_ip != '', '动态切换ip失败!'
+
+        # user_agent动态修改(采用每次都变)
+        user_agent = get_random_pc_ua() if self.user_agent_type == PC else get_random_phone_ua()
+        if self.change_user_agent:
+            pass
+        else:
+            pass
+
+        try:
+            # 这里的ip和port可以根据自己的情况填充，比如通过api获取的代理ip，或者从代理池中获取也可以
+            ip, port = proxy_ip.split(':')
+            self.driver.get("about:config")
+            _js = '''
+            var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+            prefs.setIntPref("network.proxy.type", 1);
+            prefs.setCharPref("network.proxy.http", "{ip}");
+            prefs.setIntPref("network.proxy.http_port", "{port}");
+            prefs.setCharPref("network.proxy.ssl", "{ip}");
+            prefs.setIntPref("network.proxy.ssl_port", "{port}");
+            prefs.setCharPref("network.proxy.ftp", "{ip}");
+            prefs.setIntPref("network.proxy.ftp_port", "{port}");
+　　　　　　　prefs.setBoolPref("general.useragent.site_specific_overrides",true);
+　　　　　　　prefs.setBoolPref("general.useragent.updates.enabled",true);
+            prefs.setCharPref("general.useragent.override","{user_agent}");
+            '''.format(
+                ip=ip,
+                port=port,
+                user_agent=user_agent)
+            self.driver.execute_script(_js)
+            # 不需要休眠, 上方js执行很快
+            # sleep(1.)
+        except Exception:
+            raise AssertionError('动态切换ip失败!')
+
+        return True
+
+    def get_url_cookies_from_phantomjs_session(self,
+                                               url,
+                                               css_selector='',
+                                               exec_code='',
+                                               timeout=20,
+                                               change_proxy: bool = False,
+                                               change_user_agent: bool = False,):
+        """
         从session中获取cookies
         :param url:
+        :param css_selector:
+        :param exec_code:
+        :param timeout:
+        :param change_proxy:
+        :param change_user_agent:
         :return: cookies 类型 str
-        '''
+        """
         _print(msg='正在获取cookies...请耐心等待...', logger=self.lg)
         self.use_phantomjs_to_get_url_body(
             url=url,
             css_selector=css_selector,
             exec_code=exec_code,
-            timeout=timeout)
+            timeout=timeout,
+            change_proxy=change_proxy,
+            change_user_agent=change_user_agent,)
         cookies_str = ''
         try:
             cookies_list = self.driver.get_cookies()

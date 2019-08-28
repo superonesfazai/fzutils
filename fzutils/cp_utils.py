@@ -3,14 +3,12 @@
 # cp的utils
 
 import json
-import asyncio
 import re
 import execjs
 import time
 import requests
 from gc import collect
 from random import randint
-from decimal import Decimal
 from asyncio import (
     get_event_loop,
     new_event_loop,)
@@ -24,7 +22,8 @@ from .safe_utils import md5_encrypt
 from .ip_pools import (
     IpPools,
     fz_ip_pool,
-    ip_proxy_pool,)
+    ip_proxy_pool,
+    tri_ip_pool,)
 
 __all__ = [
     'get_shelf_time_and_delete_time',                       # cp得到shelf_time和delete_time
