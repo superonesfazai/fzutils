@@ -23,14 +23,16 @@ from time import sleep
 from redis import (
     ConnectionPool,
     StrictRedis,)
+from pickle import dumps as pickle_dumps
 
 from .common_utils import _print
 
 __all__ = [
-    'BaseSqlServer',        # cli for sql_server
-    'BaseRedisCli',         # cli for redis
-    'BaseSqlite3Cli',       # cli for sqlite3
-    'pretty_table',         # 美化打印table
+    'BaseSqlServer',                        # cli for sql_server
+    'BaseRedisCli',                         # cli for redis
+    'BaseSqlite3Cli',                       # cli for sqlite3
+    'pretty_table',                         # 美化打印table
+    'create_dcs_tasks_in_redis',            # 根据target_list创建分布式任务并插入到redis
 ]
 
 class BaseSqlServer(object):
@@ -69,8 +71,13 @@ class BaseSqlServer(object):
                       logger=None,):
         res = None
         try:
+            if not self.is_connect_success:
+                raise AssertionError('sql_server连接失败! 执行操作终止!')
+            else:
+                pass
+
             cs = self.conn.cursor()
-        except AttributeError as e:
+        except (AttributeError, AssertionError) as e:
             _print(
                 msg='遇到错误:',
                 logger=logger,
@@ -112,8 +119,12 @@ class BaseSqlServer(object):
         """
         _ = False
         try:
+            if not self.is_connect_success:
+                raise AssertionError('sql_server连接失败! 执行操作终止!')
+            else:
+                pass
             cs = self.conn.cursor()
-        except AttributeError as e:
+        except (AttributeError, AssertionError) as e:
             _print(msg='遇到错误:', exception=e,)
             return _
 
@@ -152,8 +163,12 @@ class BaseSqlServer(object):
         """
         _ = False
         try:
+            if not self.is_connect_success:
+                raise AssertionError('sql_server连接失败! 执行操作终止!')
+            else:
+                pass
             cs = self.conn.cursor()
-        except AttributeError as e:
+        except (AttributeError, AssertionError) as e:
             _print(
                 msg='遇到错误:',
                 logger=logger,
@@ -210,8 +225,12 @@ class BaseSqlServer(object):
         """
         _ = False
         try:
+            if not self.is_connect_success:
+                raise AssertionError('sql_server连接失败! 执行操作终止!')
+            else:
+                pass
             cs = self.conn.cursor()
-        except AttributeError as e:
+        except (AttributeError, AssertionError) as e:
             _print(
                 msg='遇到错误:',
                 logger=logger,
@@ -274,8 +293,12 @@ class BaseSqlServer(object):
         RETRY_NUM = self.dead_lock_retry_num    # 死锁重试次数
         _ = False
         try:
+            if not self.is_connect_success:
+                raise AssertionError('sql_server连接失败! 执行操作终止!')
+            else:
+                pass
             cs = self.conn.cursor()
-        except AttributeError as e:
+        except (AttributeError, AssertionError) as e:
             _print(msg='遇到错误:', exception=e,)
             return _
 
@@ -315,8 +338,12 @@ class BaseSqlServer(object):
         RETRY_NUM = self.dead_lock_retry_num
         _ = False
         try:
+            if not self.is_connect_success:
+                raise AssertionError('sql_server连接失败! 执行操作终止!')
+            else:
+                pass
             cs = self.conn.cursor()
-        except AttributeError as e:
+        except (AttributeError, AssertionError) as e:
             _print(
                 msg='遇到错误:',
                 logger=logger,
@@ -378,8 +405,12 @@ class BaseSqlServer(object):
         RETRY_NUM = self.dead_lock_retry_num
         _ = False
         try:
+            if not self.is_connect_success:
+                raise AssertionError('sql_server连接失败! 执行操作终止!')
+            else:
+                pass
             cs = self.conn.cursor()
-        except AttributeError as e:
+        except (AttributeError, AssertionError) as e:
             _print(
                 msg='遇到错误:',
                 logger=logger,
@@ -433,8 +464,12 @@ class BaseSqlServer(object):
     def _delete_table(self, sql_str, params=None, lock_timeout=20000) -> bool:
         _ = False
         try:
+            if not self.is_connect_success:
+                raise AssertionError('sql_server连接失败! 执行操作终止!')
+            else:
+                pass
             cs = self.conn.cursor()
-        except AttributeError as e:
+        except (AttributeError, AssertionError) as e:
             _print(
                 msg='遇到错误:',
                 exception=e, )
@@ -470,8 +505,12 @@ class BaseSqlServer(object):
         """
         cursor = None
         try:
+            if not self.is_connect_success:
+                raise AssertionError('sql_server连接失败! 执行操作终止!')
+            else:
+                pass
             cursor = self.conn.cursor()
-        except AttributeError as e:
+        except (AttributeError, AssertionError) as e:
             _print(
                 msg='遇到错误:',
                 exception=e,)
@@ -490,6 +529,7 @@ class BaseSqlServer(object):
                 msg='遇到错误:',
                 exception=e,)
             cursor = None
+
             return cursor
 
         return cursor
@@ -557,6 +597,75 @@ class BaseRedisCli():
         except:
             pass
         collect()
+
+def create_dcs_tasks_in_redis(redis_pool,
+                              spider_name: str,
+                              target_list: (list, tuple),
+                              base_name='fzhook',
+                              task_serializer: str='pickle',
+                              key_expire: (float, int) = 60 * 60,
+                              nx: bool = True,
+                              decode_responses: bool=False,
+                              encoding='utf-8',
+                              max_connections=None,
+                              logger=None,) -> None:
+    """
+    根据target_list创建分布式任务并插入到redis
+    :param redis_pool: from redis import ConnectionPool as RedisConnectionPool 实例对象
+    :param spider_name: 爬虫名
+    :param target_list: eg: [{'unique_id': 'xxx', 'value': 'xxxx',}, ...]
+    :param base_name:
+    :param task_serializer: 任务序列化方式 支持: 'pickle'
+    :param key_expire: 单位秒, 默认60分钟
+    :param nx: bool True 只有name不存在时, 当前set操作才执行
+    :param decode_responses: False 以二进制编码 True 以字符串, 默认二进制, encoding='utf-8'
+    :param encoding:
+    :param max_connections:
+    :return:
+    """
+    try:
+        redis_cli = StrictRedis(
+            connection_pool=redis_pool,
+            decode_responses=decode_responses,
+            encoding=encoding,
+            max_connections=max_connections,)
+    except Exception as e:
+        _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
+        return None
+
+    for item in target_list:
+        try:
+            unique_id = item.get('unique_id', '')
+            assert unique_id != ''
+            value = item.get('value')
+            assert value is not None
+
+            if task_serializer == 'pickle':
+                # value = pickle_dumps(value)
+                # 避免取出时报错: 'utf-8' codec can't decode byte 0x80 in position 0: invalid start byte
+                # 存入时: Python对象 -> 字节串 -> latin字符串 -> utf8字节串存储在Redis里
+                # 取出时: utf8字节串 -> 解码变成字符串 -> 通过latin1编码成字节串 -> Python对象
+                # eg: pickle.loads(r.get(sid).encode('latin1'))
+                value = pickle_dumps(value).decode('latin1')
+            else:
+                raise ValueError('task_serializer value 异常!')
+
+            name = '{base_name}:{spider_name}:{unique_id}'.format(
+                base_name=base_name,
+                spider_name=spider_name,
+                unique_id=unique_id,)
+            _print(msg='insert name: {} ...'.format(name), logger=logger)
+            redis_cli.set(
+                name=name,
+                value=value,
+                ex=key_expire,
+                # 只有name不存在时, 当前set操作才执行
+                nx=nx,)
+        except (AssertionError, Exception) as e:
+            _print(msg='遇到错误:', logger=logger, log_level=2, exception=e)
+            continue
+
+    return None
 
 class BaseSqlite3Cli(object):
     """
