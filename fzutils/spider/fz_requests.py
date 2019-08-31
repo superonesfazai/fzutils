@@ -191,7 +191,7 @@ class MyRequests(object):
     def _get_proxies(cls, ip_pool_type=ip_proxy_pool, high_conceal=True, proxy_type=PROXY_TYPE_HTTP):
         '''
         得到单个代理ip
-        :return: 格式: {'http': ip+port}
+        :return: 格式: {'http': ip+port} | 异常返回 {}
         '''
         ip_obj = MyIpPools(type=ip_pool_type, high_conceal=high_conceal)
         proxies = ip_obj.get_proxy_ip_from_ip_pool()  # {'http': ['xx', 'yy', ...]}
