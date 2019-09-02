@@ -279,6 +279,7 @@ def check_thread_tasks_and_restart(need_to_be_monitored_thread_tasks_info_list: 
                             pass
                     """
                     thread_task = func_name(args=func_args)
+                    thread_task.setName(name=thread_name)
 
                 thread_task.start()
 
