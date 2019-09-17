@@ -770,7 +770,7 @@ class MyPhantomjs(object):
 
     def switch_to_default_content(self):
         """
-        切换回默认内容
+        切换回默认内容(多用于iframe切换)
         :return:
         """
         return self.driver.switch_to_default_content()
