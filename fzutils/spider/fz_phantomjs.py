@@ -167,7 +167,7 @@ class MyPhantomjs(object):
         如果使用chrome请设置page_timeout=30(可用)
         :return:
         '''
-        _print(msg='init chrome...', logger=self.lg)
+        _print(msg='init chromedriver...', logger=self.lg)
         chrome_options = webdriver.ChromeOptions()
         # 设置headless
         if self.headless:
