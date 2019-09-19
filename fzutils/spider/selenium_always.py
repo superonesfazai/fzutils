@@ -27,6 +27,9 @@ from selenium.common.exceptions import (
     TimeoutException,
     WebDriverException,
     NoSuchElementException,
+    NoSuchFrameException,
+    NoSuchWindowException,
+    NoSuchAttributeException,
 )
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 # proxy相关
