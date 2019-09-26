@@ -67,6 +67,8 @@ class MyIpPools(object):
 
         elif self.type == fz_ip_pool:
             base_url = 'http://127.0.0.1:8002/get_all'
+            # mac 内网读取树莓派的服务(本地不开, ip池白名单冲突!)
+            # base_url = 'http://192.168.2.112:8001/get_all'
             try:
                 res = get(base_url).json()
                 assert res != [], 'res为空list!'
