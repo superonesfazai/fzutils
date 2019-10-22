@@ -78,7 +78,7 @@ def str_2_unicode(target:str):
 
 @catch_exceptions(default_res=False)
 def target_str_contain_some_char_check(target_str: str,
-                                          check_char_obj: (list, tuple)) -> bool:
+                                       check_char_obj: (list, tuple)) -> bool:
     """
     目标字符串是否包含某字符检测
     :param target_str:

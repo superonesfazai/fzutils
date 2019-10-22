@@ -110,11 +110,15 @@ class BaseSqlServer(object):
                 pass
             return res
 
-    def _insert_into_table(self, sql_str, params: tuple) -> bool:
+    def _insert_into_table(self,
+                           sql_str,
+                           params: tuple,
+                           repeat_insert_default_res: bool=None) -> bool:
         """
         插入表数据
         :param sql_str:
         :param params:
+        :param repeat_insert_default_res: 控制重复插入的返回值, 默认None, 返回True
         :return:
         """
         _ = False
@@ -136,7 +140,11 @@ class BaseSqlServer(object):
             _ = True
         except IntegrityError:
             print('重复插入...')
-            _ = True
+            if repeat_insert_default_res is None:
+                _ = True
+            else:
+                _ = repeat_insert_default_res
+
         except Exception as e:
             print('-' * 9 + '| 修改信息失败, 未能将该页面信息存入到sqlserver中 |')
             _print(
@@ -153,12 +161,14 @@ class BaseSqlServer(object):
                              sql_str,
                              params: tuple,
                              logger,
-                             set_deadlock_priority_low=True) -> bool:
+                             set_deadlock_priority_low=True,
+                             repeat_insert_default_res: bool=None) -> bool:
         """
         :param sql_str:
         :param params:
         :param logger:
         :param set_deadlock_priority_low: 是否设置死锁等级低
+        :param repeat_insert_default_res: 控制重复插入的返回值, 默认None, 返回True
         :return:
         """
         _ = False
@@ -187,7 +197,10 @@ class BaseSqlServer(object):
             _ = True
         except IntegrityError:
             logger.info('重复插入goods_id[%s], 此处跳过!' % params[0])
-            _ = True
+            if repeat_insert_default_res is None:
+                _ = True
+            else:
+                _ = repeat_insert_default_res
         except Exception:
             logger.error('| 修改信息失败, 未能将该页面信息存入到sqlserver中 | 出错goods_id: %s' % params[0], exc_info=True)
         finally:
@@ -201,7 +214,8 @@ class BaseSqlServer(object):
                                    sql_str,
                                    params: tuple,
                                    logger,
-                                   error_msg_dict=None) -> bool:
+                                   error_msg_dict=None,
+                                   repeat_insert_default_res: bool=None) -> bool:
         """
         异步
             error_msg_dict参数:
@@ -221,6 +235,7 @@ class BaseSqlServer(object):
         :param params:
         :param logger:
         :param error_msg_dict: logger记录的额外信息
+        :param repeat_insert_default_res: 控制重复插入的返回值, 默认None, 返回True
         :return:
         """
         _ = False
@@ -246,9 +261,12 @@ class BaseSqlServer(object):
             logger.info('[+] add to db!')
             _ = True
         except IntegrityError:
+            if repeat_insert_default_res is None:
+                _ = True
+            else:
+                _ = repeat_insert_default_res
             if not error_msg_dict:
                 logger.info('重复插入goods_id[%s], 此处跳过!' % params[0])
-                _ = True
             else:
                 if isinstance(error_msg_dict, dict):
                     msg = '重复插入{0}[{1}], 此处跳过!'.format(
@@ -256,7 +274,6 @@ class BaseSqlServer(object):
                         error_msg_dict.get('repeat_error', {}).get('field_value', '')
                     )
                     logger.info(msg)
-                    _ = True
                 else:
                     raise TypeError('传入的error_msg_dict类型错误, 请核对需求参数!')
 
