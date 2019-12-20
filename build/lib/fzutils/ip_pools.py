@@ -1,7 +1,8 @@
 # coding:utf-8
 
-from requests import get
-import gc
+# 使用with 来自动关闭文件, 避免多开后报错'Too many open files'
+# from requests import get
+from requests import session as requests_session
 import re
 from gc import collect
 from pickle import dumps
@@ -32,7 +33,9 @@ class MyIpPools(object):
         super(MyIpPools, self).__init__()
         self.high_conceal = high_conceal
         self.type = type
-        self.redis_cli = BaseRedisCli() if self.type == fz_ip_pool or self.type == sesame_ip_pool else None
+        self.redis_cli = BaseRedisCli() \
+            if self.type == fz_ip_pool or self.type == sesame_ip_pool \
+            else None
         if self.type == fz_ip_pool:
             self.h_key = get_uuid3('h_proxy_list')
         elif self.type == sesame_ip_pool:
@@ -52,26 +55,30 @@ class MyIpPools(object):
             else:
                 base_url = 'http://127.0.0.1:8000'
             try:
-                result = get(base_url).json()
+                with requests_session() as _s:
+                    result = _s.get(base_url).json()
+
             except Exception as e:
                 print(e)
                 return {'http': None}
 
-            for item in result:
-                if item[2] > 7:
-                    tmp_url = 'http://{}:{}'.format(item[0], item[1])
-                    proxy_list.append(tmp_url)
-                else:
-                    delete_url = 'http://127.0.0.1:8000/delete?ip='
-                    delete_info = get(delete_url + item[0])
+            with requests_session() as _s:
+                for item in result:
+                    if item[2] > 7:
+                        tmp_url = 'http://{}:{}'.format(item[0], item[1])
+                        proxy_list.append(tmp_url)
+                    else:
+                        delete_url = 'http://127.0.0.1:8000/delete?ip='
+                        delete_info = _s.get(delete_url + item[0])
 
         elif self.type == fz_ip_pool:
             base_url = 'http://127.0.0.1:8002/get_all'
             # mac 内网读取树莓派的服务(本地不开, ip池白名单冲突!)
             # base_url = 'http://192.168.2.112:8001/get_all'
             try:
-                res = get(base_url).json()
-                assert res != [], 'res为空list!'
+                with requests_session() as _s:
+                    res = _s.get(base_url).json()
+                    assert res != [], 'res为空list!'
             except Exception as e:
                 print(e)
                 return {'https': None}
@@ -89,8 +96,9 @@ class MyIpPools(object):
         elif self.type == tri_ip_pool:
             base_url = 'http://127.0.0.1:8001/get_all'
             try:
-                res = get(base_url).json()
-                assert res != [], 'res为空list!'
+                with requests_session() as _s:
+                    res = _s.get(base_url).json()
+                    assert res != [], 'res为空list!'
             except Exception as e:
                 print(e)
                 return {'https': None}
@@ -133,14 +141,16 @@ class MyIpPools(object):
         '''
         if self.type == ip_proxy_pool:
             base_url = 'http://127.0.0.1:8000'
-            result = get(base_url).json()
-            delete_url = 'http://127.0.0.1:8000/delete?ip='
+            with requests_session() as _s:
+                result = _s.get(base_url).json()
+                delete_url = 'http://127.0.0.1:8000/delete?ip='
+                for item in result:
+                    if item[2] < 11:
+                        delete_info = _s.get(delete_url + item[0])
+                        print(delete_info.text)
 
-            for item in result:
-                if item[2] < 11:
-                    delete_info = get(delete_url + item[0])
-                    print(delete_info.text)
-        elif self.type == fz_ip_pool or self.type == sesame_ip_pool:
+        elif self.type == fz_ip_pool \
+                or self.type == sesame_ip_pool:
             self.redis_cli.set(self.h_key, '')
 
         return None
