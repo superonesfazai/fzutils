@@ -64,7 +64,8 @@ class MyRequests(object):
                      _session=None,
                      get_session=False,
                      proxies=None,
-                     proxy_type=PROXY_TYPE_HTTP,):
+                     proxy_type=PROXY_TYPE_HTTP,
+                     allow_redirects=True,):
         '''
         根据url得到body
         :param url:
@@ -84,6 +85,7 @@ class MyRequests(object):
         :param get_session: True 则返回值为此次请求的session
         :param proxies: 代理 None or {xxx} 同requests的proxies
         :param proxy_type: PROXY_TYPE_HTTP 即'http' or PROXY_TYPE_HTTPS 即'https'
+        :param allow_redirects: 是否允许重定向, 默认允许
         :return: '' 表示error | str 表示success
         '''
         def _get_one_proxies_obj():
@@ -135,7 +137,8 @@ class MyRequests(object):
                     cookies=cookies,
                     proxies=tmp_proxies,
                     timeout=timeout,
-                    verify=verify)  # 在requests里面传数据，在构造头时，注意在url外头的&xxx=也得先构造
+                    verify=verify,
+                    allow_redirects=allow_redirects,)  # 在requests里面传数据，在构造头时，注意在url外头的&xxx=也得先构造
                 # print(str(response.url))
                 try:
                     _ = response.content.decode(encoding)
@@ -165,7 +168,8 @@ class MyRequests(object):
                         _session=_session,
                         get_session=get_session,
                         proxies=proxies,
-                        proxy_type=proxy_type,)
+                        proxy_type=proxy_type,
+                        allow_redirects=allow_redirects,)
                 else:
                     print('requests.get()请求超时....')
                     print('data为空!')

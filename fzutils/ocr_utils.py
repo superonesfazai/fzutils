@@ -339,7 +339,10 @@ def crack_wy_point_select_captcha(username,
         ('supportuser', r_username),    # 若快打码平台账号
         ('supportpass', r_pwd),         # 若快打码平台pwd
     )
-    body = Requests.get_url_body(url=url, use_proxy=False, params=params)
+    body = Requests.get_url_body(
+        url=url,
+        use_proxy=False,
+        params=params)
     # print(body)
     res = json_2_dict(body)
     validate = res.get('validate', '') if res.get('status', 'fail') == 'ok' else ''

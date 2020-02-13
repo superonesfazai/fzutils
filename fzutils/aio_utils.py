@@ -171,6 +171,7 @@ async def unblock_request(url,
                           get_session=False,
                           proxies=None,
                           proxy_type=PROXY_TYPE_HTTP,
+                          allow_redirects=True,
                           logger=None,
                           is_new_loop=False,) -> str:
     """
@@ -193,6 +194,7 @@ async def unblock_request(url,
     :param get_session:
     :param proxies:
     :param proxy_type:
+    :param allow_redirects:
     :param logger:
     :param is_new_loop:
     :return:
@@ -216,6 +218,7 @@ async def unblock_request(url,
         get_session,
         proxies,
         proxy_type,
+        allow_redirects,
     ]
     body = await unblock_func(
         func_name=Requests.get_url_body,

@@ -33,7 +33,10 @@ def get_ip_address_info(ip) -> dict:
         ('ip', ip),
     )
     try:
-        body = Requests.get_url_body(url=base_url, use_proxy=False, params=params)
+        body = Requests.get_url_body(
+            url=base_url,
+            use_proxy=False,
+            params=params)
         _ = json_2_dict(body).get('data', {})
         country = _.get('country', '')
         assert country != '', '获取到的country为空值!'
@@ -53,7 +56,7 @@ def get_local_external_network_ip() -> str:
     :return: '' 表示获取失败!
     '''
     url = 'http://httpbin.org/get'
-    local_ip = json_2_dict(Requests.get_url_body(use_proxy=False, url=url)).get('origin', '')
+    local_ip = json_2_dict(Requests.get_url_body(use_proxy=False, url=url,)).get('origin', '')
 
     return local_ip
 
@@ -72,7 +75,10 @@ def proxy_type_detect(ip_pool_type=tri_ip_pool):
         'Accept-Language': 'zh-CN,zh;q=0.9',
     }
     url = 'http://proxies.site-digger.com/proxy-detect/'
-    body = Requests.get_url_body(url=url, headers=headers, ip_pool_type=ip_pool_type)
+    body = Requests.get_url_body(
+        url=url,
+        headers=headers,
+        ip_pool_type=ip_pool_type)
     # print(body)
     try:
         REMOTE_ADDR = re.compile('REMOTE_ADDR = (.*?)</p>').findall(body)[0]

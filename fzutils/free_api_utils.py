@@ -50,7 +50,10 @@ def get_jd_one_goods_price_info(goods_id) -> list:
     params = (
         ('skuIds', 'J_' + goods_id),
     )
-    body = Requests.get_url_body(url=base_url, use_proxy=False, params=params)
+    body = Requests.get_url_body(
+        url=base_url,
+        use_proxy=False,
+        params=params)
 
     return json_2_dict(body, default_res=[])
 
@@ -81,7 +84,10 @@ def get_express_info(express_type, express_id) -> dict:
         ('type', express_type),
         ('postid', express_id),
     )
-    body = Requests.get_url_body(url=base_url, use_proxy=False, params=params)
+    body = Requests.get_url_body(
+        url=base_url,
+        use_proxy=False,
+        params=params,)
 
     return json_2_dict(body)
 
@@ -96,7 +102,10 @@ def get_phone_num_info(phone_num) -> dict:
         ('tel', str(phone_num)),
     )
 
-    body = Requests.get_url_body(url=url, params=params, use_proxy=False)
+    body = Requests.get_url_body(
+        url=url,
+        params=params,
+        use_proxy=False)
     try:
         res = re.compile('__GetZoneResult_ = (.*)').findall(body)[0]
         return json_2_dict(res)
