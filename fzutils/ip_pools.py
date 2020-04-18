@@ -97,6 +97,8 @@ class MyIpPools(object):
             base_url = 'http://127.0.0.1:8001/get_all'
             # mac 内网读取树莓派的服务(本地不开, ip池白名单冲突!)
             # base_url = 'http://192.168.2.112:8001/get_all'
+            # 全部从一台机器上获取
+            # base_url = 'http://118.31.39.97/get_all'
             try:
                 with requests_session() as _s:
                     res = _s.get(base_url).json()
